@@ -1,0 +1,183 @@
+"""Equivalence filtering via differential execution.
+
+A mutant is flagged as *likely-equivalent* when it produces identical outputs
+to the canonical solution on all N sampled inputs.  Two passes are made:
+
+1. Fast AST check  — if the unparses are identical the mutant is trivially
+                     equivalent (no code changed) and skipped early.
+2. Execution check — run both on N random inputs; any output divergence
+                     means the mutant is non-equivalent.
+
+Limitations
+-----------
+- We only sample N inputs, so we can miss divergence on rare edge cases.
+  The larger N, the more confidence (default 500 as per the thesis plan).
+- Input generation is best-effort: we infer types from the function signature
+  and generate plausible random values.  Complex types fall back to the
+  task's own test-case inputs extracted from the ``test`` block.
+"""
+
+from __future__ import annotations
+
+import ast
+import inspect
+import random
+import re
+from dataclasses import dataclass
+from typing import Any, Optional
+
+from ..core.sandbox import execute
+from ..core.data_loader import HumanEvalTask
+from .corpus_builder import Mutant
+
+
+@dataclass
+class EquivResult:
+    mutant_id: str
+    is_equivalent: bool
+    reason: str          # "ast_identical" | "no_divergence" | "diverged"
+    n_inputs_tested: int
+
+
+# ---------------------------------------------------------------------------
+# Random input generation
+# ---------------------------------------------------------------------------
+
+def _random_int(rng: random.Random) -> int:
+    return rng.randint(-100, 100)
+
+
+def _random_float(rng: random.Random) -> float:
+    return rng.uniform(-100.0, 100.0)
+
+
+def _random_str(rng: random.Random) -> str:
+    length = rng.randint(0, 10)
+    chars = "abcdefghijklmnopqrstuvwxyz 0123456789"
+    return "".join(rng.choice(chars) for _ in range(length))
+
+
+def _random_list_int(rng: random.Random) -> list[int]:
+    length = rng.randint(0, 8)
+    return [_random_int(rng) for _ in range(length)]
+
+
+def _random_value(annotation: str, rng: random.Random) -> Any:
+    ann = annotation.lower().strip()
+    if ann in ("int",):
+        return _random_int(rng)
+    if ann in ("float",):
+        return _random_float(rng)
+    if ann in ("str",):
+        return _random_str(rng)
+    if "list" in ann:
+        return _random_list_int(rng)
+    if ann in ("bool",):
+        return rng.choice([True, False])
+    # Default: try int
+    return _random_int(rng)
+
+
+def _extract_param_annotations(func_source: str, entry_point: str) -> list[str]:
+    """Return a list of annotation strings for each parameter (excluding self)."""
+    try:
+        tree = ast.parse(func_source)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == entry_point:
+                annotations = []
+                for arg in node.args.args:
+                    if arg.annotation:
+                        annotations.append(ast.unparse(arg.annotation))
+                    else:
+                        annotations.append("int")  # fallback
+                return annotations
+    except Exception:
+        pass
+    return ["int"]  # single param fallback
+
+
+def _extract_test_inputs(test_code: str, entry_point: str) -> list[tuple]:
+    """Pull literal argument tuples from assert calls in the test block.
+
+    Matches patterns like: assert entry_point(a, b, c) == ...
+    """
+    pattern = re.compile(
+        rf"{re.escape(entry_point)}\(([^)]*)\)",
+        re.MULTILINE,
+    )
+    inputs = []
+    for match in pattern.finditer(test_code):
+        try:
+            args = eval(f"({match.group(1)},)")  # noqa: S307
+            inputs.append(args)
+        except Exception:
+            continue
+    return inputs
+
+
+def _generate_inputs(
+    task: HumanEvalTask,
+    n: int,
+    seed: int,
+) -> list[tuple]:
+    """Return up to n input tuples for the task's entry-point function."""
+    rng = random.Random(seed)
+
+    # Start with test-derived inputs for maximum coverage signal
+    inputs = _extract_test_inputs(task.test, task.entry_point)
+
+    # Fill remaining with random values
+    full_source = task.prompt + task.canonical_solution
+    annotations = _extract_param_annotations(full_source, task.entry_point)
+    while len(inputs) < n:
+        inputs.append(tuple(_random_value(ann, rng) for ann in annotations))
+
+    return inputs[:n]
+
+
+# ---------------------------------------------------------------------------
+# Equivalence check
+# ---------------------------------------------------------------------------
+
+def _run_on_inputs(code: str, entry_point: str, inputs: list[tuple], timeout_s: float) -> list[Any]:
+    """Return output for each input, or a sentinel string on error/timeout."""
+    outputs = []
+    for args in inputs:
+        call = f"\n__result__ = {entry_point}(*{repr(args)})\nprint(repr(__result__))"
+        result = execute(code, call, timeout_s=timeout_s)
+        if result.timed_out or not result.passed:
+            outputs.append(f"__error__:{result.stderr[:60]}")
+        else:
+            outputs.append(result.stdout.strip())
+    return outputs
+
+
+def check_equivalence(
+    task: HumanEvalTask,
+    mutant: Mutant,
+    n_fuzz_inputs: int = 500,
+    timeout_s: float = 5.0,
+    seed: int = 42,
+) -> EquivResult:
+    """Return an EquivResult classifying this mutant."""
+    canonical_code = task.prompt + task.canonical_solution
+
+    # 1. Fast AST check
+    try:
+        canon_tree = ast.unparse(ast.parse(canonical_code))
+        mut_tree = ast.unparse(ast.parse(mutant.code))
+        if canon_tree == mut_tree:
+            return EquivResult(mutant.mutant_id, True, "ast_identical", 0)
+    except SyntaxError:
+        pass
+
+    # 2. Differential execution
+    inputs = _generate_inputs(task, n_fuzz_inputs, seed)
+    canon_outs = _run_on_inputs(canonical_code, task.entry_point, inputs, timeout_s)
+    mutant_outs = _run_on_inputs(mutant.code, task.entry_point, inputs, timeout_s)
+
+    for c_out, m_out in zip(canon_outs, mutant_outs):
+        if c_out != m_out:
+            return EquivResult(mutant.mutant_id, False, "diverged", len(inputs))
+
+    return EquivResult(mutant.mutant_id, True, "no_divergence", len(inputs))

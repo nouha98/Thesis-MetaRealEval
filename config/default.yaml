@@ -1,0 +1,43 @@
+project:
+  output_dir: ./results
+  seed: 42
+  mock: false          # set to true for offline development (no LLM calls)
+
+benchmark:
+  name: humaneval
+  tasks: [0,1]          # null = all 164; use [0, 1, 10] for a pilot subset
+
+llm:
+  # API key and base URL are read from INNKUBE_API_KEY / INNKUBE_BASE_URL env vars.
+  # Only model IDs and generation parameters belong here.
+  models:
+    - id: gemma4-31b-it
+    - id: qwen3-next-80b-a3b-instruct
+    - id: qwen35-397b
+  max_concurrent_requests: 5    # asyncio semaphore: in-flight HTTP requests per process
+  requests_per_minute: 20       # token-bucket rate: sustained throughput cap (tune upward if no 429s)
+  retry_max_attempts: 5
+  retry_base_delay_s: 2.0       # exponential backoff: 2s, 4s, 8s, 16s, 32s
+  cache_dir: ./cache/llm_responses
+
+execution:
+  timeout_s: 10                 # per-test-case subprocess timeout
+  cpu_workers: 4                # multiprocessing pool size; match SLURM --cpus-per-task
+
+stage0:
+  n_fuzz_inputs: 500            # random inputs per mutant for differential fuzzing
+
+rq1:
+  operators: [AOR, ROR, SDL]   # mutation operators for traditional mutants
+
+rq2:
+  n_completions: 10             # samples per (task, variant, model) triple
+  temperature: 0.8
+  relations: [original, persona, formal, reorder, terse]
+
+rq3:
+  n_shared_inputs: 200          # shared random inputs for pairwise divergence
+  divergence_threshold: null    # null = auto-calibrated during Tier-1 pilot
+
+rq4:
+  degradation_levels: [0.0, 0.2, 0.5, 0.8]

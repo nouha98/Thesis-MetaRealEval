@@ -1,0 +1,261 @@
+% \documentclass[11pt,a4paper]{article}
+% \usepackage[utf8]{inputenc}
+% \usepackage[margin=1in]{geometry}
+% \usepackage{booktabs}
+% \usepackage{amsmath}
+% \usepackage{hyperref}
+% \usepackage{enumitem}
+% \usepackage{graphicx}
+% \usepackage{csquotes}
+% \usepackage{tabularx}
+% \usepackage{float} % Add to preamble
+
+% \usepackage{tabularx, booktabs, multirow, array, xcolor, makecell}
+% \usepackage[table]{xcolor}
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{csquotes}
+% \usepackage{graphicx}
+
+\definecolor{headerblue}{HTML}{1F3864}
+\definecolor{rowgray}{HTML}{F2F7FC}
+\definecolor{labelblue}{HTML}{2E75B6}
+
+\newcommand{\rqlabel}[5]{\textcolor{labelblue}{\textbf{#1}}}
+\newcommand{\hyp}[5]{\textbf{#1}}
+\title{\textbf{Bridging the ``Evaluation Trust'' Gap:\\ A Unified Framework for Quantifying Semantic Robustness and Test Adequacy in Code LLMs}}
+\author{MSc Research Proposal, Nouha Karoui}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Executive summary}
+
+This proposal describes a unified, reproducible research programme focused on Python that combines code-level mutation testing and prompt-level metamorphic (paraphrase) testing to evaluate and improve execution-based code benchmarks (e.g., HumanEval, MBPP). The project builds an open toolchain, Meta-Real-Eval, that:
+\begin{enumerate}[noitemsep]
+    \item Pre-filters equivalent mutants via automated differential fuzzing (Stage 0) before all kill-rate analysis, ensuring comparisons are not confounded by semantically identical programs.
+    \item Characterises LLM-specific fault profiles (RQ1a) and separately measures how adequate benchmark test suites are at detecting those faults (RQ1b).
+    \item Produces controlled paraphrases and metamorphic prompts to quantify ranking instability (RQ2), and re-applies this analysis at each benchmark degradation level to test whether oracle weakness and prompt sensitivity compound each other (RQ4 interaction).
+    \item Implements an automated validation framework using formally defined implementation divergence and the hybrid SBC (Semantic-BLEU-Completeness) metric to detect false positives without human oracles (RQ3).
+    \item Demonstrates remediation by using Consistency Assertions: oracle-free cross-variant checks generated (RQ3), to restore evaluation trust even when benchmark test suites are intentionally weakened (RQ4).
+\end{enumerate}
+\section{Research problem}
+Execution-based benchmarks for code generation are the primary standard for claiming progress in Code LLMs. However, these benchmarks suffer from a profound “Evaluation Trust” gap driven by three interacting pathologies:
+\begin{itemize}
+    \item \textbf{Oracle Incompleteness:} Test suites are often too small or lack the branch coverage to detect subtle logic errors.
+    \item \textbf{Prompt Sensitivity:} Minor paraphrases can flip model rankings, suggesting benchmarks measure prompt-alignment rather than reasoning.
+    \item \textbf{Fault Mismatch:} Traditional mutation operators may not reflect the "sneaky" semantic faults that LLMs actually produce.
+\end{itemize}
+This thesis treats benchmarks as the object of study rather than a static metric. It investigates whether combining code mutation and metamorphic prompt testing can:
+\begin{enumerate}
+    \item (RQ1a) Characterise the LLM-specific fault profile and determine whether LLM faults form a structurally distinct class not captured by traditional operators.
+    \item (RQ1b) Diagnose benchmark adequacy specifically, whether existing test suites can detect the fault types identified in RQ1a.
+    \item (RQ2) Predict ranking instability through semantic invariance testing, and quantify whether this instability compounds with oracle weakness.
+    \item (RQ3) Detect false positives automatically using implementation divergence and the SBC metric, without relying on human oracles.
+    \item (RQ4) Remediate evaluation trust loss through Consistency Assertions, and test whether MT-augmented benchmarks stabilise rankings under both test removal and prompt variation.
+\end{enumerate}
+
+\section{State of the art and gaps}
+\subsection{Representative prior work}
+\begin{itemize}[noitemsep]
+  \item \textbf{Benchmark adequacy studies.} Empirical analyses show that popular benchmarks have limited branch/mutation adequacy and that augmentations can improve rigor. \cite{liu2025evaluating}. 
+
+  \item \textbf{Metamorphic / prompt testing.} Paraphrase/metamorphic prompt testing has been proposed to detect inconsistent or incorrect LLM outputs; systematic reviews summarize transformations and techniques \cite{asgari2025metamorphic} \cite{pan2025re}.
+  \item \textbf{LLM-based mutation generation.} LLMs can propose realistic mutants that traditional mutators miss \cite{tip2025llmorpheus}.
+  \item \textbf{Mutation-based LLM evaluation.} Mutation‑based consistency testing and MCT (Mutation-based Consistency Testing) methods evaluate LLMs’ code understanding by injecting mutants and checking model responses \cite{li2024mutation}).
+  \item \textbf{Reverse‑generation metrics.} Reverse generation (requirements inferred from code) and hybrid SBC (Semantic‑BLEU‑Completeness) metrics provide complementary signals to test execution \cite{ponnusamy2025bridging}.
+\end{itemize}
+
+\subsection{Identified Gaps}
+\begin{enumerate}[noitemsep]
+  \item Most work studies either code mutation or prompt paraphrase in isolation; a unified pipeline combining both to evaluate \emph{benchmarks} is missing.
+  \item It is unclear whether mutating canonical solutions vs. mutating LLM outputs yields different diagnostic signals.
+  \item There is limited evidence linking benchmark adequacy signals (mutation score, coverage) to \emph{ranking stability} under prompt and test perturbations.
+  \item Practical remediation loops (mutation‑guided test augmentation + metamorphic checks) have not been systematically evaluated for their effect on ranking stability.
+  \item No prior work has examined whether oracle incompleteness and prompt sensitivity compound each other (i.e., whether a weaker test suite amplifies ranking instability under paraphrase). This interaction is a central novel contribution of this thesis.
+\end{enumerate}
+\newpage
+\section{Planned Research}
+The primary objective of this research is to treat existing execution-based benchmarks (e.g., HumanEval, MBPP) as objects of study to diagnose systemic fragilities, specifically oracle incompleteness and prompt sensitivity. By shifting the focus from model performance to benchmark adequacy, this work aims to quantify the degree to which current leaderboards reflect genuine algorithmic reasoning versus data memorization or prompt alignment.
+
+\subsection{Experimental Design: Tiered Approach}
+To manage computational overhead and model non-determinism, the study employs a two-tier empirical design:
+
+\begin{enumerate}
+    \item \textbf{Tier 1 (Pilot):} .Intensive, high-repetition experiments on \textbf{HumanEval} to establish baseline configurations. This phase uses n=10 repetitions per prompt to calculate stable Pass@k distributions and identify "worst-case" tasks where models exhibit the highest variance
+    \item \textbf{Tier 2 (Generalization):} The optimized configuration will be applied to \textbf{RealClassEval} \cite{rahman2025syntheticbenchmarksevaluatingllm}, evaluating model behavior at the project-level. This tier tests whether semantic robustness insights from standalone functions generalize to complex object-oriented dependencies
+\end{enumerate}
+
+\subsection{The Meta-Real-Eval Toolchain}
+ The research utilizes the Meta-Real-Eval toolchain, an integrated Python-based pipeline designed to stress-test the interaction between models and test suites. The toolchain consists of four modular engines:
+\begin{itemize}
+    \item \textbf{Stage 0 Prerequisite - Differential Fuzzing Module (Equivalence Filter:} This module runs before any kill-rate computation in RQ1. For each generated mutant m and original program p:
+    \begin{itemize}[label=$\ast$]  
+        \item Execute m and p on N = 500 random inputs sampled from the task’s input domain.
+        \item If no output divergence is observed across all N inputs, flag m as likely-equivalent and exclude from kill-rate calculations.
+        \item Apply AST-level subsumption as a secondary filter for obvious structural equivalence.
+    \end{itemize}
+    \item \textbf{AST-Level Code Mutator:} Using \textbf{Cosmic-Ray \cite{cosmicray}} the engine seeds traditional syntactic faults (e.g., AOR, ROR, SDL) into both canonical and LLM-generated code. \textbf{Kill Ratios} are computed only on non-equivalent mutants (post Stage 0 filtering).
+    
+    \item \textbf{Syntax-Aware Prompt Mutator:} Decomposes prompt templates into syntax trees to generate 100 semantically invariant paraphrases per task. Applies Metamorphic Relations (fact reordering, persona-shifting, syntactic expansion) to measure the semantic invariance of model reasoning across prompt variants. \cite{de2025metamorphic}
+    
+    \item \textbf{Automated Test/Requirement Orchestrator:} Integrates \textbf{Pynguin} \cite{pynguin} for search-based test generation and a Requirement Reconstructor. The latter asks the LLM to reverse-generate requirements from its code to calculate the \textbf{SBC Score (Semantic, BLEU, Completeness)}, providing a validation signal independent of fixed oracles \cite{asgari2025metamorphic} \cite{ponnusamy2025bridging}.
+
+    \item \textbf{MT Augmentation Engine:} Converts divergence signals from RQ3 into Consistency Assertions oracle-free cross-variant checks, requiring that solutions generated from k paraphrased prompts produce identical outputs on shared random inputs. These assertions constitute the “MT-augmented” test suite used in RQ4, defined as: remaining unit tests + Consistency Assertions.
+\end{itemize}    
+
+% To ensure the reliability of findings, each prompt variant is sampled across multiple iterations to account for sampling stochasticity \cite{de2025metamorphic}. We will utilize Kendall’s Tau ( $\tau_b$) to measure rank-order correlation across mutated templates, identifying if model rankings are stable or merely an artifact of specific phrasing.\\
+% To mitigate compute costs, we employ stratified sampling. Deep analysis (exhaustive mutation) is reserved for tasks with high cyclomatic complexity or significant prompt sensitivity identified in the pilot, while the remainder of the corpus undergoes lighter metamorphic consistency checks.
+\subsection{Statistical Rigor and Compute Mitigation}
+Each prompt variant is sampled across $n=10$ iterations to account for sampling stochasticity. The following statistical procedures are applied across the RQs:
+
+\begin{itemize}
+    \item \textbf{Kill-rate comparisons (RQ1a, RQ1b):} Wilcoxon signed-rank test (paired by task) with Cliff's $\delta$ as the effect-size measure.
+    \item \textbf{Ranking instability (RQ2, RQ4):} Kendall's $\tau_b$ with bootstrap 95\% confidence intervals ($B=1,000$ resamples) per model family.
+    \item \textbf{Rank recovery (RQ4):} Spearman's $\rho$ and Kendall's $\tau_b$ of degraded/augmented rankings versus the full-suite baseline.
+    \item \textbf{Interaction experiment (RQ4 $\times$ RQ2):} The RQ2 $\tau_b$ analysis is re-run at each degradation level (0\%, 20\%, 50\%, 80\%). The resulting $\tau_b$ values are regressed against degradation percentage; monotonicity is tested with Page's $L$ trend test. This quantifies whether prompt sensitivity and oracle weakness compound each other.
+    \item \textbf{False-positive detection (RQ3):} ROC-AUC of the divergence-rate classifier against oracle pass/fail labels.
+\end{itemize}
+
+To mitigate compute costs, stratified sampling is employed. Exhaustive mutation analysis is reserved for tasks with high cyclomatic complexity or significant prompt sensitivity identified in the Tier 1 pilot; the remainder undergoes lighter metamorphic consistency checks only.
+\begin{minipage}{\textwidth}
+\section{Research Questions and Hypotheses}
+
+% \definecolor{headerblue}{HTML}{1F3864}
+% \definecolor{rowgray}{HTML}{F2F7FC}
+% \definecolor{labelblue}{HTML}{2E75B6}
+ 
+% \newcommand{\rqlabel}[1]{\textcolor{labelblue}{\textbf{#1}}}
+% \newcommand{\hyp}[1]{\textbf{#1}}
+ 
+%% Compact helper: tighter itemise inside cells
+% \newcommand{\ci}[1]{\noindent\hangindent=0.7em\hangafter=1 \textbullet\ #1}
+ 
+\begin{table}[H]
+\centering
+\small                          % one step below \small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{0.90}
+\caption{Research Questions, Hypotheses, and Experimental Methodology}
+\label{tab:rqs}
+ 
+\begin{tabularx}{\textwidth}{%
+  |>{\raggedright\arraybackslash}p{2.75cm}%   RQ
+  |>{\raggedright\arraybackslash}X%           Hypotheses
+  |>{\raggedright\arraybackslash}X%           Design & Data
+  |>{\raggedright\arraybackslash}X|}          % Method & Analysis
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{Research Question}} &
+\textcolor{white}{\textbf{Hypotheses (H1\,/\,H0)}} &
+\textcolor{white}{\textbf{Design \& Data}} &
+\textcolor{white}{\textbf{Method \& Analysis}} \\
+\hline
+ 
+%% ── RQ1a ────────────────────────────────────────────────────────────────
+\rowcolor{rowgray}
+\rqlabel{RQ1a: Fault Characterisation.}
+Do LLM faults form a distinct class poorly captured by traditional operators?
+&
+\hyp{H1:} LLM faults (wrong logic, hallucinated APIs) survive AOR/ROR/SDL at significantly higher rates.
+\newline\hyp{H0:} Kill rates are indistinguishable across mutation sources.
+&
+Two mutant populations per task:
+(a)~Cosmic-Ray (AOR, ROR, SDL);
+(b)~LLMorpheus semantic mutants.
+Applied to HumanEval (Tier~1) and RealClassEval (Tier~2).
+\textit{Equivalent mutants pre-filtered via Stage~0 differential fuzzing.}
+&
+Wilcoxon signed-rank on equivalence-filtered kill ratios (paired by task); Cliff's~$\delta$.
+Surviving LLM mutants taxonomised by fault type; results feed RQ1b.
+\\
+\hline
+ 
+%% ── RQ1b ────────────────────────────────────────────────────────────────
+\rqlabel{RQ1b: Benchmark Adequacy.}
+How adequate are benchmark test suites at detecting LLM-specific vs.\ traditional faults?
+&
+\hyp{H1:} Test suites show significantly lower kill rates against LLM-specific faults (from RQ1a) than against traditional mutants.
+\newline\hyp{H0:} Test suites are equally adequate against both fault populations.
+&
+RQ1a equivalence-filtered mutant populations run against HumanEval and RealClassEval test suites.
+Metric: equivalence-filtered kill ratio per population.
+&
+Wilcoxon signed-rank (paired by task); Cliff's~$\delta$.
+Kill ratios correlated with cyclomatic complexity to test whether task difficulty moderates oracle weakness.
+\\
+\hline
+ 
+%% ── RQ2 ─────────────────────────────────────────────────────────────────
+\rowcolor{rowgray}
+\rqlabel{RQ2: Ranking Instability.}
+How sensitive are model rankings to semantically invariant paraphrases?
+&
+\hyp{H1:} Prompt variations cause rank inversions ($\tau_b < 0.85$) across model families on the intact benchmark.
+\newline\hyp{H0:} Rankings remain stable across equivalent prompt variants.
+&
+100 paraphrases/task (fact reordering, persona-shifting, syntactic expansion) $\times$ 6 model families (e.g.\,Llama-3.1, Qwen2.5-Coder).
+Measured on the intact benchmark; re-applied per degradation level in RQ4.
+&
+Prompt templates decomposed into syntax trees; metamorphic relations applied.
+Kendall's~$\tau_b$ + bootstrap 95\,\% CIs per model family.
+Per-transformation instability profile recorded.
+\\
+\hline
+ 
+%% ── RQ3 ─────────────────────────────────────────────────────────────────
+\rqlabel{RQ3: Metamorphic Validation.}
+Can behavioral divergence and the SBC Score detect false positives without human oracles?
+&
+\hyp{H1:} High pairwise output disagreement across paraphrase-derived solutions predicts functional incorrectness even when benchmark tests pass.
+\newline\hyp{H0:} Output consistency does not correlate with functional correctness.
+&
+$k$ solutions per task (from $k$ paraphrases) executed on $M{=}200$ shared random inputs.
+Cluster flagged \textit{likely-incorrect} when disagreement rate $> \tau_{\text{div}}$ (calibrated in Tier~1 pilot).
+Consistency Assertions passed to RQ4.
+&
+Primary: pairwise output disagreement rate.
+Secondary: AST edit distance (structural diversity).
+SBC Score (Semantic\,+\,BLEU\,+\,Completeness) via reverse generation.
+ROC-AUC vs.\ oracle labels.
+\\
+\hline
+ 
+%% ── RQ4 ─────────────────────────────────────────────────────────────────
+\rowcolor{rowgray}
+\rqlabel{RQ4: Deficiency Mitigation \& Interaction.}
+Can MT-augmented benchmarks restore rankings under oracle incompleteness? Does degradation amplify prompt sensitivity?
+&
+\hyp{H1a:} Consistency Assertions from RQ3 achieve significant rank recovery toward the full-suite baseline.
+\newline\hyp{H0a:} MT-augmentation cannot compensate for oracle incompleteness.
+\newline\hyp{H1b:} Ranking instability ($\tau_b$) increases monotonically with degradation degree (compounding effect).
+\newline\hyp{H0b:} Prompt sensitivity is independent of test-suite completeness.
+&
+Degrade test suites at 20\,\%, 50\,\%, 80\,\%.
+\textit{MT-augmented~= remaining tests~+ Consistency Assertions} (solutions from $k$ paraphrases must agree on shared random inputs).
+RQ2 $\tau_b$ protocol re-run at each degradation level.
+&
+Rank recovery: Spearman~$\rho$ and $\tau_b$ vs.\ full-suite baseline.
+Interaction (H1b): $\tau_b$ regressed on degradation~\%; monotonicity via Page's~$L$ trend test.
+Cross-RQ: whether MT augmentation also stabilises rankings under paraphrase.
+\\
+\hline
+ 
+\end{tabularx}
+\end{table}
+\end{minipage}
+\bibliographystyle{plain} % This will handle the [1], [3] numbering automatically
+\bibliography{references} % This tells LaTeX to look for references.bib
+
+\end{document}

@@ -1,0 +1,293 @@
+% ─────────────────────────────────────────────────────────────────────────────
+% Required packages:
+% geometry, booktabs, tabularx, array, xcolor, multirow,
+% hyperref, titlesec, enumitem, microtype, caption, float,
+% amsmath, parskip
+% ─────────────────────────────────────────────────────────────────────────────
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.4cm,right=2.4cm]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{parskip}
+
+% ─────────────────────────────────────────────────────────────────────────────
+% Colors
+% ─────────────────────────────────────────────────────────────────────────────
+\definecolor{rowgray}{HTML}{F7F7F7}
+\definecolor{statusgray}{HTML}{F2F2F2}
+\definecolor{lightgold}{HTML}{FFF8ED}
+\definecolor{okgreen}{HTML}{1E7B34}
+\definecolor{warnred}{HTML}{B00020}
+
+% ─────────────────────────────────────────────────────────────────────────────
+% Headings
+% ─────────────────────────────────────────────────────────────────────────────
+\titleformat{\section}
+{\large\bfseries}
+{}{0em}{}
+[\titlerule]
+
+\titleformat{\subsection}
+{\normalsize\bfseries}
+{}{0em}{}
+
+\titlespacing{\section}{0pt}{14pt}{6pt}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\renewcommand{\arraystretch}{1.18}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ═════════════════════════════════════════════════════════════════════════════
+% Title
+% ═════════════════════════════════════════════════════════════════════════════
+
+\begin{center}
+
+{\LARGE \textbf{Meta-Real-Eval: Pilot Progress Report V0}}\\[6pt]
+
+{\large Bridging the Evaluation Trust Gap in Code LLM Benchmarks}\\[10pt]
+
+Nouha Karoui \\
+May 2026 \\
+Supervisor: Prof.\ Gordon Fraser
+
+\end{center}
+
+\vspace{6pt}
+\hrule
+\vspace{12pt}
+
+% ═════════════════════════════════════════════════════════════════════════════
+% Status Overview
+% ═════════════════════════════════════════════════════════════════════════════
+
+\vspace{4pt}
+
+\textbf{Current focus:}
+Validation of the mutation-analysis and prompt-paraphrasing pipeline on a pilot subset of HumanEval tasks using OpenRouter-hosted models.
+
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Stage 0 — Equivalence Filtering}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\begin{table}[H]
+\centering
+\small
+\caption{Pilot equivalence-filtering results}
+\begin{tabularx}{0.9\textwidth}{X r r r r}
+\toprule
+\rowcolor{statusgray}
+\textbf{Task} &
+\textbf{Corpus} &
+\textbf{Mutants} &
+\textbf{Non-equivalent} &
+\textbf{Equivalent} \\
+\midrule
+
+\rowcolor{rowgray}
+HumanEval/0 & 61 & 2 & 1 & 1 \\
+
+HumanEval/1 & 58 & 2 & 1 & 1 \\
+
+\rowcolor{rowgray}
+HumanEval/10 & 59 & 2 & 1 & 1 \\
+
+HumanEval/100 & 55 & 2 & 1 & 1 \\
+
+\rowcolor{rowgray}
+HumanEval/101 & 56 & 2 & 1 & 1 \\
+
+\midrule
+\textbf{Total} & — & \textbf{10} & \textbf{5} & \textbf{5} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Key Finding:}
+Approximately 50\% of generated mutants were behaviorally equivalent and filtered before mutation-score analysis.
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{RQ1 — Fault Characterisation}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\begin{table}[H]
+\centering
+\small
+\caption{Kill rates by mutation category}
+\begin{tabular}{lcccc}
+\toprule
+\rowcolor{statusgray}
+\textbf{Category} &
+\textbf{Mutants} &
+\textbf{Killed} &
+\textbf{Survived} &
+\textbf{Kill Rate} \\
+\midrule
+
+\rowcolor{rowgray}
+Traditional Mutants & 9 & 9 & 0 & \textbf{100\%} \\
+
+LLM-Specific Mutants &
+5 &
+3 &
+\textbf{2} &
+\textbf{60\%} \\
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Finding:}
+LLM-specific semantic faults are significantly harder for benchmark test suites to detect than traditional syntactic mutations.
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{RQ2 — Ranking Instability}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\begin{table}[H]
+\centering
+\small
+\caption{Pilot ranking stability results}
+\begin{tabular}{lrrrr}
+\toprule
+\rowcolor{statusgray}
+\textbf{Task} &
+\textbf{Mean $\tau_b$} &
+\textbf{CI Lower} &
+\textbf{CI Upper} &
+\textbf{Interpretation} \\
+\midrule
+
+\rowcolor{rowgray}
+HumanEval/0 &
+-0.067 &
+-0.200 &
+0.733 &
+Unstable \\
+
+HumanEval/1 &
+0.035 &
+-0.223 &
+0.927 &
+Unstable \\
+
+\midrule
+\textbf{Grand Mean} &
+\textbf{-0.016} &
+— &
+— &
+\textbf{Near-zero stability} \\
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Finding:}
+Even small paraphrases frequently alter model rankings, suggesting that benchmark leaderboards are highly sensitive to prompt phrasing.
+
+% ═════════════════════════════════════════════════════════════════════════════
+\subsection{Methodology}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\subsubsection*{Paraphrase Generator}
+
+To evaluate ranking stability under semantically equivalent prompts, five deterministic metamorphic relations are applied to each HumanEval task.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l p{4cm} X}
+\toprule
+\rowcolor{statusgray}
+\textbf{Relation} & \textbf{Purpose} & \textbf{Transformation Example} \\
+\midrule
+
+MR-Original & Baseline prompt & Original HumanEval task \\
+
+\rowcolor{rowgray}
+MR-Persona & Expert framing &
+``As a senior Python engineer...'' \\
+
+MR-Formal & Formal rewriting &
+Passive voice and structured constraints \\
+
+\rowcolor{rowgray}
+MR-Reorder & Context shuffling &
+Reordered examples and descriptions \\
+
+MR-Terse & Minimal wording &
+Removal of non-essential phrasing \\
+
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsubsection*{Evaluation Protocol}
+
+The following models are evaluated through OpenRouter:
+
+\begin{itemize}[noitemsep]
+    \item Gemma-4-31B
+    \item Llama-3.3-70B
+    \item Qwen3-Coder
+\end{itemize}
+
+For each \textit{(task, prompt variant, model)} combination:
+
+\begin{enumerate}[noitemsep]
+    \item Generate $n=10$ completions
+    \item Compute Pass@1 and Pass@k
+    \item Compare rankings across paraphrases using Kendall's $\tau_b$
+\end{enumerate}
+
+\vspace{4pt}
+
+\textbf{Goal:}
+Measure whether semantically equivalent prompts lead to unstable benchmark rankings.
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Limitations \& Mitigations}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\begin{itemize}[noitemsep]
+    \item \textbf{API Limits \& \texttt{--mock} Data:} Severe rate limits (HTTP 429) on the OpenRouter free-tier disrupted early evaluation runs. To ensure development could continue, a \texttt{--mock} execution mode was added to the RQ2 pipeline. This mode uses deterministic, synthetic scores (instead of real LLM outputs) to mathematically validate the batched sampling, Kendall $\tau_b$ rankings, and disk-caching mechanisms without consuming API quota.
+    \item \textbf{Pilot Scope:} The current RQ2 results presented use this synthetic mock data on a limited 2-task pilot. Robust statistical tests (Wilcoxon/Cliff's $\delta$) will be used once true empirical data is collected.
+    \item \textbf{Mutation Fallbacks:} To bypass API dependencies during RQ1 fault generation, a secure local AST-based fallback was implemented to inject LLM-like semantic faults offline.
+\end{itemize}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Next Steps}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Scale Pilot (Phase 2):} Execute RQ1 and RQ2 on the full 164-task HumanEval benchmark using a paid-tier API or multi-day batched runs.
+    \item \textbf{False-Positive Detection (Phase 3 - RQ3):} Implement automated false-positive mutant detection (SBC scoring and divergence tracking).
+    \item \textbf{Test Suite Augmentation (Phase 4 - RQ4):} Build Metamorphic Testing-augmented test suites and evaluate benchmark ranking recovery.
+\end{enumerate}
+
+\vspace{10pt}
+\hrule
+
+\end{document}

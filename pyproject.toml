@@ -12,11 +12,12 @@ dependencies = [
     "pydantic>=2.0",
     "pyyaml",
     "python-dotenv",
-    "datasets",
+    "datasets>=3.0",
     "scipy",
     "numpy",
     "matplotlib",
     "pandas",
+    "cosmic-ray>=8.3",
 ]
 
 [project.optional-dependencies]

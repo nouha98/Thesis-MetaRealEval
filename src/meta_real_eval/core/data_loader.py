@@ -30,7 +30,7 @@ def load_humaneval(tasks: Optional[list[int]] = None) -> list[HumanEvalTask]:
     except ImportError as e:
         raise ImportError("Install the 'datasets' package: pip install datasets") from e
 
-    ds = load_dataset("openai_humaneval", split="test", trust_remote_code=True)
+    ds = load_dataset("openai/openai_humaneval", split="test")
 
     result: list[HumanEvalTask] = []
     for item in ds:

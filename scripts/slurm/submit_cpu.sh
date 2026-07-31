@@ -5,12 +5,16 @@
 #   sbatch --array=0-163 scripts/slurm/submit_cpu.sh stage0
 #   sbatch --array=0-163 scripts/slurm/submit_cpu.sh rq2 evaluate
 #
+#SBATCH --job-name=submit_cpu
 #SBATCH --cpus-per-task=4
+#SBATCH --mem=4G
 #SBATCH --time=00:30:00
 #SBATCH --output=logs/slurm_%A_%a.out
 #SBATCH --error=logs/slurm_%A_%a.err
 
 set -euo pipefail
+
+mkdir -p "${SLURM_SUBMIT_DIR}/logs"
 
 STAGE=${1:?Usage: submit_cpu.sh <stage> [phase]}
 PHASE=${2:-}

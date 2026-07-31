@@ -14,10 +14,10 @@ set -euo pipefail
 STAGE=${1:?Usage: submit_cpu_single.sh <stage> <phase>}
 PHASE=${2:?Usage: submit_cpu_single.sh <stage> <phase>}
 
+cd "${SLURM_SUBMIT_DIR}"
+
 echo "Job ${SLURM_JOB_ID}: ${STAGE} --phase ${PHASE} (CPU single job)"
 
-source .venv/bin/activate
-
-python -m meta_real_eval.${STAGE}.runner \
+.venv/bin/python -m meta_real_eval.${STAGE}.runner \
     --config config/default.yaml \
     --phase "${PHASE}"

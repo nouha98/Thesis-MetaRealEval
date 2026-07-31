@@ -15,16 +15,17 @@ set -euo pipefail
 STAGE=${1:?Usage: submit_cpu.sh <stage> [phase]}
 PHASE=${2:-}
 
-source .venv/bin/activate
+cd "${SLURM_SUBMIT_DIR}"
+PY=.venv/bin/python
 
 if [[ "${STAGE}" == "stage0" ]]; then
     echo "Job ${SLURM_JOB_ID} array-task ${SLURM_ARRAY_TASK_ID}: stage0"
-    python -m meta_real_eval.stage0.runner \
+    "${PY}" -m meta_real_eval.stage0.runner \
         --config config/default.yaml \
         --task-index "${SLURM_ARRAY_TASK_ID}"
 elif [[ -n "${PHASE}" ]]; then
     echo "Job ${SLURM_JOB_ID} array-task ${SLURM_ARRAY_TASK_ID}: ${STAGE} --phase ${PHASE}"
-    python -m meta_real_eval.${STAGE}.runner \
+    "${PY}" -m meta_real_eval.${STAGE}.runner \
         --config config/default.yaml \
         --phase "${PHASE}" \
         --task-index "${SLURM_ARRAY_TASK_ID}"

@@ -15,12 +15,10 @@ set -euo pipefail
 STAGE=${1:?Usage: submit_llm.sh <stage> <phase>}
 PHASE=${2:?Usage: submit_llm.sh <stage> <phase>}
 
-#SBATCH --job-name=mre-${STAGE}-${PHASE}
+cd "${SLURM_SUBMIT_DIR}"
 
 echo "Job ${SLURM_JOB_ID}: ${STAGE} --phase ${PHASE} (LLM-bound, all tasks)"
 
-source .venv/bin/activate
-
-python -m meta_real_eval.${STAGE}.runner \
+.venv/bin/python -m meta_real_eval.${STAGE}.runner \
     --config config/default.yaml \
     --phase "${PHASE}"

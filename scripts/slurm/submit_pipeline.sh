@@ -28,7 +28,11 @@ CPU_SCRIPT="scripts/slurm/submit_cpu.sh"
 CPU_SINGLE="scripts/slurm/submit_cpu_single.sh"
 LLM_SCRIPT="scripts/slurm/submit_llm.sh"
 
-mkdir -p logs results cache
+mkdir -p logs results cache data
+
+# Pre-stage the HumanEval corpus while we are still on the login node —
+# compute nodes have no outbound internet. No-op if already fetched.
+.venv/bin/python scripts/fetch_data.py
 
 echo "Submitting Meta-Real-Eval pipeline for task indices 0..${N_TASKS}"
 echo "Config: config/default.yaml"

@@ -29,6 +29,9 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+meta_real_eval = ["data/*.jsonl", "data/*.jsonl.gz"]  # if the corpus is vendored
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

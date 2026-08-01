@@ -4,6 +4,7 @@
 # Usage:
 #   sbatch scripts/slurm/submit_cpu_single.sh rq4 analyze
 #
+#SBATCH --job-name=submit_cpu_single
 #SBATCH --cpus-per-task=2
 #SBATCH --time=01:00:00
 #SBATCH --output=logs/slurm_%j.out
@@ -14,17 +15,11 @@ set -euo pipefail
 STAGE=${1:?Usage: submit_cpu_single.sh <stage> <phase>}
 PHASE=${2:?Usage: submit_cpu_single.sh <stage> <phase>}
 
-cd "${SLURM_SUBMIT_DIR}"
-
-# /home/ is not mounted on compute nodes on this cluster, but HuggingFace
-# `datasets` defaults its cache to $HOME/.cache. Point it at /shared instead.
-export HF_HOME="${SLURM_SUBMIT_DIR}/.cache/huggingface"
-mkdir -p "${HF_HOME}"
-
-source .venv/bin/activate
+export MRE_RUNNER_MODULE="meta_real_eval.${STAGE}.runner"
+source "${SLURM_SUBMIT_DIR:-$(dirname "$0")/../..}/scripts/slurm/_common.sh"
 
 echo "Job ${SLURM_JOB_ID}: ${STAGE} --phase ${PHASE} (CPU single job)"
 
-srun python -m meta_real_eval.${STAGE}.runner \
+srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" -m meta_real_eval.${STAGE}.runner \
     --config config/default.yaml \
     --phase "${PHASE}"

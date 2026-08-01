@@ -11,33 +11,28 @@
 #SBATCH --time=00:30:00
 #SBATCH --output=logs/slurm_%A_%a.out
 #SBATCH --error=logs/slurm_%A_%a.err
-set -euo pipefail
 
-mkdir -p "${SLURM_SUBMIT_DIR}/logs"
+set -euo pipefail
 
 STAGE=${1:?Usage: submit_cpu.sh <stage> [phase]}
 PHASE=${2:-}
 
-cd "${SLURM_SUBMIT_DIR}"
+export MRE_RUNNER_MODULE="meta_real_eval.${STAGE}.runner"
+source "${SLURM_SUBMIT_DIR:-$(dirname "$0")/../..}/scripts/slurm/_common.sh"
 
-# /home/ is not mounted on compute nodes on this cluster, but HuggingFace
-# `datasets` defaults its cache to $HOME/.cache. Point it at /shared instead.
-export HF_HOME="${SLURM_SUBMIT_DIR}/.cache/huggingface"
-mkdir -p "${HF_HOME}"
-
-source .venv/bin/activate
+TASK_INDEX="${SLURM_ARRAY_TASK_ID:-0}"
 
 if [[ "${STAGE}" == "stage0" ]]; then
-    echo "Job ${SLURM_JOB_ID} array-task ${SLURM_ARRAY_TASK_ID}: stage0"
-    srun python -m meta_real_eval.stage0.runner \
+    echo "Job ${SLURM_JOB_ID} array-task ${TASK_INDEX}: stage0"
+    srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" -m meta_real_eval.stage0.runner \
         --config config/default.yaml \
-        --task-index "${SLURM_ARRAY_TASK_ID}"
+        --task-index "${TASK_INDEX}"
 elif [[ -n "${PHASE}" ]]; then
-    echo "Job ${SLURM_JOB_ID} array-task ${SLURM_ARRAY_TASK_ID}: ${STAGE} --phase ${PHASE}"
-    srun python -m meta_real_eval.${STAGE}.runner \
+    echo "Job ${SLURM_JOB_ID} array-task ${TASK_INDEX}: ${STAGE} --phase ${PHASE}"
+    srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" -m meta_real_eval.${STAGE}.runner \
         --config config/default.yaml \
         --phase "${PHASE}" \
-        --task-index "${SLURM_ARRAY_TASK_ID}"
+        --task-index "${TASK_INDEX}"
 else
     echo "ERROR: phase required for stage '${STAGE}'" >&2
     exit 1

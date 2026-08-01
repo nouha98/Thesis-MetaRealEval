@@ -11,6 +11,13 @@ venv/
 # Experiment outputs (large, not version-controlled)
 results/
 cache/
+.cache/
+.slurm_home/
+
+# Pre-staged HumanEval corpus (scripts/fetch_data.py)
+data/HumanEval.jsonl
+data/HumanEval.jsonl.gz
+
 logs/*
 !logs/.gitkeep
 

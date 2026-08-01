@@ -33,6 +33,15 @@ else
     echo "HOME:        ${HOME}"
 fi
 
+# Belt-and-suspenders against a stale/incorrectly-resolved editable install:
+# the venv's editable-install pointer for meta_real_eval can end up recording
+# an absolute path under /home (e.g. if the repo is reached via a /home <->
+# /shared symlink on the login node when `pip install -e .` is run). /home is
+# not mounted on compute nodes, so that pointer 404s there even though the
+# venv itself resolves fine. Force the correct src dir onto sys.path so import
+# resolution doesn't depend on what got baked into site-packages.
+export PYTHONPATH="${REPO_DIR}/src${PYTHONPATH:+:${PYTHONPATH}}"
+
 export HF_HOME="${REPO_DIR}/.cache/huggingface"
 export XDG_CACHE_HOME="${REPO_DIR}/.cache/xdg"
 export MPLCONFIGDIR="${REPO_DIR}/.cache/matplotlib"

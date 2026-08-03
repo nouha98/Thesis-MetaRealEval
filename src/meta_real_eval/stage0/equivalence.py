@@ -23,6 +23,7 @@ import ast
 import inspect
 import random
 import re
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -153,16 +154,32 @@ def compute_canonical_outputs(
     n_fuzz_inputs: int = 500,
     timeout_s: float = 5.0,
     seed: int = 42,
+    cpu_workers: int = 1,
 ) -> list[Any]:
     """Run the canonical solution on the fuzz inputs once, for reuse across all mutants.
 
     The canonical solution and the generated inputs are identical for every
     mutant of a task, so callers checking many mutants should compute this
     once per task rather than paying for it inside check_equivalence again.
+
+    Unlike check_equivalence, this always executes every input (there is no
+    divergence to short-circuit on), so it is the one place where spreading
+    the n_fuzz_inputs subprocess spawns across cpu_workers processes pays off
+    unconditionally.
     """
     canonical_code = task.prompt + task.canonical_solution
     inputs = _generate_inputs(task, n_fuzz_inputs, seed)
-    return [_run_one(canonical_code, task.entry_point, args, timeout_s) for args in inputs]
+    if cpu_workers <= 1:
+        return [_run_one(canonical_code, task.entry_point, args, timeout_s) for args in inputs]
+
+    with ProcessPoolExecutor(max_workers=cpu_workers) as pool:
+        return list(pool.map(
+            _run_one,
+            [canonical_code] * len(inputs),
+            [task.entry_point] * len(inputs),
+            inputs,
+            [timeout_s] * len(inputs),
+        ))
 
 
 def check_equivalence(

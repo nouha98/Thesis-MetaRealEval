@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -58,24 +59,41 @@ def process_task(task, cfg: Config) -> None:
     # --- 2. Equivalence filtering ---
     # Canonical outputs are identical for every mutant of this task, so compute
     # them once and reuse rather than re-running the canonical solution per mutant.
+    cpu_workers = cfg.execution.cpu_workers
     canon_outs = compute_canonical_outputs(
         task=task,
         n_fuzz_inputs=cfg.stage0.n_fuzz_inputs,
         timeout_s=cfg.execution.timeout_s,
         seed=cfg.project.seed,
+        cpu_workers=cpu_workers,
     ) if mutants else []
+
+    # Each mutant's own equivalence check (up to n_fuzz_inputs subprocess spawns,
+    # early-exiting on first divergence) is independent of every other mutant's,
+    # so spread them across cpu_workers processes instead of running one at a time.
+    results_by_id: dict[str, EquivResult] = {}
+    if mutants:
+        with ProcessPoolExecutor(max_workers=cpu_workers) as pool:
+            future_to_mutant = {
+                pool.submit(
+                    check_equivalence,
+                    task,
+                    mutant,
+                    cfg.stage0.n_fuzz_inputs,
+                    cfg.execution.timeout_s,
+                    cfg.project.seed,
+                    canon_outs,
+                ): mutant
+                for mutant in mutants
+            }
+            for future in as_completed(future_to_mutant):
+                mutant = future_to_mutant[future]
+                results_by_id[mutant.mutant_id] = future.result()
 
     equiv_results: list[dict] = []
     n_equiv = 0
     for mutant in mutants:
-        result: EquivResult = check_equivalence(
-            task=task,
-            mutant=mutant,
-            n_fuzz_inputs=cfg.stage0.n_fuzz_inputs,
-            timeout_s=cfg.execution.timeout_s,
-            seed=cfg.project.seed,
-            canon_outs=canon_outs,
-        )
+        result: EquivResult = results_by_id[mutant.mutant_id]
         equiv_results.append({
             "mutant_id": result.mutant_id,
             "is_equivalent": result.is_equivalent,

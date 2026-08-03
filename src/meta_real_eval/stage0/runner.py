@@ -23,7 +23,7 @@ from ..core.config import Config
 from ..core.data_loader import load_humaneval, task_label
 from ..core.logging_setup import setup as setup_logging
 from .corpus_builder import generate_mutants, Mutant
-from .equivalence import check_equivalence, EquivResult
+from .equivalence import check_equivalence, compute_canonical_outputs, EquivResult
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,15 @@ def process_task(task, cfg: Config) -> None:
     write_json(out, "mutants.json", mutants_data)
 
     # --- 2. Equivalence filtering ---
+    # Canonical outputs are identical for every mutant of this task, so compute
+    # them once and reuse rather than re-running the canonical solution per mutant.
+    canon_outs = compute_canonical_outputs(
+        task=task,
+        n_fuzz_inputs=cfg.stage0.n_fuzz_inputs,
+        timeout_s=cfg.execution.timeout_s,
+        seed=cfg.project.seed,
+    ) if mutants else []
+
     equiv_results: list[dict] = []
     n_equiv = 0
     for mutant in mutants:
@@ -65,6 +74,7 @@ def process_task(task, cfg: Config) -> None:
             n_fuzz_inputs=cfg.stage0.n_fuzz_inputs,
             timeout_s=cfg.execution.timeout_s,
             seed=cfg.project.seed,
+            canon_outs=canon_outs,
         )
         equiv_results.append({
             "mutant_id": result.mutant_id,
@@ -79,8 +89,7 @@ def process_task(task, cfg: Config) -> None:
     write_json(out, "equiv_filter.json", equiv_results)
 
     mark_done(out)
-
-
+        
 def main(argv: list[str] | None = None) -> None:
     load_dotenv()
     parser = argparse.ArgumentParser(description="Stage 0: equivalence filtering")

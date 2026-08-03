@@ -139,17 +139,30 @@ def _generate_inputs(
 # Equivalence check
 # ---------------------------------------------------------------------------
 
-def _run_on_inputs(code: str, entry_point: str, inputs: list[tuple], timeout_s: float) -> list[Any]:
-    """Return output for each input, or a sentinel string on error/timeout."""
-    outputs = []
-    for args in inputs:
-        call = f"\n__result__ = {entry_point}(*{repr(args)})\nprint(repr(__result__))"
-        result = execute(code, call, timeout_s=timeout_s)
-        if result.timed_out or not result.passed:
-            outputs.append(f"__error__:{result.stderr[:60]}")
-        else:
-            outputs.append(result.stdout.strip())
-    return outputs
+def _run_one(code: str, entry_point: str, args: tuple, timeout_s: float) -> Any:
+    """Return the output for a single input, or a sentinel string on error/timeout."""
+    call = f"\n__result__ = {entry_point}(*{repr(args)})\nprint(repr(__result__))"
+    result = execute(code, call, timeout_s=timeout_s)
+    if result.timed_out or not result.passed:
+        return f"__error__:{result.stderr[:60]}"
+    return result.stdout.strip()
+
+
+def compute_canonical_outputs(
+    task: HumanEvalTask,
+    n_fuzz_inputs: int = 500,
+    timeout_s: float = 5.0,
+    seed: int = 42,
+) -> list[Any]:
+    """Run the canonical solution on the fuzz inputs once, for reuse across all mutants.
+
+    The canonical solution and the generated inputs are identical for every
+    mutant of a task, so callers checking many mutants should compute this
+    once per task rather than paying for it inside check_equivalence again.
+    """
+    canonical_code = task.prompt + task.canonical_solution
+    inputs = _generate_inputs(task, n_fuzz_inputs, seed)
+    return [_run_one(canonical_code, task.entry_point, args, timeout_s) for args in inputs]
 
 
 def check_equivalence(
@@ -158,8 +171,13 @@ def check_equivalence(
     n_fuzz_inputs: int = 500,
     timeout_s: float = 5.0,
     seed: int = 42,
+    canon_outs: Optional[list[Any]] = None,
 ) -> EquivResult:
-    """Return an EquivResult classifying this mutant."""
+    """Return an EquivResult classifying this mutant.
+
+    canon_outs can be precomputed via compute_canonical_outputs() and shared
+    across mutants of the same task; if omitted it is computed here.
+    """
     canonical_code = task.prompt + task.canonical_solution
 
     # 1. Fast AST check
@@ -171,13 +189,16 @@ def check_equivalence(
     except SyntaxError:
         pass
 
-    # 2. Differential execution
+    # 2. Differential execution, one input at a time, stopping at first divergence.
+    # A mutant that infinite-loops only needs to time out once to prove
+    # non-equivalence rather than on every remaining fuzz input.
     inputs = _generate_inputs(task, n_fuzz_inputs, seed)
-    canon_outs = _run_on_inputs(canonical_code, task.entry_point, inputs, timeout_s)
-    mutant_outs = _run_on_inputs(mutant.code, task.entry_point, inputs, timeout_s)
+    if canon_outs is None:
+        canon_outs = [_run_one(canonical_code, task.entry_point, args, timeout_s) for args in inputs]
 
-    for c_out, m_out in zip(canon_outs, mutant_outs):
-        if c_out != m_out:
-            return EquivResult(mutant.mutant_id, False, "diverged", len(inputs))
+    for i, args in enumerate(inputs):
+        m_out = _run_one(mutant.code, task.entry_point, args, timeout_s)
+        if m_out != canon_outs[i]:
+            return EquivResult(mutant.mutant_id, False, "diverged", i + 1)
 
     return EquivResult(mutant.mutant_id, True, "no_divergence", len(inputs))

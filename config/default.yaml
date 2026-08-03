@@ -5,7 +5,7 @@ project:
 
 benchmark:
   name: humaneval
-  tasks: [0, 1, 2, 3, 4]          # null = all 164; use [0, 1, 10] for a pilot subset
+  tasks: null         # null = all 164; use [0, 1, 10] for a pilot subset
 
 llm:
   # API key and base URL are read from INNKUBE_API_KEY / INNKUBE_BASE_URL env vars.

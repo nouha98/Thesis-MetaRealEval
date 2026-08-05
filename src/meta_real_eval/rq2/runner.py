@@ -29,6 +29,7 @@ from dotenv import load_dotenv
 from ..core.config import Config
 from ..core.data_loader import load_humaneval
 from ..core.logging_setup import setup as setup_logging
+from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from .evaluator import evaluate_task
 from .generator import run_generate
 from .ranking import compute_ranking_stability
@@ -41,14 +42,13 @@ def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description="RQ2: ranking instability")
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--phase", choices=["generate", "evaluate"], required=True)
-    parser.add_argument("--task-index", type=int, default=None)
+    add_task_selection_args(parser)
     args = parser.parse_args(argv)
 
     cfg = Config.from_yaml(args.config)
     setup_logging("rq2", args.phase, log_dir=Path("logs"))
 
-    task_filter = [args.task_index] if args.task_index is not None else cfg.benchmark.tasks
-    tasks = load_humaneval(tasks=task_filter)
+    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
     logger.info("RQ2 phase=%s, %d task(s)", args.phase, len(tasks))
 
     if args.phase == "generate":

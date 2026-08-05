@@ -33,6 +33,7 @@ from ..core.checkpoint import is_done, mark_done, task_dir, write_json, read_jso
 from ..core.config import Config
 from ..core.data_loader import load_humaneval, task_label
 from ..core.logging_setup import setup as setup_logging
+from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from ..rq2.evaluator import _run_completion, pass_at_k
 from .consistency import build_consistency_assertions
 from .degradation import degrade_all_levels
@@ -200,14 +201,13 @@ def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description="RQ4: MT augmentation and interaction")
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--phase", choices=["degrade", "augment", "analyze"], required=True)
-    parser.add_argument("--task-index", type=int, default=None)
+    add_task_selection_args(parser)
     args = parser.parse_args(argv)
 
     cfg = Config.from_yaml(args.config)
     setup_logging("rq4", args.phase, log_dir=Path("logs"))
 
-    task_filter = [args.task_index] if args.task_index is not None else cfg.benchmark.tasks
-    tasks = load_humaneval(tasks=task_filter)
+    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
     logger.info("RQ4 phase=%s, %d task(s)", args.phase, len(tasks))
 
     if args.phase == "degrade":

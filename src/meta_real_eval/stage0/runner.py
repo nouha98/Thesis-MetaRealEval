@@ -23,6 +23,7 @@ from ..core.checkpoint import is_done, mark_done, task_dir, write_json, read_jso
 from ..core.config import Config
 from ..core.data_loader import load_humaneval, task_label
 from ..core.logging_setup import setup as setup_logging
+from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from .corpus_builder import generate_mutants, Mutant
 from .equivalence import check_equivalence, compute_canonical_outputs, EquivResult
 
@@ -112,19 +113,13 @@ def main(argv: list[str] | None = None) -> None:
     load_dotenv()
     parser = argparse.ArgumentParser(description="Stage 0: equivalence filtering")
     parser.add_argument("--config", default="config/default.yaml")
-    parser.add_argument(
-        "--task-index", type=int, default=None,
-        help="Process only this task index (for SLURM job arrays)",
-    )
+    add_task_selection_args(parser)
     args = parser.parse_args(argv)
 
     cfg = Config.from_yaml(args.config)
     setup_logging("stage0", log_dir=Path("logs"))
 
-    if args.task_index is not None:
-        tasks = load_humaneval(tasks=[args.task_index])
-    else:
-        tasks = load_humaneval(tasks=cfg.benchmark.tasks)
+    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
 
     logger.info("Stage 0: %d task(s) to process", len(tasks))
     for task in tasks:

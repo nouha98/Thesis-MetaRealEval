@@ -140,11 +140,20 @@ def _generate_inputs(
 # Equivalence check
 # ---------------------------------------------------------------------------
 
+# Distinct from any real output or error string. A timeout means "we don't
+# know what this would have produced" — it must never compare equal to
+# another timeout (canonical vs. mutant timing out for unrelated reasons is
+# not evidence of equivalence) or be used to confirm equivalence.
+TIMEOUT = "__timeout__"
+
+
 def _run_one(code: str, entry_point: str, args: tuple, timeout_s: float) -> Any:
     """Return the output for a single input, or a sentinel string on error/timeout."""
     call = f"\n__result__ = {entry_point}(*{repr(args)})\nprint(repr(__result__))"
     result = execute(code, call, timeout_s=timeout_s)
-    if result.timed_out or not result.passed:
+    if result.timed_out:
+        return TIMEOUT
+    if not result.passed:
         return f"__error__:{result.stderr[:60]}"
     return result.stdout.strip()
 
@@ -213,9 +222,18 @@ def check_equivalence(
     if canon_outs is None:
         canon_outs = [_run_one(canonical_code, task.entry_point, args, timeout_s) for args in inputs]
 
+    n_tested = 0
     for i, args in enumerate(inputs):
+        if canon_outs[i] == TIMEOUT:
+            # The canonical solution itself didn't finish on this input, so it
+            # can't tell us anything about the mutant — skip without spending
+            # a mutant-side timeout wait on it.
+            continue
+        n_tested += 1
         m_out = _run_one(mutant.code, task.entry_point, args, timeout_s)
-        if m_out != canon_outs[i]:
+        if m_out == TIMEOUT or m_out != canon_outs[i]:
             return EquivResult(mutant.mutant_id, False, "diverged", i + 1)
 
-    return EquivResult(mutant.mutant_id, True, "no_divergence", len(inputs))
+    if n_tested == 0:
+        return EquivResult(mutant.mutant_id, True, "no_testable_inputs", 0)
+    return EquivResult(mutant.mutant_id, True, "no_divergence", n_tested)

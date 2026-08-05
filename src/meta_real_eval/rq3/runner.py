@@ -31,6 +31,7 @@ from ..core.config import Config
 from ..core.data_loader import load_humaneval, task_label
 from ..core.llm_client import InnkubeClient
 from ..core.logging_setup import setup as setup_logging
+from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from ..rq2.evaluator import _extract_function_body
 from .divergence import compute_divergence
 from .sbc_scorer import compute_sbc_score
@@ -131,14 +132,13 @@ def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description="RQ3: metamorphic validation")
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--phase", choices=["execute", "score"], required=True)
-    parser.add_argument("--task-index", type=int, default=None)
+    add_task_selection_args(parser)
     args = parser.parse_args(argv)
 
     cfg = Config.from_yaml(args.config)
     setup_logging("rq3", args.phase, log_dir=Path("logs"))
 
-    task_filter = [args.task_index] if args.task_index is not None else cfg.benchmark.tasks
-    tasks = load_humaneval(tasks=task_filter)
+    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
     logger.info("RQ3 phase=%s, %d task(s)", args.phase, len(tasks))
 
     if args.phase == "execute":

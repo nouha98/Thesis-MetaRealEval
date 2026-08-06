@@ -64,6 +64,7 @@ def run_execute_one(task, cfg: Config) -> None:
         n_shared_inputs=cfg.rq3.n_shared_inputs,
         timeout_s=cfg.execution.timeout_s,
         seed=cfg.project.seed,
+        cpu_workers=cfg.execution.cpu_workers,
     )
 
     write_json(out, "divergence.json", result)
@@ -143,7 +144,11 @@ def main(argv=None) -> None:
 
     if args.phase == "execute":
         for task in tasks:
-            run_execute_one(task, cfg)
+            try:
+                run_execute_one(task, cfg)
+            except Exception:
+                logger.exception("Execute failed for %s — leaving unmarked, retry later",
+                                  task_label(task))
     else:
         asyncio.run(run_score(cfg, tasks))
 

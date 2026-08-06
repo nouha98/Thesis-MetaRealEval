@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import random
+from concurrent.futures import ProcessPoolExecutor
 from itertools import combinations
 
 from ..core.checkpoint import task_dir, read_json
@@ -44,6 +45,7 @@ def compute_divergence(
     n_shared_inputs: int = 200,
     timeout_s: float = 5.0,
     seed: int = 42,
+    cpu_workers: int = 1,
 ) -> dict:
     """Compute pairwise divergence across all (relation, model) solutions.
 
@@ -55,6 +57,16 @@ def compute_divergence(
       "pairwise_disagreement_rate": float,  # fraction of (pair, input) combos with different output
       "solutions": [{"relation": str, "model": str, "code": str}, ...]
     }
+
+    Execution across (solution, input) pairs is spread over ``cpu_workers``
+    subprocess-launching worker processes (mirrors stage0's equivalence check
+    and rq2's evaluator) — this is O(n_solutions * n_inputs) subprocess
+    spawns, so running it serially against a shared SLURM time limit is what
+    causes whole-task timeouts once a single candidate solution genuinely
+    hangs (each of its n_inputs calls then pays the full timeout_s).
+
+    A single malformed/crashing completion is isolated with try/except and
+    logged rather than allowed to take down the entire task.
     """
     from ..rq2.evaluator import _extract_function_body
 
@@ -63,13 +75,20 @@ def compute_divergence(
         for model_id, completions in model_completions.items():
             if not completions:
                 continue
-            best = _pick_best_completion(completions, task, timeout_s)
-            body = _extract_function_body(best, task.entry_point)
-            import re
-            if not re.match(r"\s*def\s+", body):
-                code = task.prompt + body
-            else:
-                code = body
+            try:
+                best = _pick_best_completion(completions, task, timeout_s)
+                body = _extract_function_body(best, task.entry_point)
+                import re
+                if not re.match(r"\s*def\s+", body):
+                    code = task.prompt + body
+                else:
+                    code = body
+            except Exception as exc:
+                logger.warning(
+                    "Skipping %s/%s for %s — completion extraction failed: %s",
+                    relation, model_id, task_label(task), exc,
+                )
+                continue
             solutions.append({"relation": relation, "model": model_id, "code": code})
 
     if len(solutions) < 2:
@@ -77,13 +96,32 @@ def compute_divergence(
                 "pairwise_disagreement_rate": 0.0, "solutions": solutions}
 
     inputs = _generate_inputs(task, n_shared_inputs, seed)
+    n_inputs = len(inputs)
 
-    # Collect outputs per solution
-    all_outputs: list[list[str]] = []
-    for sol in solutions:
-        outputs = [_execute_on_input(sol["code"], task.entry_point, inp, timeout_s)
-                   for inp in inputs]
-        all_outputs.append(outputs)
+    # Collect outputs per solution. Flatten (solution, input) into parallel
+    # lists so the subprocess spawns are spread across cpu_workers processes
+    # instead of running the full n_solutions * n_inputs sequentially.
+    if cpu_workers <= 1:
+        flat_outputs = [
+            _execute_on_input(sol["code"], task.entry_point, inp, timeout_s)
+            for sol in solutions for inp in inputs
+        ]
+    else:
+        codes, entry_points, args_list, timeouts = [], [], [], []
+        for sol in solutions:
+            for inp in inputs:
+                codes.append(sol["code"])
+                entry_points.append(task.entry_point)
+                args_list.append(inp)
+                timeouts.append(timeout_s)
+        with ProcessPoolExecutor(max_workers=cpu_workers) as pool:
+            flat_outputs = list(pool.map(
+                _execute_on_input, codes, entry_points, args_list, timeouts,
+            ))
+
+    all_outputs: list[list[str]] = [
+        flat_outputs[i * n_inputs:(i + 1) * n_inputs] for i in range(len(solutions))
+    ]
 
     # Compute pairwise disagreement
     total_comparisons = 0

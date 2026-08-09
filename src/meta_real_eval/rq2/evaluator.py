@@ -14,7 +14,7 @@ import math
 import re
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from ..core.checkpoint import is_done, mark_done, task_dir, write_json, read_json
+from ..core.checkpoint import clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
 from ..core.data_loader import HumanEvalTask, task_label
 from ..core.sandbox import execute
@@ -88,10 +88,15 @@ def _run_completion(
     return result.passed
 
 
-def evaluate_task(task: HumanEvalTask, cfg: Config) -> None:
+def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None:
     """Evaluate cached completions for one task and write pass rates."""
     label = task_label(task)
     out = task_dir(cfg, "rq2", label, phase="evaluate")
+
+    if force:
+        # Also wipes rankings.json (computed downstream from pass_rates.json
+        # in this same directory), so the ranking step redoes its work too.
+        clear_done(out)
 
     if is_done(out):
         logger.info("SKIP evaluate %s", label)

@@ -26,6 +26,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from ..core.checkpoint import add_force_arg
 from ..core.config import Config
 from ..core.data_loader import load_humaneval
 from ..core.logging_setup import setup as setup_logging
@@ -43,19 +44,20 @@ def main(argv=None) -> None:
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--phase", choices=["generate", "evaluate"], required=True)
     add_task_selection_args(parser)
+    add_force_arg(parser)
     args = parser.parse_args(argv)
 
     cfg = Config.from_yaml(args.config)
     setup_logging("rq2", args.phase, log_dir=Path("logs"))
 
     tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
-    logger.info("RQ2 phase=%s, %d task(s)", args.phase, len(tasks))
+    logger.info("RQ2 phase=%s, %d task(s)%s", args.phase, len(tasks), " (forced)" if args.force else "")
 
     if args.phase == "generate":
-        asyncio.run(run_generate(cfg, tasks))
+        asyncio.run(run_generate(cfg, tasks, force=args.force))
     else:
         for task in tasks:
-            evaluate_task(task, cfg)
+            evaluate_task(task, cfg, force=args.force)
             compute_ranking_stability(task, cfg)
 
     logger.info("RQ2 phase=%s complete.", args.phase)

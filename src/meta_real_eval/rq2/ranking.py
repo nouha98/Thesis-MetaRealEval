@@ -1,36 +1,49 @@
-"""Compute Kendall tau_b ranking stability across prompt variants.
+"""Ranking stability and per-model sensitivity under prompt paraphrase.
 
-For each (task, model) pair we have one Pass@1 score per relation.
-We compare the model ranking induced by each variant against the 'original'
-variant using Kendall's tau_b, then bootstrap 95% confidence intervals.
+Three questions, at three different granularities:
 
-Output format (per task)
-------------------------
-{
-  "model_id": {
-    "tau_b_per_variant": {"persona": 0.3, "formal": -0.1, ...},
-    "mean_tau_b": 0.05,
-    "ci_lower": -0.2,
-    "ci_upper": 0.4
-  },
-  ...
-}
+1. Ranking stability — "does a paraphrase change the *ordering* of models?"
+   Kendall's tau_b correlates the model-score vector under a variant against
+   the vector under 'original'.  Both vectors are indexed by model, so tau_b
+   describes the whole leaderboard for one (task, relation) pair; it cannot be
+   attributed to a single model.  (This file used to loop over model_ids and
+   write the same number under each key — the correlated vectors span all
+   models regardless of the loop variable, so every entry was an identical
+   duplicate.  Verified: 0/164 tasks differed across models.)
+
+2. Per-model sensitivity — "does a paraphrase move *this* model's score?"
+   That one is genuinely per-model:  delta = pass@1(variant) - pass@1(original).
+
+3. Per-model rank movement — "does a paraphrase change *this* model's
+   position in the leaderboard, and by how many places?"  Ties are handled by
+   fractional (average) ranking, so this is always defined — unlike tau_b, a
+   fully-tied vector still has a well-defined rank_change of exactly 0 (no
+   position moved), it never needs to be excluded as degenerate.
+
+Undefined tau_b: when every model scores the same under a relation there is no
+ordering to preserve and tau_b is 0/0.  We record null and exclude it from the
+mean rather than substituting 1.0 ("stable") or 0.0 ("random").
+
+No confidence interval is computed here: per task there are only 4 non-baseline
+relations, far too few to bootstrap.  The CI is computed once across all tasks
+in scripts/analyze_results.py.
 """
 
 from __future__ import annotations
 
 import logging
-import random
 from typing import Optional
 
 import numpy as np
-from scipy.stats import kendalltau
+from scipy.stats import kendalltau, rankdata
 
-from ..core.checkpoint import is_done, mark_done, task_dir, write_json, read_json
+from ..core.checkpoint import task_dir, write_json, read_json
 from ..core.config import Config
 from ..core.data_loader import HumanEvalTask, task_label
 
 logger = logging.getLogger(__name__)
+
+BASELINE_RELATION = "original"
 
 
 def _model_pass_at1(pass_rates: dict, relation: str) -> dict[str, float]:
@@ -46,42 +59,35 @@ def _rank_vector(scores: dict[str, float], model_ids: list[str]) -> list[float]:
     return [scores.get(mid, 0.0) for mid in model_ids]
 
 
-def _tau_b(vec_a: list[float], vec_b: list[float]) -> float:
-    if len(set(vec_a)) <= 1 and len(set(vec_b)) <= 1:
-        return 1.0  # both constant → trivially concordant
+def _tau_b(vec_a: list[float], vec_b: list[float]) -> Optional[float]:
+    """Kendall tau_b between two model-score vectors, or None if undefined.
+
+    A constant vector has no ordering, so tau_b is 0/0.  Returning None forces
+    callers to exclude it rather than coerce it into a fabricated observation.
+    """
+    if len(set(vec_a)) <= 1 or len(set(vec_b)) <= 1:
+        return None
     result = kendalltau(vec_a, vec_b)
-    return float(result.statistic) if not np.isnan(result.statistic) else 0.0
+    return None if np.isnan(result.statistic) else float(result.statistic)
 
 
-def _bootstrap_ci(
-    values: list[float],
-    n_boot: int = 1000,
-    alpha: float = 0.05,
-    seed: int = 42,
-) -> tuple[float, float]:
-    """Percentile bootstrap 95% CI over a list of tau_b values."""
-    if not values:
-        return (float("nan"), float("nan"))
-    rng = random.Random(seed)
-    boots = [
-        np.mean(rng.choices(values, k=len(values)))
-        for _ in range(n_boot)
-    ]
-    boots.sort()
-    lo = boots[int(alpha / 2 * n_boot)]
-    hi = boots[int((1 - alpha / 2) * n_boot)]
-    return float(lo), float(hi)
+def _rank_positions(scores: dict[str, float], model_ids: list[str]) -> dict[str, float]:
+    """Rank models by score, best = rank 1.  Ties share the average rank
+    (fractional ranking), so a tie never arbitrarily favours one model.
+    """
+    vec = _rank_vector(scores, model_ids)
+    ranks = rankdata([-v for v in vec], method="average")  # negate: higher score -> lower (better) rank
+    return dict(zip(model_ids, ranks))
 
 
 def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
-    """Read pass_rates.json and write rankings.json for one task."""
+    """Read pass_rates.json and write rankings.json for one task.
+
+    Always recomputed — this is pure post-processing of pass_rates.json (no LLM
+    calls, no sandbox execution), so there is nothing to checkpoint around.
+    """
     label = task_label(task)
     out = task_dir(cfg, "rq2", label, phase="evaluate")
-
-    rankings_file = out / "rankings.json"
-    if rankings_file.exists():
-        logger.info("SKIP rankings %s (already done)", label)
-        return
 
     try:
         pass_rates: dict = read_json(out, "pass_rates.json")
@@ -90,33 +96,71 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
         return
 
     model_ids = cfg.model_ids()
-    relations = cfg.rq2.relations
-    baseline_relation = "original"
+    relations = [r for r in cfg.rq2.relations if r != BASELINE_RELATION]
 
-    baseline_scores = _model_pass_at1(pass_rates, baseline_relation)
+    baseline_scores = _model_pass_at1(pass_rates, BASELINE_RELATION)
     baseline_vec = _rank_vector(baseline_scores, model_ids)
 
-    rankings: dict[str, dict] = {}
-    for model_id in model_ids:
-        variant_taus: dict[str, float] = {}
-        for relation in relations:
-            if relation == baseline_relation:
-                continue
-            variant_scores = _model_pass_at1(pass_rates, relation)
-            variant_vec = _rank_vector(variant_scores, model_ids)
-            variant_taus[relation] = _tau_b(baseline_vec, variant_vec)
+    # 1. Ranking stability: one tau_b per relation, not per model.
+    tau_per_relation: dict[str, Optional[float]] = {}
+    for relation in relations:
+        variant_vec = _rank_vector(_model_pass_at1(pass_rates, relation), model_ids)
+        tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
 
-        tau_values = list(variant_taus.values())
-        mean_tau = float(np.mean(tau_values)) if tau_values else float("nan")
-        ci_lo, ci_hi = _bootstrap_ci(tau_values, seed=cfg.project.seed)
+    defined = [t for t in tau_per_relation.values() if t is not None]
 
-        rankings[model_id] = {
-            "tau_b_per_variant": variant_taus,
-            "mean_tau_b": mean_tau,
-            "ci_lower": ci_lo,
-            "ci_upper": ci_hi,
+    # 2. Per-model sensitivity: delta pass@1 against the baseline relation.
+    delta_pass_at_1 = {
+        model_id: {
+            relation: round(
+                _model_pass_at1(pass_rates, relation).get(model_id, 0.0)
+                - baseline_scores.get(model_id, 0.0),
+                6,
+            )
+            for relation in relations
         }
-        logger.debug("  %s / %s mean_tau_b=%.3f", label, model_id, mean_tau)
+        for model_id in model_ids
+    }
 
-    write_json(out, "rankings.json", rankings)
-    logger.info("Rankings computed for %s", label)
+    # 3. Per-model rank movement: positive = moved to a better (lower-numbered)
+    # rank; negative = moved to a worse one.  Always defined (see module docstring).
+    baseline_ranks = _rank_positions(baseline_scores, model_ids)
+    rank_change = {
+        model_id: {
+            relation: round(
+                baseline_ranks[model_id]
+                - _rank_positions(_model_pass_at1(pass_rates, relation), model_ids)[model_id],
+                4,
+            )
+            for relation in relations
+        }
+        for model_id in model_ids
+    }
+
+    write_json(out, "rankings.json", {
+        "model_ids": model_ids,
+        "baseline_pass_at_1": baseline_scores,
+        "tau_b_per_relation": tau_per_relation,
+        "mean_tau_b": float(np.mean(defined)) if defined else None,
+        "n_relations_defined": len(defined),
+        "n_relations_total": len(tau_per_relation),
+        "degenerate_relations": [r for r, t in tau_per_relation.items() if t is None],
+        "delta_pass_at_1": delta_pass_at_1,
+        "mean_abs_delta_pass_at_1": {
+            model_id: float(np.mean([abs(d) for d in deltas.values()])) if deltas else 0.0
+            for model_id, deltas in delta_pass_at_1.items()
+        },
+        "rank_change": rank_change,
+        "mean_abs_rank_change": {
+            model_id: float(np.mean([abs(c) for c in changes.values()])) if changes else 0.0
+            for model_id, changes in rank_change.items()
+        },
+    })
+
+    mean_tau = float(np.mean(defined)) if defined else None
+    logger.info(
+        "Rankings %s: mean_tau_b=%s over %d/%d relations",
+        label,
+        f"{mean_tau:.3f}" if mean_tau is not None else "undefined",
+        len(defined), len(tau_per_relation),
+    )

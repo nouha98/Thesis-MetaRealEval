@@ -19,7 +19,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from ..core.checkpoint import is_done, mark_done, task_dir, write_json, read_json
+from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
 from ..core.data_loader import load_humaneval, task_label
 from ..core.logging_setup import setup as setup_logging
@@ -30,9 +30,12 @@ from .equivalence import check_equivalence, compute_canonical_outputs, EquivResu
 logger = logging.getLogger(__name__)
 
 
-def process_task(task, cfg: Config) -> None:
+def process_task(task, cfg: Config, force: bool = False) -> None:
     label = task_label(task)
     out = task_dir(cfg, "stage0", label)
+
+    if force:
+        clear_done(out)
 
     if is_done(out):
         logger.info("SKIP %s (already done)", label)
@@ -114,6 +117,7 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Stage 0: equivalence filtering")
     parser.add_argument("--config", default="config/default.yaml")
     add_task_selection_args(parser)
+    add_force_arg(parser)
     args = parser.parse_args(argv)
 
     cfg = Config.from_yaml(args.config)
@@ -121,9 +125,9 @@ def main(argv: list[str] | None = None) -> None:
 
     tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
 
-    logger.info("Stage 0: %d task(s) to process", len(tasks))
+    logger.info("Stage 0: %d task(s) to process%s", len(tasks), " (forced)" if args.force else "")
     for task in tasks:
-        process_task(task, cfg)
+        process_task(task, cfg, force=args.force)
 
     logger.info("Stage 0 complete.")
 

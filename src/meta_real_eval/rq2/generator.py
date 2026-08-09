@@ -14,7 +14,7 @@ import logging
 from pathlib import Path
 
 from ..core.cache import ResponseCache
-from ..core.checkpoint import is_done, mark_done, task_dir, write_json
+from ..core.checkpoint import clear_done, is_done, mark_done, task_dir, write_json
 from ..core.config import Config
 from ..core.data_loader import HumanEvalTask, task_label
 from ..core.llm_client import InnkubeClient
@@ -41,10 +41,14 @@ async def generate_task(
     task: HumanEvalTask,
     cfg: Config,
     client: InnkubeClient,
+    force: bool = False,
 ) -> None:
     """Generate completions for one task across all (relation, model) combos."""
     label = task_label(task)
     out = task_dir(cfg, "rq2", label, phase="generate")
+
+    if force:
+        clear_done(out)
 
     if is_done(out):
         logger.info("SKIP generate %s", label)
@@ -82,9 +86,9 @@ async def generate_task(
     logger.info("Generated completions for %s", label)
 
 
-async def run_generate(cfg: Config, tasks: list[HumanEvalTask]) -> None:
+async def run_generate(cfg: Config, tasks: list[HumanEvalTask], force: bool = False) -> None:
     """Dispatch all tasks concurrently (semaphore + rate limiter handle throttling)."""
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
-    coros = [generate_task(t, cfg, client) for t in tasks]
+    coros = [generate_task(t, cfg, client, force=force) for t in tasks]
     await asyncio.gather(*coros)

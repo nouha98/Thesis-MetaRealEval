@@ -29,7 +29,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from ..core.checkpoint import is_done, mark_done, task_dir, write_json, read_json
+from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
 from ..core.data_loader import load_humaneval, task_label
 from ..core.logging_setup import setup as setup_logging
@@ -46,9 +46,12 @@ logger = logging.getLogger(__name__)
 # Degrade phase
 # ---------------------------------------------------------------------------
 
-def run_degrade_one(task, cfg: Config) -> None:
+def run_degrade_one(task, cfg: Config, force: bool = False) -> None:
     label = task_label(task)
     out = task_dir(cfg, "rq4", label, phase="degrade")
+
+    if force:
+        clear_done(out)
 
     if is_done(out):
         logger.info("SKIP degrade %s", label)
@@ -67,20 +70,17 @@ def run_degrade_one(task, cfg: Config) -> None:
 
     results: dict[str, dict] = {}
     for level, degraded_test in degraded_tests.items():
-        tau_by_model = compute_tau_at_degradation_level(
+        summary = compute_tau_at_degradation_level(
             task, completions_data, degraded_test, cfg
         )
-        results[str(level)] = {
-            "model_taus": tau_by_model,
-            "degradation_level": level,
-        }
+        results[str(level)] = {**summary, "degradation_level": level}
 
-    # Page's L: use mean across models
+    # Page's L over the task-level tau_b at each degradation level. Levels whose
+    # tau_b is undefined (every model tied) are dropped rather than imputed.
     tau_by_level = {
-        float(lv): float(
-            sum(d["model_taus"].values()) / max(len(d["model_taus"]), 1)
-        )
+        float(lv): d["mean_tau_b"]
         for lv, d in results.items()
+        if d["mean_tau_b"] is not None
     }
     trend = pages_l_trend_test(tau_by_level)
     results["trend_test"] = trend
@@ -94,9 +94,12 @@ def run_degrade_one(task, cfg: Config) -> None:
 # Augment phase
 # ---------------------------------------------------------------------------
 
-def run_augment_one(task, cfg: Config) -> None:
+def run_augment_one(task, cfg: Config, force: bool = False) -> None:
     label = task_label(task)
     out = task_dir(cfg, "rq4", label, phase="augment")
+
+    if force:
+        clear_done(out)
 
     if is_done(out):
         logger.info("SKIP augment %s", label)
@@ -131,17 +134,17 @@ def run_augment_one(task, cfg: Config) -> None:
     augmented_test = degraded_50 + "\n" + ca_code if ca_code else degraded_50
 
     # Evaluate completions under MT-augmented suite
-    tau_by_model = compute_tau_at_degradation_level(
+    augmented_summary = compute_tau_at_degradation_level(
         task, completions_data, augmented_test, cfg
     )
 
     results = {
         "has_consistency_assertions": bool(ca_code),
-        "model_taus_under_augmented": tau_by_model,
+        "under_augmented": augmented_summary,
     }
     write_json(out, "augment_analysis.json", results)
     mark_done(out)
-    logger.info("Augment %s: taus=%s", label, tau_by_model)
+    logger.info("Augment %s: mean_tau_b=%s", label, augmented_summary["mean_tau_b"])
 
 
 # ---------------------------------------------------------------------------
@@ -202,20 +205,21 @@ def main(argv=None) -> None:
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--phase", choices=["degrade", "augment", "analyze"], required=True)
     add_task_selection_args(parser)
+    add_force_arg(parser)
     args = parser.parse_args(argv)
 
     cfg = Config.from_yaml(args.config)
     setup_logging("rq4", args.phase, log_dir=Path("logs"))
 
     tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
-    logger.info("RQ4 phase=%s, %d task(s)", args.phase, len(tasks))
+    logger.info("RQ4 phase=%s, %d task(s)%s", args.phase, len(tasks), " (forced)" if args.force else "")
 
     if args.phase == "degrade":
         for task in tasks:
-            run_degrade_one(task, cfg)
+            run_degrade_one(task, cfg, force=args.force)
     elif args.phase == "augment":
         for task in tasks:
-            run_augment_one(task, cfg)
+            run_augment_one(task, cfg, force=args.force)
     else:
         run_analyze(cfg, tasks)
 

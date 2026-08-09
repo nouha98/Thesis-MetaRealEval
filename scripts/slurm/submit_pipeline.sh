@@ -11,14 +11,22 @@
 # Usage:
 #   bash scripts/slurm/submit_pipeline.sh           # array 0..163
 #   bash scripts/slurm/submit_pipeline.sh --tasks 4 # array 0..3 (pilot)
+#   bash scripts/slurm/submit_pipeline.sh --force   # redo every stage from
+#                                                    # scratch (ignores existing
+#                                                    # _done.marker files). Back
+#                                                    # up results/ first if you
+#                                                    # want to keep the old run:
+#                                                    #   ssh -l USER host "cd DIR && tar czf - results logs" > backup.tar.gz
 
 set -euo pipefail
 
 N_TASKS=163   # 164 tasks: HumanEval indices 0..163
+FORCE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --tasks) N_TASKS=$(($2 - 1)); shift 2 ;;
+        --force) FORCE="--force"; shift ;;
         *) echo "Unknown arg: $1"; exit 1 ;;
     esac
 done
@@ -38,31 +46,31 @@ echo "Submitting Meta-Real-Eval pipeline for task indices 0..${N_TASKS}"
 echo "Config: config/default.yaml"
 echo ""
 
-S0=$(sbatch --parsable --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" stage0)
+S0=$(sbatch --parsable --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" stage0 ${FORCE})
 echo "Stage 0:          job ${S0}  (array ${ARRAY_RANGE})"
 
-RQ1G=$(sbatch --parsable --dependency=afterok:"${S0}" "${LLM_SCRIPT}" rq1 generate)
+RQ1G=$(sbatch --parsable --dependency=afterok:"${S0}" "${LLM_SCRIPT}" rq1 generate ${FORCE})
 echo "RQ1 generate:     job ${RQ1G}  (single, LLM-bound)"
 
-RQ1E=$(sbatch --parsable --dependency=afterok:"${RQ1G}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq1 evaluate)
+RQ1E=$(sbatch --parsable --dependency=afterok:"${RQ1G}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq1 evaluate ${FORCE})
 echo "RQ1 evaluate:     job ${RQ1E}  (array ${ARRAY_RANGE})"
 
-RQ2G=$(sbatch --parsable --dependency=afterok:"${RQ1E}" "${LLM_SCRIPT}" rq2 generate)
+RQ2G=$(sbatch --parsable --dependency=afterok:"${RQ1E}" "${LLM_SCRIPT}" rq2 generate ${FORCE})
 echo "RQ2 generate:     job ${RQ2G}  (single, LLM-bound) *** main bottleneck ***"
 
-RQ2E=$(sbatch --parsable --dependency=afterok:"${RQ2G}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq2 evaluate)
+RQ2E=$(sbatch --parsable --dependency=afterok:"${RQ2G}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq2 evaluate ${FORCE})
 echo "RQ2 evaluate:     job ${RQ2E}  (array ${ARRAY_RANGE})"
 
-RQ3X=$(sbatch --parsable --dependency=afterok:"${RQ2E}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq3 execute)
+RQ3X=$(sbatch --parsable --dependency=afterok:"${RQ2E}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq3 execute ${FORCE})
 echo "RQ3 execute:      job ${RQ3X}  (array ${ARRAY_RANGE})"
 
-RQ3S=$(sbatch --parsable --dependency=afterok:"${RQ3X}" "${LLM_SCRIPT}" rq3 score)
+RQ3S=$(sbatch --parsable --dependency=afterok:"${RQ3X}" "${LLM_SCRIPT}" rq3 score ${FORCE})
 echo "RQ3 score:        job ${RQ3S}  (single, LLM-bound)"
 
-RQ4D=$(sbatch --parsable --dependency=afterok:"${RQ3S}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq4 degrade)
+RQ4D=$(sbatch --parsable --dependency=afterok:"${RQ3S}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq4 degrade ${FORCE})
 echo "RQ4 degrade:      job ${RQ4D}  (array ${ARRAY_RANGE})"
 
-RQ4A=$(sbatch --parsable --dependency=afterok:"${RQ4D}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq4 augment)
+RQ4A=$(sbatch --parsable --dependency=afterok:"${RQ4D}" --array="${ARRAY_RANGE}" "${CPU_SCRIPT}" rq4 augment ${FORCE})
 echo "RQ4 augment:      job ${RQ4A}  (array ${ARRAY_RANGE})"
 
 RQ4Z=$(sbatch --parsable --dependency=afterok:"${RQ4A}" "${CPU_SINGLE}" rq4 analyze)

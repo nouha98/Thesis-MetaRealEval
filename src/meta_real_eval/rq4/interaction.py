@@ -10,15 +10,13 @@ H1b: Ranking instability (tau_b) increases monotonically with degradation degree
 from __future__ import annotations
 
 import logging
-from itertools import combinations
 
 import numpy as np
-from scipy.stats import kendalltau
 
 from ..core.config import Config
-from ..core.data_loader import HumanEvalTask, task_label
+from ..core.data_loader import HumanEvalTask
 from ..rq2.evaluator import _run_completion, pass_at_k
-from ..rq2.ranking import _rank_vector, _model_pass_at1, _tau_b
+from ..rq2.ranking import _rank_vector, _tau_b
 
 logger = logging.getLogger(__name__)
 
@@ -28,17 +26,22 @@ def compute_tau_at_degradation_level(
     completions_data: dict,
     degraded_test: str,
     cfg: Config,
-) -> dict[str, float]:
-    """Compute mean tau_b across variants for one degradation level.
+) -> dict:
+    """Re-run RQ2's ranking-stability protocol using a degraded test suite.
 
-    Returns {model_id: mean_tau_b} using degraded_test instead of task.test.
+    Returns the (task, relation)-level summary that rq2.ranking produces, so
+    every degradation level is directly comparable to the intact baseline:
+
+        {"mean_tau_b": float | None, "tau_b_per_relation": {...},
+         "degenerate_relations": [...]}
+
+    tau_b describes the ordering of the whole model set, so there is one value
+    per relation — not one per model (see rq2/ranking.py).
     """
-    from concurrent.futures import ProcessPoolExecutor, as_completed
-
     model_ids = cfg.model_ids()
-    relations = cfg.rq2.relations
+    relations = [r for r in cfg.rq2.relations if r != "original"]
 
-    # Compute pass@1 for each (relation, model) using the degraded test
+    # pass@1 for each (relation, model) under the degraded test
     pass_at1: dict[str, dict[str, float]] = {}
     for relation, model_completions in completions_data.items():
         pass_at1[relation] = {}
@@ -54,25 +57,24 @@ def compute_tau_at_degradation_level(
                     pass
             pass_at1[relation][model_id] = pass_at_k(n, correct, 1)
 
-    # Compute tau_b per model relative to 'original' variant
     baseline_vec = _rank_vector(
         {mid: pass_at1.get("original", {}).get(mid, 0.0) for mid in model_ids},
         model_ids,
     )
-    model_taus: dict[str, float] = {}
-    for model_id in model_ids:
-        variant_taus = []
-        for relation in relations:
-            if relation == "original":
-                continue
-            variant_vec = _rank_vector(
-                {mid: pass_at1.get(relation, {}).get(mid, 0.0) for mid in model_ids},
-                model_ids,
-            )
-            variant_taus.append(_tau_b(baseline_vec, variant_vec))
-        model_taus[model_id] = float(np.mean(variant_taus)) if variant_taus else float("nan")
+    tau_per_relation: dict[str, float | None] = {}
+    for relation in relations:
+        variant_vec = _rank_vector(
+            {mid: pass_at1.get(relation, {}).get(mid, 0.0) for mid in model_ids},
+            model_ids,
+        )
+        tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
 
-    return model_taus
+    defined = [t for t in tau_per_relation.values() if t is not None]
+    return {
+        "mean_tau_b": float(np.mean(defined)) if defined else None,
+        "tau_b_per_relation": tau_per_relation,
+        "degenerate_relations": [r for r, t in tau_per_relation.items() if t is None],
+    }
 
 
 def pages_l_trend_test(tau_by_level: dict[float, float]) -> dict:

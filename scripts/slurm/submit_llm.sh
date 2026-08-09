@@ -2,8 +2,8 @@
 # LLM-bound single job: processes all tasks in one async process.
 # Rate limiting (requests_per_minute in config) controls Innkube load.
 #
-# Usage: sbatch scripts/slurm/submit_llm.sh <stage> <phase>
-# Example: sbatch scripts/slurm/submit_llm.sh rq2 generate
+# Usage: sbatch scripts/slurm/submit_llm.sh <stage> <phase> [--force]
+# Example: sbatch scripts/slurm/submit_llm.sh rq2 generate --force
 #
 #SBATCH --job-name=submit_llm
 #SBATCH --cpus-per-task=2
@@ -13,14 +13,17 @@
 
 set -euo pipefail
 
-STAGE=${1:?Usage: submit_llm.sh <stage> <phase>}
-PHASE=${2:?Usage: submit_llm.sh <stage> <phase>}
+STAGE=${1:?Usage: submit_llm.sh <stage> <phase> [--force]}
+PHASE=${2:?Usage: submit_llm.sh <stage> <phase> [--force]}
+FORCE_ARGS=()
+[[ "${3:-}" == "--force" ]] && FORCE_ARGS=(--force)
 
 export MRE_RUNNER_MODULE="meta_real_eval.${STAGE}.runner"
 source "${SLURM_SUBMIT_DIR:-$(dirname "$0")/../..}/scripts/slurm/_common.sh"
 
-echo "Job ${SLURM_JOB_ID}: ${STAGE} --phase ${PHASE} (LLM-bound, all tasks)"
+echo "Job ${SLURM_JOB_ID}: ${STAGE} --phase ${PHASE} (LLM-bound, all tasks)${FORCE_ARGS:+ (forced)}"
 
 srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" -m meta_real_eval.${STAGE}.runner \
     --config config/default.yaml \
-    --phase "${PHASE}"
+    --phase "${PHASE}" \
+    ${FORCE_ARGS[@]+"${FORCE_ARGS[@]}"}

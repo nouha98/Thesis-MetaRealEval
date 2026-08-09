@@ -26,7 +26,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from ..core.cache import ResponseCache
-from ..core.checkpoint import is_done, mark_done, task_dir, write_json, read_json
+from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
 from ..core.data_loader import load_humaneval, task_label
 from ..core.llm_client import InnkubeClient
@@ -43,9 +43,12 @@ logger = logging.getLogger(__name__)
 # Execute phase
 # ---------------------------------------------------------------------------
 
-def run_execute_one(task, cfg: Config) -> None:
+def run_execute_one(task, cfg: Config, force: bool = False) -> None:
     label = task_label(task)
     out = task_dir(cfg, "rq3", label, phase="execute")
+
+    if force:
+        clear_done(out)
 
     if is_done(out):
         logger.info("SKIP execute %s", label)
@@ -80,9 +83,12 @@ def run_execute_one(task, cfg: Config) -> None:
 # Score phase
 # ---------------------------------------------------------------------------
 
-async def _score_one(task, cfg: Config, client: InnkubeClient) -> None:
+async def _score_one(task, cfg: Config, client: InnkubeClient, force: bool = False) -> None:
     label = task_label(task)
     out = task_dir(cfg, "rq3", label, phase="score")
+
+    if force:
+        clear_done(out)
 
     if is_done(out):
         logger.info("SKIP score %s", label)
@@ -117,10 +123,10 @@ async def _score_one(task, cfg: Config, client: InnkubeClient) -> None:
     logger.info("SBC scored %s: %d solutions", label, len(sbc_results))
 
 
-async def run_score(cfg: Config, tasks) -> None:
+async def run_score(cfg: Config, tasks, force: bool = False) -> None:
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
-    coros = [_score_one(t, cfg, client) for t in tasks]
+    coros = [_score_one(t, cfg, client, force=force) for t in tasks]
     await asyncio.gather(*coros)
 
 
@@ -134,23 +140,24 @@ def main(argv=None) -> None:
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--phase", choices=["execute", "score"], required=True)
     add_task_selection_args(parser)
+    add_force_arg(parser)
     args = parser.parse_args(argv)
 
     cfg = Config.from_yaml(args.config)
     setup_logging("rq3", args.phase, log_dir=Path("logs"))
 
     tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
-    logger.info("RQ3 phase=%s, %d task(s)", args.phase, len(tasks))
+    logger.info("RQ3 phase=%s, %d task(s)%s", args.phase, len(tasks), " (forced)" if args.force else "")
 
     if args.phase == "execute":
         for task in tasks:
             try:
-                run_execute_one(task, cfg)
+                run_execute_one(task, cfg, force=args.force)
             except Exception:
                 logger.exception("Execute failed for %s — leaving unmarked, retry later",
                                   task_label(task))
     else:
-        asyncio.run(run_score(cfg, tasks))
+        asyncio.run(run_score(cfg, tasks, force=args.force))
 
     logger.info("RQ3 phase=%s complete.", args.phase)
 

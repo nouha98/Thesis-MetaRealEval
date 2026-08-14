@@ -13,8 +13,8 @@ llm:
   models:
     - id: gemma4-31b-it
     - id: qwen3-next-80b-a3b-instruct
-    - id: qwen35-397b
-    - id: qwen35-35b
+    #- id: qwen35-397b
+    - id: qwen36-35b 
   max_concurrent_requests: 5    # asyncio semaphore: in-flight HTTP requests per process
   requests_per_minute: 20       # token-bucket rate: sustained throughput cap (tune upward if no 429s)
   retry_max_attempts: 5

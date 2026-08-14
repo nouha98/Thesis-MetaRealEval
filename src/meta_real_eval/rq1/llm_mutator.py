@@ -85,7 +85,10 @@ async def generate_llm_mutants(
         if code.strip() == (task.prompt + task.canonical_solution).strip():
             continue
         mutants.append(Mutant(
-            mutant_id=f"LLM_{idx}",
+            # Tag the id with the sourcing model, not a generic "LLM_N" --
+            # once mutants from every model land in the same task's corpus,
+            # a bare index can't tell them apart.
+            mutant_id=f"LLM-{model_id}-{idx}",
             operator="LLM",
             description=f"LLM-generated semantic mutant (model={model_id})",
             code=code,

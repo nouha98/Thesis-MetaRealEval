@@ -63,20 +63,101 @@ def _random_list_int(rng: random.Random) -> list[int]:
     return [_random_int(rng) for _ in range(length)]
 
 
+def _generic_arg(ann: str) -> str:
+    """Text inside the outermost [...] of a generic annotation, or ''."""
+    start = ann.find("[")
+    if start == -1 or not ann.endswith("]"):
+        return ""
+    return ann[start + 1:-1].strip()
+
+
 def _random_value(annotation: str, rng: random.Random) -> Any:
+    """Random value matching a type annotation or an inferred type tag.
+
+    Recurses into generic containers instead of collapsing every list-ish
+    annotation to list[int]: feeding ints to a function expecting list[str]
+    makes canonical and mutant raise the same TypeError, which the caller
+    would then misread as "no divergence" and flag the mutant equivalent.
+    """
     ann = annotation.lower().strip()
-    if ann in ("int",):
-        return _random_int(rng)
-    if ann in ("float",):
-        return _random_float(rng)
-    if ann in ("str",):
-        return _random_str(rng)
-    if "list" in ann:
-        return _random_list_int(rng)
-    if ann in ("bool",):
+    inner = _generic_arg(ann)
+
+    if ann.startswith(("optional[", "union[")):
+        first = inner.split(",")[0].strip() if inner else ""
+        return _random_value(first, rng) if first else _random_int(rng)
+    if ann.startswith(("list[", "sequence[")):
+        return [_random_value(inner, rng) for _ in range(rng.randint(0, 6))]
+    if ann.startswith("tuple["):
+        parts = [p.strip() for p in inner.split(",") if p.strip() and p.strip() != "..."]
+        return tuple(_random_value(p, rng) for p in parts) if parts else (_random_int(rng),)
+    if ann.startswith("dict["):
+        parts = [p.strip() for p in inner.split(",")]
+        key_t = parts[0] if parts else "str"
+        val_t = parts[1] if len(parts) > 1 else "int"
+        return {_random_value(key_t, rng): _random_value(val_t, rng)
+                for _ in range(rng.randint(0, 4))}
+
+    if ann == "bool":
         return rng.choice([True, False])
-    # Default: try int
+    if ann == "int":
+        return _random_int(rng)
+    if ann == "float":
+        return _random_float(rng)
+    if ann == "str":
+        return _random_str(rng)
+    if ann in ("list", "sequence"):
+        return _random_list_int(rng)
+    if ann == "tuple":
+        return tuple(_random_int(rng) for _ in range(rng.randint(1, 3)))
+    if ann == "dict":
+        return {_random_str(rng): _random_int(rng) for _ in range(rng.randint(0, 4))}
     return _random_int(rng)
+
+
+def _infer_tags(inputs: list[tuple]) -> list[str]:
+    """Per-parameter type tags inferred from example inputs.
+
+    Prefers an example that actually carries type information: the first test
+    input is often an empty-container edge case (``([],)``), and an empty list
+    says nothing about its element type.
+    """
+    arity = max(len(args) for args in inputs)
+    tags: list[str] = []
+    for pos in range(arity):
+        values = [args[pos] for args in inputs if pos < len(args)]
+        informative = next(
+            (v for v in values if not (hasattr(v, "__len__") and len(v) == 0)),
+            values[0] if values else None,
+        )
+        tags.append(_type_tag(informative) if informative is not None else "int")
+    return tags
+
+
+def _type_tag(value: Any) -> str:
+    """Describe a concrete example value as an annotation-like tag.
+
+    Most HumanEval signatures are unannotated, so the reliable way to learn a
+    parameter's type is to look at the arguments the benchmark's own tests
+    pass in, rather than guessing from a missing annotation.
+    """
+    if isinstance(value, bool):
+        return "bool"
+    if isinstance(value, int):
+        return "int"
+    if isinstance(value, float):
+        return "float"
+    if isinstance(value, str):
+        return "str"
+    if isinstance(value, tuple):
+        return f"tuple[{', '.join(_type_tag(v) for v in value)}]" if value else "tuple[int]"
+    if isinstance(value, list):
+        return f"list[{_type_tag(value[0])}]" if value else "list[int]"
+    if isinstance(value, dict):
+        if not value:
+            return "dict[str, int]"
+        k = next(iter(value))
+        return f"dict[{_type_tag(k)}, {_type_tag(value[k])}]"
+    return "int"
 
 
 def _extract_param_annotations(func_source: str, entry_point: str) -> list[str]:
@@ -97,22 +178,50 @@ def _extract_param_annotations(func_source: str, entry_point: str) -> list[str]:
     return ["int"]  # single param fallback
 
 
-def _extract_test_inputs(test_code: str, entry_point: str) -> list[tuple]:
-    """Pull literal argument tuples from assert calls in the test block.
+def _balanced_slice(text: str, open_idx: int) -> Optional[str]:
+    """Return the text between the '(' at open_idx and its matching ')'."""
+    depth = 0
+    for i in range(open_idx, len(text)):
+        if text[i] == "(":
+            depth += 1
+        elif text[i] == ")":
+            depth -= 1
+            if depth == 0:
+                return text[open_idx + 1:i]
+    return None
 
-    Matches patterns like: assert entry_point(a, b, c) == ...
+
+def _extract_test_inputs(test_code: str, entry_point: str) -> list[tuple]:
+    """Pull literal argument tuples from the benchmark's own assert statements.
+
+    These are the highest-quality inputs available: hand-written by the
+    benchmark authors and type-correct by construction.
+
+    Two things this has to get right.  HumanEval's test block is
+    ``def check(candidate): assert candidate(...)`` — the calls are on the
+    *parameter* name, so matching only ``entry_point(`` finds nothing on 163
+    of 164 tasks.  And arguments must be scanned with balanced parentheses,
+    since ``[^)]*`` truncates ``candidate([(1, 2)])`` at the first ')'.
     """
-    pattern = re.compile(
-        rf"{re.escape(entry_point)}\(([^)]*)\)",
-        re.MULTILINE,
-    )
-    inputs = []
-    for match in pattern.finditer(test_code):
-        try:
-            args = eval(f"({match.group(1)},)")  # noqa: S307
-            inputs.append(args)
-        except Exception:
-            continue
+    inputs: list[tuple] = []
+    seen: set[str] = set()
+
+    for name in {"candidate", entry_point}:
+        for match in re.finditer(rf"\b{re.escape(name)}\s*\(", test_code):
+            arg_str = _balanced_slice(test_code, match.end() - 1)
+            if arg_str is None or not arg_str.strip():
+                continue
+            try:
+                # Benchmark-authored literals only; a non-literal (e.g. a call
+                # to a helper) simply fails to eval and is skipped.
+                args = eval(f"({arg_str},)")  # noqa: S307
+            except Exception:
+                continue
+            key = repr(args)
+            if key not in seen:
+                seen.add(key)
+                inputs.append(args)
+
     return inputs
 
 
@@ -127,11 +236,17 @@ def _generate_inputs(
     # Start with test-derived inputs for maximum coverage signal
     inputs = _extract_test_inputs(task.test, task.entry_point)
 
-    # Fill remaining with random values
-    full_source = task.prompt + task.canonical_solution
-    annotations = _extract_param_annotations(full_source, task.entry_point)
+    # Fill the rest randomly.  Prefer types inferred from the real test inputs
+    # above — most HumanEval signatures carry no annotations, so falling back
+    # to _extract_param_annotations would default every parameter to int.
+    if inputs:
+        tags = _infer_tags(inputs)
+    else:
+        full_source = task.prompt + task.canonical_solution
+        tags = _extract_param_annotations(full_source, task.entry_point)
+
     while len(inputs) < n:
-        inputs.append(tuple(_random_value(ann, rng) for ann in annotations))
+        inputs.append(tuple(_random_value(tag, rng) for tag in tags))
 
     return inputs[:n]
 

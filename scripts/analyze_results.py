@@ -24,6 +24,15 @@ from meta_real_eval.analysis.statistics import wilcoxon_test, bootstrap_ci, clif
 RESULTS = REPO_ROOT / "results"
 TRADITIONAL_OPS = {"AOR", "ROR", "SDL"}
 
+# Statement deletions whose kill outcome is predetermined: removing a return or
+# a definition makes the function yield None or raise NameError, so *any* test
+# suite kills it. They inflate the traditional kill rate without saying anything
+# about whether the benchmark detects subtly wrong logic — which is exactly what
+# RQ1a's traditional-vs-LLM comparison is about. Reported both ways: headline
+# numbers keep them (deleting a return is standard SDL), and a restricted
+# population excludes them so the gap can be shown not to depend on them.
+TRIVIALLY_KILLED_SDL_KINDS = {"Return", "Import", "ImportFrom", "FunctionDef"}
+
 
 def load(path: Path):
     with open(path, encoding="utf-8") as f:
@@ -87,15 +96,42 @@ def analyze_stage0() -> dict:
 # RQ1 — kill rates, traditional vs LLM-specific
 # ---------------------------------------------------------------------------
 
+def _sdl_stmt_kind(description: str) -> str | None:
+    """Extract the deleted statement kind from an SDL mutant's description.
+
+    Descriptions read "Delete Return statement 3 in f". Corpora generated
+    before the kind was recorded read "Delete statement 3 in f" and yield
+    None, so the stratified numbers are reported as unavailable rather than
+    silently computed over a mislabelled population.
+    """
+    if not description.startswith("Delete "):
+        return None
+    kind, sep, _ = description[len("Delete "):].partition(" statement ")
+    return kind if (sep and kind) else None
+
+
+def _rate(killed: int, total: int) -> float:
+    return killed / total if total else 0.0
+
+
 def analyze_rq1() -> dict:
     task_dirs = sorted((RESULTS / "rq1" / "evaluate").iterdir())
     trad_total = trad_killed = 0
     llm_total = llm_killed = 0
+    # Restricted population: traditional mutants minus predetermined-outcome
+    # statement deletions (see TRIVIALLY_KILLED_SDL_KINDS).
+    nontrivial_total = nontrivial_killed = 0
     per_op_totals = defaultdict(lambda: {"total": 0, "killed": 0})
+    sdl_by_kind = defaultdict(lambda: {"total": 0, "killed": 0})
     paired_trad_rate = []
     paired_llm_rate = []
+    paired_nontrivial_rate = []
+    paired_llm_rate_for_nontrivial = []
     tasks_with_survivors = []
     n_tasks_both = 0
+    n_trivial_excluded = 0
+    n_trivial_survived = 0
+    n_sdl_unlabelled = 0
 
     for td in task_dirs:
         if not td.is_dir():
@@ -127,38 +163,83 @@ def analyze_rq1() -> dict:
             paired_trad_rate.append(t_killed / t_total)
             paired_llm_rate.append(l_killed / l_total)
 
+        # --- join kill outcomes back to the corpus to recover SDL statement kinds ---
+        kill_matrix = load(td / "kill_matrix.json") if (td / "kill_matrix.json").exists() else []
+        s0_mutants_path = RESULTS / "stage0" / td.name / "mutants.json"
+        desc_of = {}
+        if s0_mutants_path.exists():
+            desc_of = {m["mutant_id"]: m.get("description", "") for m in load(s0_mutants_path)}
+
+        nt_total = nt_killed = 0
+        for row in kill_matrix:
+            if row["operator"] not in TRADITIONAL_OPS:
+                continue
+            is_trivial = False
+            if row["operator"] == "SDL":
+                kind = _sdl_stmt_kind(desc_of.get(row["mutant_id"], ""))
+                if kind is None:
+                    n_sdl_unlabelled += 1
+                else:
+                    sdl_by_kind[kind]["total"] += 1
+                    sdl_by_kind[kind]["killed"] += int(row["is_killed"])
+                    is_trivial = kind in TRIVIALLY_KILLED_SDL_KINDS
+            if is_trivial:
+                n_trivial_excluded += 1
+                if not row["is_killed"]:
+                    # A predetermined-kill mutant that survived means the suite
+                    # accepts a function that returns None / raises NameError.
+                    n_trivial_survived += 1
+                continue
+            nt_total += 1
+            nt_killed += int(row["is_killed"])
+
+        nontrivial_total += nt_total
+        nontrivial_killed += nt_killed
+        if nt_total > 0 and l_total > 0:
+            paired_nontrivial_rate.append(nt_killed / nt_total)
+            paired_llm_rate_for_nontrivial.append(l_killed / l_total)
+
         survivors = l_total - l_killed
         if survivors > 0:
-            kill_matrix = load(td / "kill_matrix.json")
             survivor_ids = [r["mutant_id"] for r in kill_matrix
                              if r["operator"] == "LLM" and not r["is_killed"]]
             tasks_with_survivors.append({"task": td.name, "n_survived": survivors,
                                           "mutant_ids": survivor_ids})
 
     wilcoxon = wilcoxon_test(paired_trad_rate, paired_llm_rate) if paired_trad_rate else None
+    wilcoxon_nt = (wilcoxon_test(paired_nontrivial_rate, paired_llm_rate_for_nontrivial)
+                   if paired_nontrivial_rate else None)
 
     # Complementary pooled-proportion test (independent of the per-task pairing
     # above): are the two overall kill rates different if we just pool all
     # mutants regardless of which task they came from?
     from scipy.stats import chi2_contingency
-    table = [[trad_killed, trad_total - trad_killed], [llm_killed, llm_total - llm_killed]]
-    chi2, chi_p, _, _ = chi2_contingency(table)
+
+    def _chi2(a_killed, a_total, b_killed, b_total):
+        table = [[a_killed, a_total - a_killed], [b_killed, b_total - b_killed]]
+        if min(a_total, b_total) == 0 or any(v < 0 for row in table for v in row):
+            return None
+        chi2, p, _, _ = chi2_contingency(table)
+        return {"chi2": float(chi2), "p_value": float(p)}
+
+    # Stratification is only meaningful if the corpus actually recorded kinds.
+    stratified = bool(sdl_by_kind) and n_sdl_unlabelled == 0
 
     return {
-        "pooled_chi2_kill_rate_trad_vs_llm": {"chi2": float(chi2), "p_value": float(chi_p)},
+        "pooled_chi2_kill_rate_trad_vs_llm": _chi2(trad_killed, trad_total, llm_killed, llm_total),
         "n_tasks_with_both_categories": n_tasks_both,
         "traditional": {
             "total": trad_total, "killed": trad_killed,
             "survived": trad_total - trad_killed,
-            "kill_rate": trad_killed / trad_total if trad_total else 0.0,
+            "kill_rate": _rate(trad_killed, trad_total),
         },
         "llm_specific": {
             "total": llm_total, "killed": llm_killed,
             "survived": llm_total - llm_killed,
-            "kill_rate": llm_killed / llm_total if llm_total else 0.0,
+            "kill_rate": _rate(llm_killed, llm_total),
         },
         "by_operator": {
-            op: {**v, "kill_rate": v["killed"] / v["total"] if v["total"] else 0.0}
+            op: {**v, "kill_rate": _rate(v["killed"], v["total"])}
             for op, v in per_op_totals.items()
         },
         "wilcoxon_paired_kill_rate_trad_vs_llm": wilcoxon,
@@ -166,6 +247,27 @@ def analyze_rq1() -> dict:
         "surviving_llm_mutant_tasks": sorted(
             tasks_with_survivors, key=lambda r: -r["n_survived"]
         )[:15],
+        # --- restricted-population (stratified) view ---
+        "stratification_available": stratified,
+        "n_sdl_mutants_without_recorded_kind": n_sdl_unlabelled,
+        "sdl_by_statement_kind": {
+            k: {**v, "kill_rate": _rate(v["killed"], v["total"]),
+                "trivially_killed_by_construction": k in TRIVIALLY_KILLED_SDL_KINDS}
+            for k, v in sorted(sdl_by_kind.items(), key=lambda kv: -kv[1]["total"])
+        },
+        "traditional_excl_trivial_sdl": {
+            "total": nontrivial_total, "killed": nontrivial_killed,
+            "survived": nontrivial_total - nontrivial_killed,
+            "kill_rate": _rate(nontrivial_killed, nontrivial_total),
+            "n_excluded": n_trivial_excluded,
+            "n_excluded_that_survived": n_trivial_survived,
+        },
+        "wilcoxon_paired_kill_rate_trad_excl_trivial_vs_llm": wilcoxon_nt,
+        "pooled_chi2_kill_rate_trad_excl_trivial_vs_llm": _chi2(
+            nontrivial_killed, nontrivial_total, llm_killed, llm_total),
+        "gap_points_all": (_rate(trad_killed, trad_total) - _rate(llm_killed, llm_total)) * 100,
+        "gap_points_excl_trivial_sdl": (
+            _rate(nontrivial_killed, nontrivial_total) - _rate(llm_killed, llm_total)) * 100,
     }
 
 
@@ -406,9 +508,43 @@ def main() -> None:
         print(f"  statistic={w['statistic']:.3f}  p={w['p_value']:.4g}  "
               f"cliffs_delta={w.get('cliffs_delta', 'n/a')}")
     c = rq1["pooled_chi2_kill_rate_trad_vs_llm"]
-    print(f"Pooled chi-square (ignores task pairing): chi2={c['chi2']:.3f}  p={c['p_value']:.4g}")
+    if c:
+        print(f"Pooled chi-square (ignores task pairing): chi2={c['chi2']:.3f}  p={c['p_value']:.4g}")
     print(f"\nTasks with >=1 surviving LLM mutant: {rq1['n_tasks_with_surviving_llm_mutants']} / "
           f"{rq1['n_tasks_with_both_categories']}")
+
+    # --- robustness: does the gap survive dropping predetermined-kill SDL? ---
+    print()
+    print("-" * 70)
+    print("RQ1 robustness — excluding trivially-killed statement deletions")
+    print("-" * 70)
+    if not rq1["stratification_available"]:
+        n_missing = rq1["n_sdl_mutants_without_recorded_kind"]
+        print(f"  UNAVAILABLE: {n_missing} SDL mutant(s) carry no recorded statement")
+        print("  kind. Re-run stage0 with --force to rebuild the corpus, then re-analyse.")
+    else:
+        print("  SDL kill rate by deleted statement kind:")
+        for kind, v in rq1["sdl_by_statement_kind"].items():
+            flag = "  <- predetermined kill" if v["trivially_killed_by_construction"] else ""
+            print(f"    {kind:14s} total={v['total']:4d} killed={v['killed']:4d} "
+                  f"kill_rate={v['kill_rate']*100:5.1f}%{flag}")
+        nt = rq1["traditional_excl_trivial_sdl"]
+        print(f"\n  Excluded {nt['n_excluded']} predetermined-kill deletion(s); "
+              f"{nt['n_excluded_that_survived']} of them SURVIVED")
+        if nt["n_excluded_that_survived"]:
+            print("    (a mutant returning None / raising NameError passed the suite —"
+                  " worth reporting on its own)")
+        print(f"  Traditional (restricted): total={nt['total']:5d} killed={nt['killed']:5d} "
+              f"kill_rate={nt['kill_rate']*100:.1f}%")
+        print(f"  trad - LLM gap: {rq1['gap_points_all']:+.1f} pts (all)  ->  "
+              f"{rq1['gap_points_excl_trivial_sdl']:+.1f} pts (excl. trivial)")
+        wn = rq1["wilcoxon_paired_kill_rate_trad_excl_trivial_vs_llm"]
+        if wn:
+            print(f"  Paired Wilcoxon (restricted): statistic={wn['statistic']:.3f}  "
+                  f"p={wn['p_value']:.4g}  cliffs_delta={wn.get('cliffs_delta', 'n/a')}")
+        cn = rq1["pooled_chi2_kill_rate_trad_excl_trivial_vs_llm"]
+        if cn:
+            print(f"  Pooled chi-square (restricted): chi2={cn['chi2']:.3f}  p={cn['p_value']:.4g}")
 
     print()
     print("=" * 70)

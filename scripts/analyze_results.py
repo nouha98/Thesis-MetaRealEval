@@ -1,15 +1,24 @@
 #!/usr/bin/env python
-"""Aggregate the full 164-task cluster run (Stage 0, RQ1, RQ2) into summary stats.
+"""Aggregate the full cluster run (Stage 0, RQ1-RQ4) into summary stats.
 
-Reads directly from results/{stage0,rq1,rq2}/... and reuses the statistical
-tests in meta_real_eval.analysis.statistics. Prints a report to stdout and
-writes results/analysis_summary.json for downstream plotting/reporting.
+Reads directly from results/{stage0,rq1,rq2,rq3,rq4}/... and reuses the
+statistical tests in meta_real_eval.analysis.statistics. Prints a report to
+stdout and writes results/analysis_summary.json for downstream plotting.
+
+This file is also the *only* place the two halves of the pipeline meet. RQ1
+(is the test suite adequate?) and RQ2-RQ4 (are model rankings stable?) study
+different objects and share no runtime artifacts, so they run as independent
+SLURM branches off Stage 0. They are joined here, on task label, by
+analyze_cross_rq(): RQ1b's per-task oracle-adequacy deficit becomes a covariate
+for RQ4's ranking instability. The join is pure post-processing - it adds no
+runtime coupling and cannot block any job.
 
 Usage:
     .venv/bin/python scripts/analyze_results.py
 """
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from collections import Counter, defaultdict
@@ -19,7 +28,19 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from meta_real_eval.analysis.statistics import wilcoxon_test, bootstrap_ci, cliffs_delta  # noqa: E402
+from meta_real_eval.core.config import (  # noqa: E402
+    CalibrationError,
+    write_divergence_threshold,
+)
+from meta_real_eval.analysis.statistics import (  # noqa: E402
+    bootstrap_ci,
+    cliffs_delta,
+    mannwhitney_test,
+    roc_auc,
+    spearman_rho,
+    wilcoxon_test,
+    youden_threshold,
+)
 
 RESULTS = REPO_ROOT / "results"
 TRADITIONAL_OPS = {"AOR", "ROR", "SDL"}
@@ -128,6 +149,8 @@ def analyze_rq1() -> dict:
     paired_nontrivial_rate = []
     paired_llm_rate_for_nontrivial = []
     tasks_with_survivors = []
+    # task label -> per-task oracle-adequacy row, consumed by analyze_cross_rq()
+    per_task_adequacy: dict[str, dict] = {}
     n_tasks_both = 0
     n_trivial_excluded = 0
     n_trivial_survived = 0
@@ -199,6 +222,23 @@ def analyze_rq1() -> dict:
             paired_nontrivial_rate.append(nt_killed / nt_total)
             paired_llm_rate_for_nontrivial.append(l_killed / l_total)
 
+        # Per-task oracle adequacy: how much lower the LLM-specific kill rate is
+        # than the traditional one. A large deficit means the suite catches
+        # textbook mutations but misses the realistic, LLM-style faults - i.e. a
+        # weak oracle. The restricted (excl. trivially-killed SDL) population is
+        # preferred so predetermined kills do not inflate the deficit.
+        if t_total > 0 and l_total > 0:
+            trad_rate = t_killed / t_total
+            llm_rate = l_killed / l_total
+            nt_rate = (nt_killed / nt_total) if nt_total > 0 else None
+            per_task_adequacy[td.name] = {
+                "traditional_kill_rate": trad_rate,
+                "traditional_excl_trivial_kill_rate": nt_rate,
+                "llm_kill_rate": llm_rate,
+                "deficit": (nt_rate if nt_rate is not None else trad_rate) - llm_rate,
+                "deficit_basis": "excl_trivial_sdl" if nt_rate is not None else "all_traditional",
+            }
+
         survivors = l_total - l_killed
         if survivors > 0:
             survivor_ids = [r["mutant_id"] for r in kill_matrix
@@ -226,6 +266,7 @@ def analyze_rq1() -> dict:
     stratified = bool(sdl_by_kind) and n_sdl_unlabelled == 0
 
     return {
+        "per_task_adequacy": per_task_adequacy,
         "pooled_chi2_kill_rate_trad_vs_llm": _chi2(trad_killed, trad_total, llm_killed, llm_total),
         "n_tasks_with_both_categories": n_tasks_both,
         "traditional": {
@@ -465,13 +506,331 @@ def analyze_rq2() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# RQ3 — divergence as a detector of benchmark-failing solutions
+# ---------------------------------------------------------------------------
 
-def main() -> None:
+def analyze_rq3() -> dict:
+    """Score cross-variant divergence as a classifier, and calibrate tau_div.
+
+    Two ROC analyses at two different units, because the two questions are
+    different:
+
+    1. Per-solution (RQ3's headline). Score = how often a solution disagrees
+       with the majority-vote consensus of its sibling solutions; label = the
+       solution FAILS the benchmark suite. AUC answers "can cross-variant
+       divergence flag wrong solutions without consulting the oracle?". AUC 0.5
+       is chance, 1.0 is perfect.
+
+    2. Per-task (calibration only). Score = the task's pairwise disagreement
+       rate; label = the task contains at least one benchmark-failing solution.
+       This is the unit rq3.divergence_threshold actually gates on (RQ4 asks
+       "does THIS TASK deserve consistency assertions?"), so the recommended
+       threshold is read off this curve via Youden's J, not the per-solution one.
+    """
+    root = RESULTS / "rq3" / "execute"
+    if not root.exists():
+        return {"available": False, "note": "results/rq3/execute not found"}
+
+    sol_scores: list[float] = []
+    sol_labels: list[int] = []          # 1 = solution fails the benchmark
+    sbc_scores: list[float] = []        # secondary predictor (see below)
+    sbc_labels: list[int] = []
+    task_scores: list[float] = []
+    task_labels: list[int] = []         # 1 = task has >=1 failing solution
+    per_task_divergence: dict[str, float] = {}
+    n_tasks = n_no_consensus = n_sbc_missing = 0
+
+    for td in sorted(root.iterdir()):
+        if not td.is_dir() or not (td / "divergence.json").exists():
+            continue
+        dv = load(td / "divergence.json")
+        n_tasks += 1
+        per_task_divergence[td.name] = dv.get("pairwise_disagreement_rate", 0.0)
+
+        sols = dv.get("solutions", [])
+        # Older runs predate the consensus block; skip them rather than score
+        # a field that is not there.
+        scored = [x for x in sols
+                  if "consensus_disagreement_rate" in x and "passes_benchmark" in x]
+        if not scored:
+            n_no_consensus += 1
+            continue
+        for x in scored:
+            sol_scores.append(x["consensus_disagreement_rate"])
+            sol_labels.append(0 if x["passes_benchmark"] else 1)
+
+        # Secondary predictor: the SBC score from RQ3's reverse-generation phase.
+        # A wrong solution should yield a recovered specification that matches the
+        # original task description less well, so the score is NEGATED to point
+        # the same way as divergence (higher = more likely to be failing).
+        sbc_path = RESULTS / "rq3" / "score" / td.name / "sbc_scores.json"
+        if sbc_path.exists():
+            sbc = load(sbc_path)
+            for x in scored:
+                entry = sbc.get(f"{x['relation']}/{x['model']}")
+                if not entry or entry.get("sbc_score") is None:
+                    continue
+                sbc_scores.append(-float(entry["sbc_score"]))
+                sbc_labels.append(0 if x["passes_benchmark"] else 1)
+        else:
+            n_sbc_missing += 1
+
+        task_scores.append(dv.get("pairwise_disagreement_rate", 0.0))
+        task_labels.append(int(any(not x["passes_benchmark"] for x in scored)))
+
+    per_solution = roc_auc(sol_scores, sol_labels)
+    per_task = roc_auc(task_scores, task_labels)
+    calibration = youden_threshold(task_scores, task_labels)
+
+    return {
+        "available": n_tasks > 0,
+        "n_tasks": n_tasks,
+        "n_tasks_without_consensus_block": n_no_consensus,
+        "n_solutions_scored": len(sol_scores),
+        "mean_pairwise_divergence": (
+            sum(per_task_divergence.values()) / len(per_task_divergence)
+            if per_task_divergence else float("nan")
+        ),
+        "roc_auc_per_solution": per_solution,
+        "roc_auc_per_task": per_task,
+        "n_tasks_without_sbc_scores": n_sbc_missing,
+        "roc_auc_sbc_per_solution": roc_auc(sbc_scores, sbc_labels),
+        "recommended_divergence_threshold": calibration,
+        "per_task_divergence": per_task_divergence,
+        "note": (
+            "Positive class is 'fails the benchmark', so AUC > 0.5 means higher "
+            "divergence goes with failing solutions. The consensus is a majority "
+            "vote over paraphrase-derived solutions, not ground truth: a fault "
+            "shared by a majority of them is invisible to it. The SBC row is "
+            "the secondary, non-execution predictor: it compares the "
+            "specification recovered from the code against the task's docstring "
+            "by word overlap only, so it is expected to be much weaker than the "
+            "execution-based divergence rate."
+        ),
+    }
+
+
+# ---------------------------------------------------------------------------
+# RQ4 — degradation, MT augmentation, rank recovery
+# ---------------------------------------------------------------------------
+
+def analyze_rq4() -> dict:
+    """Summarise RQ4 and extract the per-task numbers the cross-RQ join needs."""
+    degrade_root = RESULTS / "rq4" / "degrade"
+    augment_root = RESULTS / "rq4" / "augment"
+    summary_path = RESULTS / "rq4" / "summary" / "high_level.json"
+    if not degrade_root.exists():
+        return {"available": False, "note": "results/rq4/degrade not found"}
+
+    per_task: dict[str, dict] = {}
+    n_with_ca = 0
+    n_uncalibrated = 0
+    n_identical_to_degraded = 0
+
+    for td in sorted(degrade_root.iterdir()):
+        if not td.is_dir() or not (td / "degradation_analysis.json").exists():
+            continue
+        d = load(td / "degradation_analysis.json")
+        levels = sorted(
+            (float(k) for k in d if k != "trend_test"),
+        )
+        if not levels:
+            continue
+        intact, worst = str(levels[0]), str(levels[-1])
+        tau_intact = d.get(intact, {}).get("mean_tau_b")
+        tau_worst = d.get(worst, {}).get("mean_tau_b")
+
+        row = {
+            "levels": levels,
+            "mean_tau_b_intact": tau_intact,
+            "mean_tau_b_worst": tau_worst,
+            "tau_b_drop": (
+                tau_intact - tau_worst
+                if tau_intact is not None and tau_worst is not None else None
+            ),
+            "monotonic_decrease_in_tau": d.get("trend_test", {}).get(
+                "monotonic_decrease_in_tau"),
+        }
+
+        ap = augment_root / td.name / "augment_analysis.json"
+        if ap.exists():
+            a = load(ap)
+            row["has_consistency_assertions"] = a.get("has_consistency_assertions")
+            row["n_consistency_assertions"] = a.get("n_consistency_assertions")
+            row["threshold_calibrated"] = a.get("threshold_calibrated")
+            row["mean_tau_b_augmented_worst"] = a.get(worst, {}).get("mean_tau_b")
+            n_with_ca += bool(a.get("has_consistency_assertions"))
+            n_uncalibrated += a.get("threshold_calibrated") is False
+            # The decisive no-op check: if the augmented suite scores every
+            # candidate exactly like the degraded suite, the augmentation is inert.
+            if a.get("has_consistency_assertions") and _same_pass_rates(
+                d.get(worst, {}).get("pass_at_1"), a.get(worst, {}).get("pass_at_1")
+            ):
+                n_identical_to_degraded += 1
+
+        per_task[td.name] = row
+
+    return {
+        "available": True,
+        "n_tasks": len(per_task),
+        "n_tasks_with_consistency_assertions": n_with_ca,
+        "n_tasks_uncalibrated_threshold": n_uncalibrated,
+        "n_tasks_augmentation_had_no_effect": n_identical_to_degraded,
+        "rank_recovery": load(summary_path) if summary_path.exists() else None,
+        "per_task": per_task,
+    }
+
+
+def _same_pass_rates(a: dict | None, b: dict | None) -> bool:
+    """True when two pass@1 tables are identical (augmentation changed nothing)."""
+    return a is not None and b is not None and a == b
+
+
+# ---------------------------------------------------------------------------
+# Cross-RQ join — does a weak oracle predict an unstable ranking?
+# ---------------------------------------------------------------------------
+
+def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
+    """Join RQ1b's oracle-adequacy deficit onto RQ4's ranking instability.
+
+    Hypothesis: tasks whose test suite misses realistic LLM-style faults (large
+    kill-rate deficit) show larger ranking instability when the suite is
+    degraded (large tau_b drop).
+
+    Two views, deliberately kept separate:
+      * a rank correlation across all joined tasks (Spearman rho), and
+      * a weak-vs-strong-oracle split at the median deficit, compared with
+        Mann-Whitney U + Cliff's delta. The two groups are DIFFERENT tasks, so
+        the independent-samples test is the correct one - a paired Wilcoxon
+        would silently assume a task-to-task matching that does not exist.
+    """
+    adequacy = rq1.get("per_task_adequacy", {})
+    per_task = rq4.get("per_task", {}) if rq4.get("available") else {}
+    joined = [
+        {"task": label,
+         "deficit": adequacy[label]["deficit"],
+         "tau_b_drop": per_task[label]["tau_b_drop"]}
+        for label in sorted(set(adequacy) & set(per_task))
+        if per_task[label].get("tau_b_drop") is not None
+    ]
+    if len(joined) < 3:
+        return {"available": False, "n_joined_tasks": len(joined),
+                "note": "need >=3 tasks with both an RQ1 deficit and an RQ4 tau_b drop"}
+
+    deficits = [r["deficit"] for r in joined]
+    drops = [r["tau_b_drop"] for r in joined]
+
+    median = sorted(deficits)[len(deficits) // 2]
+    weak = [r["tau_b_drop"] for r in joined if r["deficit"] >= median]
+    strong = [r["tau_b_drop"] for r in joined if r["deficit"] < median]
+
+    correlation = (
+        spearman_rho(deficits, drops) if len(set(deficits)) > 1 and len(set(drops)) > 1
+        else {"rho": None, "p_value": None, "note": "a vector is constant"}
+    )
+
+    return {
+        "available": True,
+        "n_joined_tasks": len(joined),
+        "median_deficit": median,
+        "spearman_deficit_vs_tau_b_drop": correlation,
+        "weak_vs_strong_oracle": {
+            "n_weak": len(weak), "n_strong": len(strong),
+            "mean_tau_b_drop_weak": sum(weak) / len(weak) if weak else None,
+            "mean_tau_b_drop_strong": sum(strong) / len(strong) if strong else None,
+            "mannwhitney": mannwhitney_test(weak, strong) if weak and strong else None,
+        },
+        "joined_rows": joined,
+        "note": (
+            "deficit = traditional kill rate (excluding trivially-killed statement "
+            "deletions where available) minus LLM-specific kill rate; larger = "
+            "weaker oracle. tau_b_drop = ranking stability at 0% degradation minus "
+            "stability at the largest degradation level; larger = more unstable."
+        ),
+    }
+
+
+# ---------------------------------------------------------------------------
+# tau_div calibration
+# ---------------------------------------------------------------------------
+
+# A classifier at or below chance carries no threshold worth adopting: any cut-off
+# would gate MT augmentation on noise. Better to leave the config null (which the
+# runners flag loudly) than to bake in a meaningless number.
+MIN_USEFUL_AUC = 0.5
+
+
+def apply_calibration(rq3: dict, config_path: Path) -> dict:
+    """Write the pilot's recommended tau_div into the config, or explain why not.
+
+    Refuses rather than writes when the ROC is degenerate — an uncalibrated
+    threshold that is *known* to be uncalibrated is safer than a calibrated-
+    looking one derived from a coin flip.
+    """
+    if not rq3.get("available"):
+        return {"written": False, "reason": "no RQ3 results to calibrate from"}
+
+    auc = (rq3.get("roc_auc_per_task") or {}).get("auc")
+    best = rq3.get("recommended_divergence_threshold") or {}
+    threshold = best.get("threshold")
+
+    if threshold is None:
+        return {"written": False,
+                "reason": f"no usable cut-off: {best.get('note', 'undefined')}"}
+    if auc is None:
+        return {"written": False, "reason": "per-task ROC-AUC is undefined"}
+    if auc <= MIN_USEFUL_AUC:
+        return {"written": False,
+                "reason": (f"per-task ROC-AUC is {auc:.3f} (<= {MIN_USEFUL_AUC}): "
+                           "divergence does not separate the classes, so no "
+                           "threshold is worth adopting")}
+
+    try:
+        previous = write_divergence_threshold(config_path, threshold)
+    except CalibrationError as exc:
+        return {"written": False, "reason": str(exc)}
+
+    return {"written": True, "previous": previous, "threshold": threshold,
+            "auc": auc, "youden_j": best.get("youden_j"),
+            "config": str(config_path)}
+
+
+# ---------------------------------------------------------------------------
+
+def main(argv=None) -> None:
+    global RESULTS
+    parser = argparse.ArgumentParser(description="Aggregate a Meta-Real-Eval run")
+    parser.add_argument(
+        "--results", default=str(RESULTS),
+        help="Results directory to analyse (default: ./results). Point this at a "
+             "pilot or smoke-run output dir to analyse it without touching the "
+             "real run.",
+    )
+    parser.add_argument(
+        "--calibrate", action="store_true",
+        help="Write the recommended rq3.divergence_threshold (Youden's J on the "
+             "per-task ROC) back into the config file, instead of printing it for "
+             "manual copying. Refuses if the ROC is degenerate.",
+    )
+    parser.add_argument(
+        "--config", default="config/default.yaml",
+        help="Config file --calibrate writes to (default: config/default.yaml).",
+    )
+    args = parser.parse_args(argv)
+    RESULTS = Path(args.results)
+
     stage0 = analyze_stage0()
     rq1 = analyze_rq1()
     rq2 = analyze_rq2()
+    rq3 = analyze_rq3()
+    rq4 = analyze_rq4()
+    cross_rq = analyze_cross_rq(rq1, rq4)
+    calibration = apply_calibration(rq3, Path(args.config)) if args.calibrate else None
 
-    out = {"stage0": stage0, "rq1": rq1, "rq2": rq2}
+    out = {"stage0": stage0, "rq1": rq1, "rq2": rq2, "rq3": rq3, "rq4": rq4,
+           "cross_rq": cross_rq}
+    if calibration is not None:
+        out["calibration"] = calibration
     out_path = RESULTS / "analysis_summary.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=2)
@@ -583,6 +942,108 @@ def main() -> None:
         by_rel = rq2["pairwise_reversal_rate"]["by_pair_and_relation"].get(pair, {})
         for rel, rs2 in by_rel.items():
             print(f"      {rel:10s} {rs2['mean']*100:5.1f}%  n={rs2['n']}")
+
+    print()
+    print("=" * 70)
+    print("RQ3 — Divergence as a detector of benchmark-failing solutions")
+    print("=" * 70)
+    if not rq3.get("available"):
+        print(f"  UNAVAILABLE: {rq3.get('note')}")
+    else:
+        print(f"Tasks with divergence data : {rq3['n_tasks']}")
+        print(f"Solutions scored           : {rq3['n_solutions_scored']}")
+        if rq3["n_tasks_without_consensus_block"]:
+            print(f"  ({rq3['n_tasks_without_consensus_block']} task(s) predate the consensus "
+                  "block — re-run rq3 execute --force to include them)")
+        print(f"Mean pairwise divergence   : {rq3['mean_pairwise_divergence']:.3f}")
+        for name, key in (("per solution", "roc_auc_per_solution"),
+                          ("per task    ", "roc_auc_per_task")):
+            r = rq3[key]
+            if r.get("auc") is None:
+                print(f"ROC-AUC ({name}) : undefined — {r.get('note')}")
+            else:
+                print(f"ROC-AUC ({name}) : {r['auc']:.3f}   "
+                      f"(pos={r['n_positive']}, neg={r['n_negative']})")
+        sbc_roc = rq3.get("roc_auc_sbc_per_solution") or {}
+        if sbc_roc.get("auc") is None:
+            print(f"ROC-AUC (SBC, secondary) : undefined - {sbc_roc.get('note', 'no data')}")
+        else:
+            print(f"ROC-AUC (SBC, secondary) : {sbc_roc['auc']:.3f}   "
+                  f"(word overlap only, not execution-based)")
+        cal = rq3["recommended_divergence_threshold"]
+        if cal.get("threshold") is None:
+            print(f"Recommended tau_div: undefined — {cal.get('note')}")
+        else:
+            print(f"Recommended tau_div (Youden's J, per task): {cal['threshold']:.3f}  "
+                  f"J={cal['youden_j']:.3f} sens={cal['sensitivity']:.2f} "
+                  f"spec={cal['specificity']:.2f}")
+            if not calibration:
+                print("  -> re-run with --calibrate to write it into config/default.yaml")
+
+    if calibration is not None:
+        print()
+        if calibration["written"]:
+            print(f"CALIBRATED: rq3.divergence_threshold "
+                  f"{calibration['previous']!r} -> {calibration['threshold']:.4f} "
+                  f"in {calibration['config']}")
+            print(f"            (per-task ROC-AUC {calibration['auc']:.3f}, "
+                  f"Youden J {calibration['youden_j']:.3f})")
+        else:
+            print(f"NOT CALIBRATED: {calibration['reason']}")
+            print("                config left unchanged; runs stay tagged "
+                  "threshold_calibrated=false")
+
+    print()
+    print("=" * 70)
+    print("RQ4 — Oracle degradation and MT augmentation")
+    print("=" * 70)
+    if not rq4.get("available"):
+        print(f"  UNAVAILABLE: {rq4.get('note')}")
+    else:
+        print(f"Tasks analysed                      : {rq4['n_tasks']}")
+        print(f"Tasks carrying consistency assertions: {rq4['n_tasks_with_consistency_assertions']}")
+        if rq4["n_tasks_uncalibrated_threshold"]:
+            print(f"  WARNING: {rq4['n_tasks_uncalibrated_threshold']} task(s) used an "
+                  "UNCALIBRATED divergence threshold")
+        if rq4["n_tasks_augmentation_had_no_effect"]:
+            print(f"  WARNING: {rq4['n_tasks_augmentation_had_no_effect']} task(s) had "
+                  "assertions that changed no pass rate (augmentation inert there)")
+        rr = (rq4.get("rank_recovery") or {}).get("rank_recovery_by_level") or {}
+        if not rr:
+            print("  Rank recovery unavailable — run: rq4.runner --phase analyze")
+        else:
+            print("Rank recovery (Spearman rho vs the intact-suite ranking; H1a):")
+            for level, st in rr.items():
+                w = st["wilcoxon_augmented_vs_degraded"]
+                print(f"  degradation {level:>4}: degraded={st['mean_rho_degraded']:+.3f}  "
+                      f"augmented={st['mean_rho_augmented']:+.3f}  "
+                      f"recovery={st['mean_recovery']:+.3f}  "
+                      f"p={w['p_value']:.4g}  delta={w.get('cliffs_delta', float('nan')):+.3f}  "
+                      f"n={st['n_tasks']}")
+
+    print()
+    print("=" * 70)
+    print("CROSS-RQ — does a weak oracle predict an unstable ranking?")
+    print("=" * 70)
+    if not cross_rq.get("available"):
+        print(f"  UNAVAILABLE: {cross_rq.get('note')} "
+              f"(joined {cross_rq.get('n_joined_tasks', 0)} task(s))")
+    else:
+        print(f"Tasks joined on label (RQ1 deficit x RQ4 tau_b drop): {cross_rq['n_joined_tasks']}")
+        c = cross_rq["spearman_deficit_vs_tau_b_drop"]
+        if c.get("rho") is None:
+            print(f"  Spearman: undefined — {c.get('note')}")
+        else:
+            print(f"  Spearman rho(deficit, tau_b drop) = {c['rho']:+.3f}  p={c['p_value']:.4g}")
+        g = cross_rq["weak_vs_strong_oracle"]
+        print(f"  weak-oracle tasks   (n={g['n_weak']}): mean tau_b drop = "
+              f"{g['mean_tau_b_drop_weak']:+.3f}")
+        print(f"  strong-oracle tasks (n={g['n_strong']}): mean tau_b drop = "
+              f"{g['mean_tau_b_drop_strong']:+.3f}")
+        mw = g.get("mannwhitney")
+        if mw and mw.get("p_value") is not None:
+            print(f"  Mann-Whitney U={mw['statistic']:.1f}  p={mw['p_value']:.4g}  "
+                  f"cliffs_delta={mw['cliffs_delta']:+.3f}")
 
     print(f"\nWrote {out_path}")
 

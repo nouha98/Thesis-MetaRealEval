@@ -9,10 +9,11 @@ where n = total samples, c = correct samples.
 
 from __future__ import annotations
 
+import ast
 import logging
 import math
 import re
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor
 
 from ..core.checkpoint import clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
@@ -38,29 +39,119 @@ def pass_at_k(n: int, c: int, k: int) -> float:
 # ---------------------------------------------------------------------------
 # Code extraction
 # ---------------------------------------------------------------------------
+#
+# Whether a completion is a *body* (to be appended to the task prompt) or a
+# *complete module* (to be run on its own) decides what source gets executed, so
+# getting it wrong silently scores a correct solution as wrong.  The decision is
+# made by parsing, never by pattern-matching the first characters:
+#
+#   re.match(r"\s*def\s+", body)
+#
+# accepted a leading indent, so a body-only completion opening with a nested
+# helper ("    def f(x): ...") was read as a complete module, run without the
+# prompt, and died with IndentationError.  That was 924 of 24 600 completions in
+# the pilot corpus - and unevenly distributed across models, which is exactly the
+# kind of bias RQ2's ranking analysis cannot absorb.
+
+_FENCE_RE = re.compile(r"```[A-Za-z0-9_+-]*\s*(.*?)```", re.DOTALL)
+_OPEN_FENCE_RE = re.compile(r"```[A-Za-z0-9_+-]*[ \t]*\r?\n")
+
+
+def _strip_markdown(raw: str) -> str:
+    """Return the code inside a markdown fence, if the completion used one."""
+    fenced = _FENCE_RE.search(raw)
+    if fenced:
+        return fenced.group(1)
+    # Truncated generation: an opening fence with no closing one.  Everything
+    # after it is still code, and the ``` line itself is not.
+    open_fence = _OPEN_FENCE_RE.search(raw)
+    if open_fence:
+        return raw[open_fence.end():]
+    return raw
+
+
+def _defines_entry_point(code: str, entry_point: str) -> bool:
+    """True if `code` parses and defines `entry_point` at module level.
+
+    Module level matters: a nested helper of the same name would not be callable
+    by the test driver, and indented source does not parse at all.
+    """
+    try:
+        tree = ast.parse(code)
+    except (SyntaxError, ValueError):
+        return False
+    return any(
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == entry_point
+        for node in tree.body
+    )
+
+
+def _prompt_imports(task_prompt: str) -> list[str]:
+    """Top-level import statements the task prompt supplies.
+
+    HumanEval prompts often open with `import math` or `from typing import List`
+    above the signature.  A completion that restates the whole function but not
+    those imports needs them re-attached or it raises NameError.
+    """
+    try:
+        tree = ast.parse(task_prompt)
+    except (SyntaxError, ValueError):
+        return [ln for ln in task_prompt.splitlines()
+                if ln.startswith(("import ", "from "))]
+    return [ast.unparse(node) for node in tree.body
+            if isinstance(node, (ast.Import, ast.ImportFrom))]
+
 
 def _extract_function_body(raw: str, entry_point: str) -> str:
-    """Extract the function body from a model completion.
+    """Extract the runnable code from a model completion.
 
-    Models may return:
-    - just the body (indented lines)
-    - a full function definition
-    - markdown-fenced code
+    Models may return just the body (indented lines), a complete module, or
+    either wrapped in a markdown fence.  A complete module is returned *whole* -
+    including any imports and helper definitions above the entry point, which an
+    earlier version sliced away at the `def` line.
     """
-    # Strip markdown
-    fenced = re.search(r"```(?:python)?\s*(.*?)```", raw, re.DOTALL)
-    if fenced:
-        raw = fenced.group(1)
+    src = _strip_markdown(raw)
 
-    # If it contains `def entry_point(`, return from that line onward
-    match = re.search(rf"def\s+{re.escape(entry_point)}\s*\(", raw)
-    if match:
-        # Find the function body indented block
-        func_block = raw[match.start():]
-        return func_block
+    lines = src.splitlines()
+    def_pattern = re.compile(rf"[ \t]*def\s+{re.escape(entry_point)}\s*\(")
+    def_index = next(
+        (i for i, line in enumerate(lines) if def_pattern.match(line)), None
+    )
+    if def_index is None:
+        return src                      # body-only completion
 
-    # Otherwise assume it's already just the body
-    return raw
+    # Keep as much of the prefix as still parses.  Starting at 0 keeps imports
+    # and helper functions; later starts drop prose, stray fences, or a
+    # truncated leading statement that would make the module unparseable.
+    for start in range(def_index + 1):
+        candidate = "\n".join(lines[start:])
+        if _defines_entry_point(candidate, entry_point):
+            return candidate
+
+    # Nothing parses (e.g. the def is indented, so this is really a body).
+    # Hand back the original text and let build_solution_code() prepend the
+    # prompt, rather than slicing at the def and guaranteeing a syntax error.
+    return src
+
+
+def build_solution_code(completion: str, task_prompt: str, entry_point: str) -> str:
+    """Assemble the module source to execute for one completion.
+
+    Single source of truth for the body-vs-module decision, shared by RQ2's
+    evaluator and RQ3's divergence/SBC paths so all three score a completion
+    the same way.
+    """
+    code = _extract_function_body(completion, entry_point)
+
+    if not _defines_entry_point(code, entry_point):
+        # Body-only: the prompt supplies the signature and the imports.
+        return task_prompt + code
+
+    # Complete module: re-attach the prompt's imports.  Repeating an import the
+    # model already wrote is harmless, so this needs no de-duplication.
+    imports = _prompt_imports(task_prompt)
+    return ("\n".join(imports) + "\n" + code) if imports else code
 
 
 # ---------------------------------------------------------------------------
@@ -75,13 +166,7 @@ def _run_completion(
     timeout_s: float,
 ) -> bool:
     """Return True if the completion passes the test."""
-    body = _extract_function_body(completion, entry_point)
-
-    # If model returned only a body (no def line), prepend the prompt
-    if not re.match(r"\s*def\s+", body):
-        solution_code = task_prompt + body
-    else:
-        solution_code = body
+    solution_code = build_solution_code(completion, task_prompt, entry_point)
 
     test = test_code + f"\ncheck({entry_point})\n"
     result = execute(solution_code, test, timeout_s=timeout_s)
@@ -114,7 +199,6 @@ def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None
     for relation, model_completions in completions_data.items():
         pass_rates[relation] = {}
         for model_id, completions in model_completions.items():
-            correct = 0
             n = len(completions)
             with ProcessPoolExecutor(max_workers=cfg.execution.cpu_workers) as pool:
                 futures = [
@@ -128,16 +212,22 @@ def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None
                     )
                     for comp in completions
                 ]
-                for f in as_completed(futures):
+                # Iterated in submission order (not as_completed) so per_completion[i]
+                # refers to completions[i].  RQ3 scores divergence as a classifier of
+                # "this solution passes the benchmark", which needs the individual
+                # outcomes — they were previously summed away and thrown out.
+                per_completion = []
+                for f in futures:
                     try:
-                        if f.result():
-                            correct += 1
+                        per_completion.append(bool(f.result()))
                     except Exception:
-                        pass
+                        per_completion.append(False)
+            correct = sum(per_completion)
 
             pass_rates[relation][model_id] = {
                 "n": n,
                 "correct": correct,
+                "per_completion": per_completion,
                 "pass@1":  pass_at_k(n, correct, 1),
                 "pass@5":  pass_at_k(n, correct, 5),
                 "pass@10": pass_at_k(n, correct, 10),

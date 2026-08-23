@@ -32,7 +32,7 @@ from ..core.data_loader import load_humaneval, task_label
 from ..core.llm_client import InnkubeClient
 from ..core.logging_setup import setup as setup_logging
 from ..core.task_selection import add_task_selection_args, resolve_task_filter
-from ..rq2.evaluator import _extract_function_body
+from ..rq2.evaluator import build_solution_code
 from .divergence import compute_divergence
 from .sbc_scorer import compute_sbc_score
 
@@ -61,6 +61,18 @@ def run_execute_one(task, cfg: Config, force: bool = False) -> None:
         logger.error("RQ2 completions missing for %s — run rq2 generate first", label)
         return
 
+    # RQ2's evaluate phase already ran every completion against the intact
+    # suite; reuse those outcomes rather than re-executing them here.
+    eval_out = task_dir(cfg, "rq2", label, phase="evaluate")
+    try:
+        pass_rates: dict | None = read_json(eval_out, "pass_rates.json")
+    except FileNotFoundError:
+        pass_rates = None
+        logger.warning(
+            "pass_rates.json missing for %s — re-executing completions to label "
+            "them (slower); run rq2 evaluate first to avoid this", label,
+        )
+
     result = compute_divergence(
         task=task,
         completions_data=completions_data,
@@ -68,6 +80,7 @@ def run_execute_one(task, cfg: Config, force: bool = False) -> None:
         timeout_s=cfg.execution.timeout_s,
         seed=cfg.project.seed,
         cpu_workers=cfg.execution.cpu_workers,
+        pass_rates=pass_rates,
     )
 
     write_json(out, "divergence.json", result)
@@ -104,14 +117,12 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, force: bool = Fal
     model_id = cfg.model_ids()[0]
     sbc_results: dict[str, dict] = {}
 
-    import re
     for relation, model_completions in completions_data.items():
         for mid, completions in model_completions.items():
             if not completions:
                 continue
             best = completions[0]
-            body = _extract_function_body(best, task.entry_point)
-            code = task.prompt + body if not re.match(r"\s*def\s+", body) else body
+            code = build_solution_code(best, task.prompt, task.entry_point)
             key = f"{relation}/{mid}"
             try:
                 sbc_results[key] = await compute_sbc_score(task, code, model_id, client)

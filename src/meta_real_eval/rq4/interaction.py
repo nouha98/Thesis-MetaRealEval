@@ -33,21 +33,31 @@ def compute_tau_at_degradation_level(
     every degradation level is directly comparable to the intact baseline:
 
         {"mean_tau_b": float | None, "tau_b_per_relation": {...},
-         "degenerate_relations": [...]}
+         "degenerate_relations": [...], "pass_at_1": {relation: {model: float}}}
 
     tau_b describes the ordering of the whole model set, so there is one value
     per relation — not one per model (see rq2/ranking.py).
+
+    ``pass_at_1`` is returned as well because two downstream analyses need the
+    raw scores, not just their rank correlation: RQ4's rank-recovery statistic
+    (H1a) compares each suite's model ranking against the intact-suite ranking,
+    and the augment-vs-degrade verification check needs to see that the two
+    suites actually score candidates differently.
     """
     model_ids = cfg.model_ids()
     relations = [r for r in cfg.rq2.relations if r != "original"]
 
-    # pass@1 for each (relation, model) under the degraded test
+    # pass@1 for each (relation, model) under the degraded test. A cell with no
+    # completions is left out entirely rather than scored 0.0 — see
+    # rq2/ranking.py::_model_pass_at1 for why an empty sample is not a zero.
     pass_at1: dict[str, dict[str, float]] = {}
     for relation, model_completions in completions_data.items():
         pass_at1[relation] = {}
         for model_id, completions in model_completions.items():
-            correct = 0
             n = len(completions)
+            if n == 0:
+                continue
+            correct = 0
             for comp in completions:
                 try:
                     if _run_completion(comp, task.prompt, degraded_test,
@@ -57,16 +67,18 @@ def compute_tau_at_degradation_level(
                     pass
             pass_at1[relation][model_id] = pass_at_k(n, correct, 1)
 
-    baseline_vec = _rank_vector(
-        {mid: pass_at1.get("original", {}).get(mid, 0.0) for mid in model_ids},
-        model_ids,
-    )
+    def _complete(relation: str) -> bool:
+        scores = pass_at1.get(relation, {})
+        return all(mid in scores for mid in model_ids)
+
+    baseline_ok = _complete("original")
+    baseline_vec = _rank_vector(pass_at1.get("original", {}), model_ids)
     tau_per_relation: dict[str, float | None] = {}
     for relation in relations:
-        variant_vec = _rank_vector(
-            {mid: pass_at1.get(relation, {}).get(mid, 0.0) for mid in model_ids},
-            model_ids,
-        )
+        if not baseline_ok or not _complete(relation):
+            tau_per_relation[relation] = None
+            continue
+        variant_vec = _rank_vector(pass_at1.get(relation, {}), model_ids)
         tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
 
     defined = [t for t in tau_per_relation.values() if t is not None]
@@ -74,6 +86,7 @@ def compute_tau_at_degradation_level(
         "mean_tau_b": float(np.mean(defined)) if defined else None,
         "tau_b_per_relation": tau_per_relation,
         "degenerate_relations": [r for r, t in tau_per_relation.items() if t is None],
+        "pass_at_1": pass_at1,
     }
 
 

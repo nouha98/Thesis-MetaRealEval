@@ -47,10 +47,17 @@ BASELINE_RELATION = "original"
 
 
 def _model_pass_at1(pass_rates: dict, relation: str) -> dict[str, float]:
-    """Return {model_id: pass@1} for a given relation."""
+    """Return {model_id: pass@1} for a given relation, skipping empty cells.
+
+    A (relation, model) cell with no completions is missing data, not a score of
+    zero: pass@1 over an empty sample is 0.0, which would enter the leaderboard
+    as "this model got everything wrong". Callers check for a complete set of
+    models before computing a ranking statistic.
+    """
     return {
         model_id: rates["pass@1"]
         for model_id, rates in pass_rates.get(relation, {}).items()
+        if rates.get("n", 0) > 0
     }
 
 
@@ -102,10 +109,27 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
     baseline_vec = _rank_vector(baseline_scores, model_ids)
 
     # 1. Ranking stability: one tau_b per relation, not per model.
+    # A relation missing any model has no leaderboard to compare, so it is
+    # recorded as undefined alongside the all-tied case rather than ranked with
+    # a fabricated 0.0 standing in for the absent model.
+    incomplete_relations: list[str] = []
+    baseline_complete = len(baseline_scores) == len(model_ids)
     tau_per_relation: dict[str, Optional[float]] = {}
     for relation in relations:
-        variant_vec = _rank_vector(_model_pass_at1(pass_rates, relation), model_ids)
+        variant_scores = _model_pass_at1(pass_rates, relation)
+        if not baseline_complete or len(variant_scores) != len(model_ids):
+            incomplete_relations.append(relation)
+            tau_per_relation[relation] = None
+            continue
+        variant_vec = _rank_vector(variant_scores, model_ids)
         tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
+
+    if incomplete_relations:
+        logger.warning(
+            "%s: %d relation(s) missing a model's completions (%s) — excluded "
+            "from tau_b rather than scored 0.0",
+            label, len(incomplete_relations), ", ".join(incomplete_relations),
+        )
 
     defined = [t for t in tau_per_relation.values() if t is not None]
 
@@ -145,6 +169,8 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
         "n_relations_defined": len(defined),
         "n_relations_total": len(tau_per_relation),
         "degenerate_relations": [r for r, t in tau_per_relation.items() if t is None],
+        "incomplete_relations": incomplete_relations,
+        "baseline_complete": baseline_complete,
         "delta_pass_at_1": delta_pass_at_1,
         "mean_abs_delta_pass_at_1": {
             model_id: float(np.mean([abs(d) for d in deltas.values()])) if deltas else 0.0

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -80,3 +81,61 @@ class Config(BaseModel):
 
     def model_ids(self) -> list[str]:
         return [m.id for m in self.llm.models]
+
+
+# ---------------------------------------------------------------------------
+# Calibration write-back
+# ---------------------------------------------------------------------------
+
+# Matches the value of a `divergence_threshold:` line, keeping indentation and
+# any trailing comment. A full YAML round-trip (load -> dump) would work too but
+# would strip every explanatory comment in the file, so the edit is textual.
+_THRESHOLD_RE = re.compile(
+    r"^(?P<indent>[ \t]*)divergence_threshold:[ \t]*"
+    r"(?P<value>[^#\n]*?)[ \t]*(?P<comment>#[^\n]*)?$",
+    re.MULTILINE,
+)
+
+
+class CalibrationError(RuntimeError):
+    """Raised when the threshold cannot be written back safely."""
+
+
+def write_divergence_threshold(config_path: str | Path, value: float) -> Optional[float]:
+    """Set ``rq3.divergence_threshold`` in ``config_path`` in place.
+
+    Editing the text (rather than re-dumping the parsed YAML) keeps the file's
+    comments, which carry the calibration instructions themselves.
+
+    Returns the previous value.  Raises CalibrationError if the key is missing or
+    ambiguous, or if the file does not read back with the intended value — the
+    threshold decides which tasks get MT augmentation, so a half-applied edit
+    must not pass silently.
+    """
+    path = Path(config_path)
+    text = path.read_text(encoding="utf-8")
+
+    matches = list(_THRESHOLD_RE.finditer(text))
+    if not matches:
+        raise CalibrationError(
+            f"no 'divergence_threshold:' key in {path} — add it under rq3: first"
+        )
+    if len(matches) > 1:
+        raise CalibrationError(
+            f"{len(matches)} 'divergence_threshold:' keys in {path} — cannot tell "
+            "which one belongs to rq3:; fix the file by hand"
+        )
+
+    previous = Config.from_yaml(path).rq3.divergence_threshold
+    match = matches[0]
+    comment = f"  {match.group('comment')}" if match.group("comment") else ""
+    replacement = f"{match.group('indent')}divergence_threshold: {value!r}{comment}"
+    text = text[: match.start()] + replacement + text[match.end():]
+    path.write_text(text, encoding="utf-8")
+
+    written = Config.from_yaml(path).rq3.divergence_threshold
+    if written is None or abs(written - value) > 1e-12:
+        raise CalibrationError(
+            f"wrote {value!r} to {path} but it reads back as {written!r}"
+        )
+    return previous

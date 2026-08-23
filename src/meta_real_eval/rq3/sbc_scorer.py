@@ -1,14 +1,20 @@
 """RQ3 score phase: SBC (Semantic-BLEU-Completeness) scoring via reverse generation.
 
 We ask the LLM to infer the requirements from each generated solution
-(reverse generation), then compare the inferred spec against the original
-task description on three dimensions:
+(reverse generation), then compare the inferred spec against the original task
+description.  The comparison is **purely lexical** — no embedding model or LLM
+judge is involved:
 
-- Semantic similarity (embedding cosine or LLM-judged)
-- BLEU score between inferred and original spec
-- Completeness score (fraction of key concepts covered)
+- bigram overlap    (labelled "semantic" in the proposal; it is not semantics)
+- unigram overlap   (a 1-gram BLEU approximation)
+- completeness      (fraction of the docstring's content words that reappear)
 
-This provides a false-positive detection signal independent of fixed oracles.
+All three measure word overlap between two English texts, so they are strongly
+correlated with one another and their mean is not three independent signals.
+Read the SBC score as "does the specification recovered from this code still
+read like the original task description", and treat it as a weak secondary
+signal behind the execution-based divergence rate.  Reporting it as semantic
+similarity would overstate what is computed.
 """
 
 from __future__ import annotations
@@ -88,19 +94,21 @@ async def compute_sbc_score(
 
     bleu = _bleu_1gram(original_spec, inferred_spec)
     completeness = _completeness_score(original_spec, inferred_spec)
-    # Semantic score: proxy via BLEU on bigrams (simple, no embedding needed)
     ref_bigrams = set(zip(original_spec.lower().split(), original_spec.lower().split()[1:]))
     hyp_bigrams = list(zip(inferred_spec.lower().split(), inferred_spec.lower().split()[1:]))
-    semantic = (
+    bigram_overlap = (
         sum(1 for b in hyp_bigrams if b in ref_bigrams) / len(hyp_bigrams)
         if hyp_bigrams else 0.0
     )
-    sbc = (semantic + bleu + completeness) / 3.0
+    sbc = (bigram_overlap + bleu + completeness) / 3.0
 
     return {
         "inferred_spec": inferred_spec,
-        "semantic_score": round(semantic, 4),
-        "bleu_score": round(bleu, 4),
+        # Named for what it computes. The proposal calls this component
+        # "semantic"; it is bigram overlap, and no embedding model is used.
+        "bigram_overlap_score": round(bigram_overlap, 4),
+        "unigram_overlap_score": round(bleu, 4),
         "completeness_score": round(completeness, 4),
         "sbc_score": round(sbc, 4),
+        "reverse_generation_failed": not inferred_spec,
     }

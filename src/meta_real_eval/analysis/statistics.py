@@ -7,7 +7,7 @@ statistic value, p-value, and effect size where applicable.
 from __future__ import annotations
 
 import numpy as np
-from scipy.stats import wilcoxon, kendalltau
+from scipy.stats import wilcoxon, kendalltau, mannwhitneyu
 
 
 def wilcoxon_test(a: list[float], b: list[float]) -> dict:
@@ -76,3 +76,77 @@ def spearman_rho(a: list[float], b: list[float]) -> dict:
         "rho": float(result.statistic),
         "p_value": float(result.pvalue),
     }
+
+
+def roc_auc(scores: list[float], labels: list[int]) -> dict:
+    """Rank-based ROC-AUC for a continuous score against binary labels (RQ3).
+
+    ``labels`` is 1 for the positive class.  Implemented as the Mann-Whitney U
+    identity (AUC = P(score_positive > score_negative), ties counted as 0.5)
+    rather than pulling in scikit-learn for a five-line computation.
+
+    Returns {"auc", "n_positive", "n_negative"}.  AUC is None when either class
+    is empty — with only one class present the statistic is undefined, and
+    reporting 0.5 there would fabricate a "chance-level" result.
+    """
+    if len(scores) != len(labels):
+        raise ValueError("scores and labels must have the same length")
+    pos = [s for s, y in zip(scores, labels) if y]
+    neg = [s for s, y in zip(scores, labels) if not y]
+    if not pos or not neg:
+        return {"auc": None, "n_positive": len(pos), "n_negative": len(neg),
+                "note": "AUC undefined: only one class present"}
+
+    wins = sum(
+        (1.0 if p > n else (0.5 if p == n else 0.0))
+        for p in pos for n in neg
+    )
+    return {
+        "auc": wins / (len(pos) * len(neg)),
+        "n_positive": len(pos),
+        "n_negative": len(neg),
+    }
+
+
+def youden_threshold(scores: list[float], labels: list[int]) -> dict:
+    """Pick the score cut-off maximising Youden's J = sensitivity + specificity - 1.
+
+    Used to calibrate rq3.divergence_threshold from the Tier-1 pilot.  The
+    positive class is label==1 and the rule is ``score >= threshold``.
+    Candidate cut-offs are the observed scores themselves.
+    """
+    if len(scores) != len(labels):
+        raise ValueError("scores and labels must have the same length")
+    n_pos = sum(1 for y in labels if y)
+    n_neg = len(labels) - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return {"threshold": None, "youden_j": None,
+                "note": "undefined: only one class present"}
+
+    best = {"threshold": None, "youden_j": -1.0, "sensitivity": None, "specificity": None}
+    for cut in sorted(set(scores)):
+        tp = sum(1 for s, y in zip(scores, labels) if y and s >= cut)
+        fp = sum(1 for s, y in zip(scores, labels) if not y and s >= cut)
+        sens = tp / n_pos
+        spec = 1 - fp / n_neg
+        j = sens + spec - 1
+        if j > best["youden_j"]:
+            best = {"threshold": float(cut), "youden_j": float(j),
+                    "sensitivity": float(sens), "specificity": float(spec)}
+    return best
+
+
+def mannwhitney_test(a: list[float], b: list[float]) -> dict:
+    """Mann-Whitney U for two *independent* groups, with Cliff's delta.
+
+    Used where the two samples are different sets of tasks (e.g. weak-oracle vs
+    strong-oracle tasks in the cross-RQ join).  The paired wilcoxon_test above
+    would be wrong there: it assumes each value in `a` is matched to the value
+    at the same position in `b`, which unrelated task groups are not.
+    """
+    if not a or not b:
+        return {"statistic": None, "p_value": None, "cliffs_delta": None,
+                "note": "one group is empty"}
+    stat, p = mannwhitneyu(a, b, alternative="two-sided")
+    return {"statistic": float(stat), "p_value": float(p),
+            "cliffs_delta": cliffs_delta(a, b), "n_a": len(a), "n_b": len(b)}

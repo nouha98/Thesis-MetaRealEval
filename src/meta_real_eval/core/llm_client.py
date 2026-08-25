@@ -77,8 +77,19 @@ class InnkubeClient:
         temperature: float = 0.8,
         max_tokens: int = 1024,
         n: int = 1,
+        cache_salt: Optional[str] = None,
     ) -> list[str]:
-        """Return *n* completion strings.  Returns mock strings if mock=True."""
+        """Return *n* completion strings.  Returns mock strings if mock=True.
+
+        ``cache_salt`` is folded into the cache key and **not** sent to the API.
+        It exists so a caller can deliberately re-sample a request it has already
+        made: without it, submitting the identical prompt twice returns the
+        identical cached completions, which would make RQ2's ``control_resample``
+        arm report a sampling-noise floor of exactly zero, and would make the
+        paraphrase generator's retry budget replay its first attempt forever.
+        Callers that pass nothing keep their existing keys, so adding this
+        parameter invalidates no cache entry.
+        """
         if self._mock:
             stub = f"# mock [{model}]\ndef solution():\n    pass\n"
             return [stub] * n
@@ -86,6 +97,7 @@ class InnkubeClient:
         cache_key = self._cache.key(
             model, messages,
             temperature=temperature, max_tokens=max_tokens, n=n,
+            **({} if cache_salt is None else {"cache_salt": cache_salt}),
         )
         if cached := self._cache.get(cache_key):
             logger.debug("Cache hit %s", cache_key[:12])

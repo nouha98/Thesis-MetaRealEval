@@ -51,6 +51,30 @@ def test_apply_all_returns_all_relations():
     assert set(result.keys()) == set(relations)
 
 
+def test_reorder_is_a_no_op_without_examples():
+    """A no-op relation is a dead cell, not a measurement.
+
+    ``generate_task`` builds the messages from the transformed prompt, and
+    ``ResponseCache.key`` hashes the messages — so a relation that returns its
+    input unchanged produces the same cache key as ``original`` and replays
+    original's completions, scoring tau_b = 1.0 without testing anything.
+    Measured over the real corpus: ``reorder`` is a no-op on 88 of 164 HumanEval
+    prompts and ``terse`` on 103, i.e. 191 of 656 (task, relation) cells.
+
+    These transforms are kept as RQ2's control arm precisely so that shortfall is
+    a measured comparison against the LLM corpus rather than a claim. The LLM arm
+    has no equivalent hole: Gate A rejects any candidate byte-identical to the
+    original (see test_corpus.py).
+    """
+    prompt = 'def f(x):\n    """Return x."""\n'
+    assert apply_relation(prompt, "reorder") == prompt
+
+
+def test_terse_is_a_no_op_without_filler():
+    prompt = 'def f(x):\n    """Return x."""\n'
+    assert apply_relation(prompt, "terse") == prompt
+
+
 def test_unknown_relation_raises():
     with pytest.raises(ValueError):
         apply_relation(SAMPLE_PROMPT, "nonsense")

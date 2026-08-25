@@ -34,11 +34,50 @@ rq1:
 rq2:
   n_completions: 10             # samples per (task, variant, model) triple
   temperature: 0.8
-  relations: [original, persona, formal, reorder, terse]
+
+  # Deterministic template transforms (rq2/paraphraser.py), kept as a CONTROL ARM
+  # so "templates understate instability by X" is a measured result. They barely
+  # reword anything: `reorder` is a no-op on 88/164 prompts and `terse` on 103,
+  # and a no-op prompt hashes to the same cache key as `original`, so those cells
+  # return identical completions and score tau_b = 1.0 by construction.
+  template_relations: [persona, formal, reorder, terse]
+
+  # The unmodified prompt re-submitted under a cache salt, i.e. genuinely
+  # re-sampled at temperature 0.8. Its tau_b is the sampling-noise floor that
+  # every other relation is read against.
+  include_control_resample: true
+
+  # LLM paraphrase corpus: 5 families x 3 variants per task, generated once and
+  # committed. Build it with scripts/generate_paraphrases.py, then paste the
+  # sha256 it prints below. RQ2 generate verifies the hash and ABORTS on a
+  # mismatch — it never silently regenerates, because two models seeing different
+  # prompts is exactly the confound the committed corpus exists to prevent.
+  # Leave paraphrase_corpus null to run the template arm alone.
+  paraphrase_corpus: null       # ./data/paraphrases/humaneval_v1.json
+  corpus_sha256: null
+
+  # Corpus generator and equivalence judge. BOTH must be held out of llm.models:
+  # judging paraphrases with the models being ranked filters on the dependent
+  # variable and drives RQ2 toward a null by construction.
+  # scripts/generate_paraphrases.py refuses to run if either is in llm.models.
+  generator_model: null
+  judge_model: null
 
 rq3:
   n_shared_inputs: 200          # shared random inputs for pairwise divergence
-  divergence_threshold: null    # null = auto-calibrated during Tier-1 pilot
+  # Divergence is O(n_solutions * n_shared_inputs) subprocess spawns, so RQ3 does
+  # not inherit RQ2's full variant count: it samples this many LLM variants per
+  # family (plus `original`), seeded from project.seed and the task label.
+  # Raising it raises per-task execution cost linearly and invalidates the
+  # calibrated divergence_threshold below.
+  variant_sample_per_family: 1
+  # Above this pairwise-disagreement rate a task gets RQ4 consistency assertions.
+  # null = NOT yet calibrated: runs fall back to 0.1, log a warning, and tag their
+  # output threshold_calibrated=false, and submit_pipeline.sh refuses to launch a
+  # full run. Do not edit this by hand - run the Tier-1 pilot, then:
+  #   .venv/bin/python scripts/analyze_results.py --calibrate
+  # which derives the value (Youden's J on the per-task ROC) and writes it here.
+  divergence_threshold: null
 
 rq4:
   degradation_levels: [0.0, 0.2, 0.5, 0.8]

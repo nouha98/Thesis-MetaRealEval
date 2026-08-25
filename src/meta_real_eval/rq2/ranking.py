@@ -44,6 +44,71 @@ from ..core.data_loader import HumanEvalTask, task_label
 logger = logging.getLogger(__name__)
 
 BASELINE_RELATION = "original"
+CONTROL_RELATION = "control_resample"
+
+
+def relation_arm(relation: str) -> tuple[str, Optional[str]]:
+    """Classify a relation key into ``(arm, family)``.
+
+    Three arms answer three different questions and must never be averaged
+    together:
+
+    ``control``   ``control_resample`` — the original prompt re-sampled. Its
+                  tau_b is the sampling-noise floor, the value against which
+                  every other arm has to be read.
+    ``template``  the deterministic transforms — the control arm for "do
+                  templates understate instability?".
+    ``llm``       the validated corpus rewrites, carrying a family label.
+
+    Classified by key shape rather than from the config so that every reader —
+    ranking, RQ4, and the offline analysis script — agrees without needing the
+    config that produced the run.
+    """
+    if relation == BASELINE_RELATION:
+        return "baseline", None
+    if relation == CONTROL_RELATION:
+        return "control", None
+    if relation.startswith("llm_"):
+        parts = relation.split("_")
+        return "llm", "_".join(parts[1:-1]) if len(parts) >= 3 else "unknown"
+    return "template", None
+
+
+def collapse_tau_by_arm(tau_per_relation: dict[str, Optional[float]]) -> dict:
+    """Collapse per-relation tau_b into per-arm task-level values.
+
+    Variants within a family within a task are not independent — they are three
+    rewrites of one prompt by one model — so they are averaged into a family mean
+    before the family means are averaged into the arm's value. Flattening all 15
+    LLM variants into one pool would treat them as 15 independent observations of
+    a task that produced three.
+
+    ``primary`` is the arm the headline statistics use: the LLM arm when the
+    corpus is in play, the template arm otherwise. It never includes the control,
+    which is a floor to compare against rather than a paraphrase result.
+    """
+    by_arm: dict[str, list[float]] = {}
+    by_family: dict[str, list[float]] = {}
+    for relation, tau in tau_per_relation.items():
+        if tau is None:
+            continue
+        arm, family = relation_arm(relation)
+        if arm == "baseline":
+            continue
+        if arm == "llm":
+            by_family.setdefault(family or "unknown", []).append(tau)
+        else:
+            by_arm.setdefault(arm, []).append(tau)
+
+    family_means = {f: float(np.mean(v)) for f, v in by_family.items()}
+    result: dict = {
+        "control": float(np.mean(by_arm["control"])) if by_arm.get("control") else None,
+        "template": float(np.mean(by_arm["template"])) if by_arm.get("template") else None,
+        "llm": float(np.mean(list(family_means.values()))) if family_means else None,
+        "llm_by_family": family_means,
+    }
+    result["primary"] = result["llm"] if result["llm"] is not None else result["template"]
+    return result
 
 
 def _model_pass_at1(pass_rates: dict, relation: str) -> dict[str, float]:
@@ -132,6 +197,7 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
         )
 
     defined = [t for t in tau_per_relation.values() if t is not None]
+    by_arm = collapse_tau_by_arm(tau_per_relation)
 
     # 2. Per-model sensitivity: delta pass@1 against the baseline relation.
     delta_pass_at_1 = {
@@ -165,7 +231,13 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
         "model_ids": model_ids,
         "baseline_pass_at_1": baseline_scores,
         "tau_b_per_relation": tau_per_relation,
-        "mean_tau_b": float(np.mean(defined)) if defined else None,
+        # mean_tau_b is the *primary arm's* value (LLM when the corpus is in
+        # play, templates otherwise), not a flat mean over every relation. A flat
+        # mean would let 15 LLM variants outvote 4 templates and would fold the
+        # noise floor in with the treatments.
+        "mean_tau_b": by_arm["primary"],
+        "tau_b_by_arm": by_arm,
+        "mean_tau_b_all_relations": float(np.mean(defined)) if defined else None,
         "n_relations_defined": len(defined),
         "n_relations_total": len(tau_per_relation),
         "degenerate_relations": [r for r, t in tau_per_relation.items() if t is None],
@@ -183,10 +255,11 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
         },
     })
 
-    mean_tau = float(np.mean(defined)) if defined else None
+    def _fmt(value: Optional[float]) -> str:
+        return f"{value:.3f}" if value is not None else "undefined"
+
     logger.info(
-        "Rankings %s: mean_tau_b=%s over %d/%d relations",
-        label,
-        f"{mean_tau:.3f}" if mean_tau is not None else "undefined",
+        "Rankings %s: tau_b control=%s template=%s llm=%s over %d/%d relations",
+        label, _fmt(by_arm["control"]), _fmt(by_arm["template"]), _fmt(by_arm["llm"]),
         len(defined), len(tau_per_relation),
     )

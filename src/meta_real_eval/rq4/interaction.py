@@ -16,7 +16,7 @@ import numpy as np
 from ..core.config import Config
 from ..core.data_loader import HumanEvalTask
 from ..rq2.evaluator import _run_completion, pass_at_k
-from ..rq2.ranking import _rank_vector, _tau_b
+from ..rq2.ranking import _rank_vector, _tau_b, collapse_tau_by_arm
 
 logger = logging.getLogger(__name__)
 
@@ -82,8 +82,14 @@ def compute_tau_at_degradation_level(
         tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
 
     defined = [t for t in tau_per_relation.values() if t is not None]
+    by_arm = collapse_tau_by_arm(tau_per_relation)
     return {
-        "mean_tau_b": float(np.mean(defined)) if defined else None,
+        # Same definition as rq2/ranking.py: the primary arm, collapsed
+        # variant -> family -> arm. Page's L compares this value across
+        # degradation levels, so it has to mean the same thing at every level.
+        "mean_tau_b": by_arm["primary"],
+        "tau_b_by_arm": by_arm,
+        "mean_tau_b_all_relations": float(np.mean(defined)) if defined else None,
         "tau_b_per_relation": tau_per_relation,
         "degenerate_relations": [r for r, t in tau_per_relation.items() if t is None],
         "pass_at_1": pass_at1,

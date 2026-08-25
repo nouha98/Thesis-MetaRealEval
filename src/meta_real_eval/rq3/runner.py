@@ -21,13 +21,14 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import random
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 from ..core.cache import ResponseCache
 from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
-from ..core.config import Config
+from ..core.config import BASELINE_RELATION, CONTROL_RELATION, Config
 from ..core.data_loader import load_humaneval, task_label
 from ..core.llm_client import InnkubeClient
 from ..core.logging_setup import setup as setup_logging
@@ -42,6 +43,48 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Execute phase
 # ---------------------------------------------------------------------------
+
+def select_divergence_relations(cfg: Config, label: str, available: list[str]) -> list[str]:
+    """Choose which RQ2 relations feed one task's divergence computation.
+
+    RQ3 must not inherit RQ2's full variant count. Divergence costs
+    O(n_solutions * n_shared_inputs) subprocess spawns via ``_execute_on_input``;
+    at 20 relations x 3 models x 200 inputs x 164 tasks that is roughly two
+    million spawns, and it would also silently invalidate the calibrated
+    ``tau_div``, which was derived at k=15 solutions.
+
+    So: ``original`` plus ``rq3.variant_sample_per_family`` LLM variants drawn
+    from each family, seeded from ``project.seed`` and the task label so the
+    choice is deterministic per task but not the same slot for every task.
+
+    Excluded on purpose:
+      - the template relations — they are RQ2's control arm, and most of them are
+        no-ops on the prompt, so they would contribute near-duplicate solutions;
+      - ``control_resample`` — it is the original prompt again, so it would add a
+        solution whose divergence measures sampling noise rather than paraphrase.
+
+    If the corpus is not configured there are no LLM variants to sample, and
+    every non-control relation is used — the pre-corpus behaviour.
+    """
+    from ..rq2.corpus import family_of
+
+    by_family: dict[str, list[str]] = {}
+    for relation in available:
+        family = family_of(relation)
+        if family is not None:
+            by_family.setdefault(family, []).append(relation)
+
+    if not by_family:
+        return [r for r in available if r != CONTROL_RELATION]
+
+    rng = random.Random(f"{cfg.project.seed}:{label}")
+    selected = [BASELINE_RELATION] if BASELINE_RELATION in available else []
+    for family in sorted(by_family):
+        pool = sorted(by_family[family])
+        k = min(cfg.rq3.variant_sample_per_family, len(pool))
+        selected.extend(rng.sample(pool, k))
+    return selected
+
 
 def run_execute_one(task, cfg: Config, force: bool = False) -> None:
     label = task_label(task)
@@ -73,9 +116,12 @@ def run_execute_one(task, cfg: Config, force: bool = False) -> None:
             "them (slower); run rq2 evaluate first to avoid this", label,
         )
 
+    selected = select_divergence_relations(cfg, label, list(completions_data))
+    sampled_data = {r: completions_data[r] for r in selected if r in completions_data}
+
     result = compute_divergence(
         task=task,
-        completions_data=completions_data,
+        completions_data=sampled_data,
         n_shared_inputs=cfg.rq3.n_shared_inputs,
         timeout_s=cfg.execution.timeout_s,
         seed=cfg.project.seed,
@@ -83,12 +129,16 @@ def run_execute_one(task, cfg: Config, force: bool = False) -> None:
         pass_rates=pass_rates,
     )
 
+    # Which variants were sampled is part of the result, not an implementation
+    # detail: the divergence rate is only interpretable against the set of
+    # solutions it was computed over.
+    result["selected_relations"] = selected
     write_json(out, "divergence.json", result)
     mark_done(out)
     logger.info(
-        "Divergence %s: %.3f (%d solutions, %d inputs)",
+        "Divergence %s: %.3f (%d solutions from %d relations, %d inputs)",
         label, result["pairwise_disagreement_rate"],
-        result["n_solutions"], result["n_inputs"],
+        result["n_solutions"], len(sampled_data), result["n_inputs"],
     )
 
 
@@ -117,7 +167,14 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, force: bool = Fal
     model_id = cfg.model_ids()[0]
     sbc_results: dict[str, dict] = {}
 
-    for relation, model_completions in completions_data.items():
+    # Same containment as the execute phase, and for the same reason: SBC costs
+    # one LLM call per (relation, model), so scoring every corpus variant would
+    # multiply this phase's budget by the variant count. Both phases sample from
+    # the same seed and task label, so they score the same solutions.
+    selected = select_divergence_relations(cfg, label, list(completions_data))
+    scored_data = {r: completions_data[r] for r in selected if r in completions_data}
+
+    for relation, model_completions in scored_data.items():
         for mid, completions in model_completions.items():
             if not completions:
                 continue

@@ -81,6 +81,40 @@ else
     echo ""
 fi
 
+# The paraphrase corpus is an input to RQ2 generate, the 24h bottleneck job.
+# Verifying it here means a missing file or a drifted hash fails in a second on
+# the login node instead of after the queue wait. Same abort-don't-regenerate
+# rule as the runtime check in rq2/generator.py.
+if ! .venv/bin/python - <<'PY'
+import sys
+sys.path.insert(0, "src")
+from meta_real_eval.core.config import Config
+from meta_real_eval.rq2.corpus import CorpusError, load_corpus, verify_corpus
+
+cfg = Config.from_yaml("config/default.yaml")
+path = cfg.rq2.paraphrase_corpus
+if path is None:
+    print("Paraphrase corpus: not configured — template arm only.")
+    sys.exit(0)
+try:
+    corpus = load_corpus(path)
+    verify_corpus(corpus, cfg.rq2.corpus_sha256, path)
+except CorpusError as exc:
+    print(f"ERROR: {exc}", file=sys.stderr)
+    sys.exit(1)
+filled = sum(len(t["variants"]) for t in corpus["tasks"].values())
+print(f"Paraphrase corpus: {path}  [{len(corpus['tasks'])} tasks, "
+      f"{filled} variants, sha256 verified]")
+PY
+then
+    echo "" >&2
+    echo "  Build or restore the corpus before submitting:" >&2
+    echo "    .venv/bin/python scripts/generate_paraphrases.py" >&2
+    echo "  then pin the sha256 it prints in rq2.corpus_sha256." >&2
+    exit 1
+fi
+echo ""
+
 echo "Submitting Meta-Real-Eval pipeline for task indices 0..${N_TASKS}"
 echo "Config: config/default.yaml"
 echo ""

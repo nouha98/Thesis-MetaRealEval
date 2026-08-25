@@ -32,6 +32,7 @@ from meta_real_eval.core.config import (  # noqa: E402
     CalibrationError,
     write_divergence_threshold,
 )
+from meta_real_eval.rq2.ranking import collapse_tau_by_arm  # noqa: E402
 from meta_real_eval.analysis.statistics import (  # noqa: E402
     bootstrap_ci,
     cliffs_delta,
@@ -321,6 +322,56 @@ def _sign(a: float, b: float) -> int:
     return (a > b) - (a < b)
 
 
+def _understatement(template: list[float], llm: list[float],
+                    control: list[float]) -> dict:
+    """How much instability the template arm misses, measured against the floor.
+
+    Both arms are compared to the same resampling floor, so the answer is stated
+    as movement *away from* that floor rather than as raw tau_b. Without the
+    floor every tau_b is implicitly compared against a perfect 1.0, which is what
+    made a grand mean of 0.909 read as "stable".
+
+    Paired per task where both arms exist: the arms are measured on the same
+    tasks, so the difference of the paired means is the honest comparison.
+    """
+    if not template or not llm:
+        return {"n": 0, "note": "needs both a template and an LLM arm"}
+
+    floor = sum(control) / len(control) if control else 1.0
+    template_mean = sum(template) / len(template)
+    llm_mean = sum(llm) / len(llm)
+    template_drop = floor - template_mean
+    llm_drop = floor - llm_mean
+
+    # A template arm at or above the floor is the expected outcome, not an edge
+    # case: a no-op relation replays original's completions and scores exactly
+    # 1.0, which is *above* a resampling floor below 1.0. A ratio against a
+    # non-positive denominator would be negative or explode, so it is reported
+    # as undefined and the plain statement is given instead.
+    ratio = llm_drop / template_drop if template_drop > 1e-9 else None
+    return {
+        "control_floor_tau_b": floor,
+        "template_mean_tau_b": template_mean,
+        "llm_mean_tau_b": llm_mean,
+        "template_drop_from_floor": template_drop,
+        "llm_drop_from_floor": llm_drop,
+        "llm_minus_template_tau_b": llm_mean - template_mean,
+        "understatement_ratio": ratio,
+        "template_finds_no_instability_beyond_the_floor": template_drop <= 1e-9,
+        "n_tasks_template": len(template),
+        "n_tasks_llm": len(llm),
+        "note": (
+            "Both arms are stated as a drop below the resampling floor, so the "
+            "comparison does not assume a perfect 1.0 baseline. "
+            "understatement_ratio > 1 means the LLM corpus finds that many times "
+            "more ranking movement than the templates do; it is undefined when "
+            "the template arm sits at or above the floor, which happens whenever "
+            "the templates are no-ops on most prompts — read "
+            "template_drop_from_floor directly in that case."
+        ),
+    }
+
+
 def analyze_rq2() -> dict:
     """Aggregate RQ2 across tasks.
 
@@ -350,14 +401,19 @@ def analyze_rq2() -> dict:
     task_dirs = sorted((RESULTS / "rq2" / "evaluate").iterdir())
     per_task = []                       # one task-level mean tau_b each
     per_relation_tau = defaultdict(list)
+    # arm -> [one task-level value each]; families are collapsed inside the arm
+    # before the task contributes, so a task with 15 LLM variants still counts
+    # once. "control" is the resampling noise floor, not a treatment.
+    per_arm_tau = defaultdict(list)
+    per_family_tau = defaultdict(list)
     per_model_abs_delta = defaultdict(list)
     per_model_signed_delta = defaultdict(lambda: defaultdict(list))
     per_model_abs_rank_change = defaultdict(list)
     per_model_signed_rank_change = defaultdict(lambda: defaultdict(list))
     # pair_key -> relation -> [one 0/1 per task with a valid (non-tied) comparison]
     pairwise_by_relation = defaultdict(lambda: defaultdict(list))
-    # pair_key -> [one mean-across-that-task's-valid-relations value, per task]
-    pairwise_pooled = defaultdict(list)
+    # arm -> pair_key -> [one collapsed value per task]
+    pairwise_pooled = defaultdict(lambda: defaultdict(list))
     model_correct = Counter()
     model_n = Counter()
     n_tasks = 0
@@ -376,6 +432,16 @@ def analyze_rq2() -> dict:
 
         if r.get("mean_tau_b") is not None:
             per_task.append({"task": td.name, "mean_tau_b": r["mean_tau_b"]})
+
+        # Recomputed here rather than trusted from rankings.json, so results
+        # written by an older version of ranking.py still aggregate correctly.
+        by_arm = collapse_tau_by_arm(r.get("tau_b_per_relation", {}))
+        for arm in ("control", "template", "llm"):
+            if by_arm[arm] is not None:
+                per_arm_tau[arm].append(by_arm[arm])
+        for family, value in by_arm["llm_by_family"].items():
+            per_family_tau[family].append(value)
+
         for relation, tau in r.get("tau_b_per_relation", {}).items():
             n_pairs += 1
             if tau is None:
@@ -405,7 +471,9 @@ def analyze_rq2() -> dict:
 
         model_ids = r.get("model_ids") or list(pr.get("original", {}).keys())
         baseline = {m: pr["original"][m]["pass@1"] for m in model_ids if m in pr.get("original", {})}
-        this_task_pair_values = defaultdict(list)  # pair_key -> [0/1 across this task's relations]
+        # pair_key -> {relation: 0/1}; collapsed per arm below, exactly as tau_b
+        # is, so 15 LLM variants of one task do not outvote its 4 templates.
+        this_task_pair_values = defaultdict(dict)
         for relation in pr:
             if relation == "original":
                 continue
@@ -420,10 +488,13 @@ def analyze_rq2() -> dict:
                 pair_key = f"{i} vs {j}"
                 reversed_ = int(base_sign != var_sign)
                 pairwise_by_relation[pair_key][relation].append(reversed_)
-                this_task_pair_values[pair_key].append(reversed_)
+                this_task_pair_values[pair_key][relation] = float(reversed_)
 
-        for pair_key, vals in this_task_pair_values.items():
-            pairwise_pooled[pair_key].append(sum(vals) / len(vals))
+        for pair_key, rel_values in this_task_pair_values.items():
+            collapsed = collapse_tau_by_arm(rel_values)
+            for arm in ("control", "template", "llm"):
+                if collapsed[arm] is not None:
+                    pairwise_pooled[arm][pair_key].append(collapsed[arm])
 
     task_tau = [r["mean_tau_b"] for r in per_task]
     grand_mean = sum(task_tau) / len(task_tau) if task_tau else float("nan")
@@ -452,6 +523,14 @@ def analyze_rq2() -> dict:
             "ci_lower": ci_lo,
             "ci_upper": ci_hi,
             "interpretation": interpret(grand_mean),
+            "by_arm": {arm: _mean_ci(vals) for arm, vals in per_arm_tau.items()},
+            "by_llm_family": {
+                fam: _mean_ci(vals) for fam, vals in per_family_tau.items()
+            },
+            "template_understatement": _understatement(
+                per_arm_tau.get("template", []), per_arm_tau.get("llm", []),
+                per_arm_tau.get("control", []),
+            ),
             "by_relation": {
                 rel: _mean_ci(vals) for rel, vals in per_relation_tau.items()
             },
@@ -461,8 +540,13 @@ def analyze_rq2() -> dict:
                 "tau_b compares the ordering of all models, so one value per "
                 "(task, relation); degenerate pairs (all models tied, tau_b "
                 "undefined) are excluded rather than scored 1.0 or 0.0. Every "
-                "mean/CI here — grand and per-relation — bootstraps task-level "
-                "values."
+                "mean/CI here bootstraps task-level values. The three arms are "
+                "reported separately and must not be pooled: 'control' is the "
+                "resampling noise floor (the same prompt, re-sampled), "
+                "'template' is the deterministic transforms, 'llm' is the "
+                "validated paraphrase corpus collapsed variant -> family -> "
+                "task. grand_mean_tau_b is the primary arm (llm when the corpus "
+                "is in play, template otherwise)."
             ),
         },
         "model_sensitivity": {
@@ -492,8 +576,9 @@ def analyze_rq2() -> dict:
                 "bootstrap one mean-per-task value (task-clustered, same "
                 "discipline as tau_b), not the raw per-relation observations."
             ),
-            "pooled_by_pair": {
-                pair: _mean_ci(vals) for pair, vals in pairwise_pooled.items()
+            "pooled_by_pair_and_arm": {
+                arm: {pair: _mean_ci(vals) for pair, vals in by_pair.items()}
+                for arm, by_pair in pairwise_pooled.items()
             },
             "by_pair_and_relation": {
                 pair: {rel: _mean_ci(vals) for rel, vals in by_rel.items()}
@@ -916,9 +1001,32 @@ def main(argv=None) -> None:
     print(f"Interpretation   : {rs['interpretation']}")
     print(f"Degenerate (task, relation) pairs excluded: "
           f"{rs['n_degenerate_pairs']}/{rs['n_task_relation_pairs']}")
-    print("By paraphrase relation (mean tau_b vs original, 95% CI bootstrapped over tasks):")
+
+    print()
+    print("By arm (mean tau_b vs original; 'control' is the resampling noise floor —")
+    print("the SAME prompt re-sampled — so read the other arms against it, not against 1.0):")
+    for arm in ("control", "template", "llm"):
+        s = rs["by_arm"].get(arm)
+        if s:
+            print(f"  {arm:10s} mean={s['mean']:.3f}  "
+                  f"CI=[{s['ci_lower']:.3f}, {s['ci_upper']:.3f}]  n={s['n']}")
+    for family, s in rs.get("by_llm_family", {}).items():
+        print(f"    llm/{family:8s} mean={s['mean']:.3f}  "
+              f"CI=[{s['ci_lower']:.3f}, {s['ci_upper']:.3f}]  n={s['n']}")
+
+    u = rs.get("template_understatement", {})
+    if u.get("n") != 0:
+        ratio = u.get("understatement_ratio")
+        print(f"  templates vs LLM corpus: drop below the floor "
+              f"{u['template_drop_from_floor']:+.3f} (template) vs "
+              f"{u['llm_drop_from_floor']:+.3f} (llm)"
+              + (f", ratio {ratio:.2f}x" if ratio is not None
+                 else "  [templates find no instability beyond the floor]"))
+
+    print()
+    print("By individual relation (mean tau_b vs original, 95% CI bootstrapped over tasks):")
     for relation, s in rs["by_relation"].items():
-        print(f"  {relation:10s} mean={s['mean']:.3f}  CI=[{s['ci_lower']:.3f}, {s['ci_upper']:.3f}]  n={s['n']}")
+        print(f"  {relation:18s} mean={s['mean']:.3f}  CI=[{s['ci_lower']:.3f}, {s['ci_upper']:.3f}]  n={s['n']}")
 
     print()
     print("Per-model sensitivity (vs original prompt; both are mean-of-|change| per task, 95% CI over tasks):")
@@ -935,13 +1043,15 @@ def main(argv=None) -> None:
 
     print()
     print("Pairwise reversal rate (how often a model pair's relative order flips vs. original,")
-    print("ties within the pair excluded; pooled = task-clustered bootstrap over all relations):")
-    for pair, s in sorted(rq2["pairwise_reversal_rate"]["pooled_by_pair"].items(),
-                          key=lambda kv: -kv[1]["mean"]):
-        print(f"  {pair:55s} {s['mean']*100:5.1f}%  CI=[{s['ci_lower']*100:.1f}%, {s['ci_upper']*100:.1f}%]  n={s['n']}")
-        by_rel = rq2["pairwise_reversal_rate"]["by_pair_and_relation"].get(pair, {})
-        for rel, rs2 in by_rel.items():
-            print(f"      {rel:10s} {rs2['mean']*100:5.1f}%  n={rs2['n']}")
+    print("ties within the pair excluded; task-clustered bootstrap, collapsed variant->family->task):")
+    pooled = rq2["pairwise_reversal_rate"]["pooled_by_pair_and_arm"]
+    for arm in ("control", "template", "llm"):
+        if arm not in pooled:
+            continue
+        print(f"  [{arm} arm]")
+        for pair, s in sorted(pooled[arm].items(), key=lambda kv: -kv[1]["mean"]):
+            print(f"    {pair:53s} {s['mean']*100:5.1f}%  "
+                  f"CI=[{s['ci_lower']*100:.1f}%, {s['ci_upper']*100:.1f}%]  n={s['n']}")
 
     print()
     print("=" * 70)

@@ -22,10 +22,11 @@ from pathlib import Path
 
 from ..core.cache import ResponseCache
 from ..core.checkpoint import clear_done, is_done, mark_done, task_dir, write_json
-from ..core.config import Config
+from ..core.config import BASELINE_RELATION, CONTROL_RELATION, Config
 from ..core.data_loader import HumanEvalTask, task_label
 from ..core.llm_client import InnkubeClient
-from .paraphraser import apply_all_relations
+from .corpus import load_corpus, variants_for_task, verify_corpus
+from .paraphraser import apply_relation
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +51,45 @@ def _build_messages(prompt_variant: str) -> list[dict]:
     ]
 
 
+def build_task_variants(task: HumanEvalTask, cfg: Config) -> dict[str, tuple[str, str | None]]:
+    """Return ``{relation: (prompt_text, cache_salt)}`` for one task.
+
+    Three arms share one flat relation namespace, because every downstream
+    reader (completions.json, pass_rates.json, rankings.json, RQ3, RQ4) keys on
+    an opaque relation string:
+
+    ``original``          the unmodified prompt.
+    ``control_resample``  the unmodified prompt again, under a cache salt so it
+                          is genuinely re-sampled rather than served from the
+                          cache — its tau_b is the sampling-noise floor.
+    template relations    the deterministic transforms (control arm).
+    ``llm_<family>_NN``   the validated LLM rewrites from the corpus.
+
+    A corpus variant that a task lacks (its family could not be filled during
+    generation) is simply absent from the returned mapping.  It is not padded
+    with a template: ``rq2/ranking.py`` already treats an absent relation as
+    missing data, and padding would reintroduce exactly the tautological cells
+    the corpus exists to remove.
+    """
+    variants: dict[str, tuple[str, str | None]] = {BASELINE_RELATION: (task.prompt, None)}
+
+    if cfg.rq2.include_control_resample:
+        variants[CONTROL_RELATION] = (task.prompt, CONTROL_RELATION)
+
+    for relation in cfg.rq2.template_relations:
+        variants[relation] = (apply_relation(task.prompt, relation), None)
+
+    if cfg.rq2.paraphrase_corpus is not None:
+        corpus = load_corpus(cfg.rq2.paraphrase_corpus)
+        for variant_id, text in variants_for_task(corpus, task.task_id).items():
+            variants[variant_id] = (text, None)
+
+    return variants
+
+
 async def _complete_with_retries(
     task, relation: str, model_id: str, messages: list[dict],
-    cfg: Config, client: InnkubeClient,
+    cfg: Config, client: InnkubeClient, cache_salt: str | None = None,
 ) -> tuple[list[str], str | None]:
     """Fetch one (relation, model) cell, retrying while it comes back empty."""
     last_error: str | None = None
@@ -64,6 +101,7 @@ async def _complete_with_retries(
                 temperature=cfg.rq2.temperature,
                 max_tokens=1024,
                 n=cfg.rq2.n_completions,
+                cache_salt=cache_salt,
             )
         except Exception as exc:
             completions = []
@@ -99,18 +137,25 @@ async def generate_task(
         logger.info("SKIP generate %s", label)
         return
 
-    variants = apply_all_relations(task.prompt, cfg.rq2.relations)
+    variants = build_task_variants(task, cfg)
     results: dict[str, dict[str, list[str]]] = {}
     empty_cells: list[dict] = []
 
-    for relation, prompt_variant in variants.items():
+    missing = [r for r in cfg.rq2.relations if r not in variants]
+    if missing:
+        # A generation gap in the corpus, already recorded when it was built.
+        # Logged per task so the shortfall is visible in the run log too.
+        logger.warning("%s: %d corpus variant(s) absent (%s) — cells left missing, not padded",
+                       label, len(missing), ", ".join(missing))
+
+    for relation, (prompt_variant, cache_salt) in variants.items():
         results[relation] = {}
         messages = _build_messages(prompt_variant)
 
         for model_cfg in cfg.llm.models:
             model_id = model_cfg.id
             completions, error = await _complete_with_retries(
-                task, relation, model_id, messages, cfg, client
+                task, relation, model_id, messages, cfg, client, cache_salt=cache_salt
             )
             if not completions:
                 empty_cells.append({"relation": relation, "model_id": model_id,
@@ -135,7 +180,7 @@ async def generate_task(
             "Generation incomplete for %s: %d/%d (relation, model) cell(s) empty "
             "(%s) — NOT marking done; re-run to retry. Evaluating this task now "
             "would score those models 0.0 for an infrastructure failure.",
-            label, len(empty_cells), len(cfg.rq2.relations) * len(cfg.llm.models),
+            label, len(empty_cells), len(variants) * len(cfg.llm.models),
             ", ".join(f"{c['relation']}/{c['model_id']}" for c in empty_cells),
         )
         return
@@ -147,6 +192,17 @@ async def generate_task(
 
 async def run_generate(cfg: Config, tasks: list[HumanEvalTask], force: bool = False) -> None:
     """Dispatch all tasks concurrently (semaphore + rate limiter handle throttling)."""
+    if cfg.rq2.paraphrase_corpus is not None:
+        # Verified once, up front, before any budget is spent: a corpus that
+        # drifted since the pinned hash would give different models different
+        # prompts, which makes their pass rates incomparable — the exact confound
+        # the committed corpus exists to prevent. Abort, never regenerate.
+        corpus = load_corpus(cfg.rq2.paraphrase_corpus)
+        verify_corpus(corpus, cfg.rq2.corpus_sha256, cfg.rq2.paraphrase_corpus)
+        logger.info("Paraphrase corpus %s: %d tasks, %d variant slots",
+                    cfg.rq2.paraphrase_corpus, len(corpus["tasks"]),
+                    len(cfg.rq2.relations))
+
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
     coros = [generate_task(t, cfg, client, force=force) for t in tasks]

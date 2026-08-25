@@ -47,15 +47,64 @@ class RQ1Config(BaseModel):
     operators: list[str] = ["AOR", "ROR", "SDL"]
 
 
+BASELINE_RELATION = "original"
+
+# The unmodified prompt, re-submitted as its own variant.  Its tau_b is the
+# sampling-noise floor: without it every relation is implicitly compared against
+# a perfect 1.0, which is why a grand mean of 0.909 reads as "stable".
+CONTROL_RELATION = "control_resample"
+
+
 class RQ2Config(BaseModel):
     n_completions: int = 10
     temperature: float = 0.8
-    relations: list[str] = ["original", "persona", "formal", "reorder", "terse"]
+
+    # Template control arm (src/meta_real_eval/rq2/paraphraser.py).  Kept so the
+    # LLM corpus can be compared against it — "templates understate instability
+    # by X" is then a measured result rather than a speculative limitation.
+    template_relations: list[str] = ["persona", "formal", "reorder", "terse"]
+
+    # LLM paraphrase corpus (src/meta_real_eval/rq2/corpus.py).  None → template
+    # arm only, i.e. the pre-corpus behaviour.
+    paraphrase_corpus: Optional[Path] = None
+    corpus_sha256: Optional[str] = None
+    include_control_resample: bool = True
+
+    # Models used to build the corpus.  Both must sit OUTSIDE llm.models: judging
+    # paraphrases with the models being ranked would filter on the dependent
+    # variable and drive RQ2 toward a null by construction.
+    generator_model: Optional[str] = None
+    judge_model: Optional[str] = None
+
+    @property
+    def relations(self) -> list[str]:
+        """Every relation key RQ2 generates, in a stable order.
+
+        Derived rather than configured so that ``rq2/ranking.py``,
+        ``rq4/interaction.py`` and ``rq4/runner.py`` — which all read
+        ``cfg.rq2.relations`` and filter out the baseline — keep working unchanged
+        as the corpus grows.  The corpus is read (and cached) on demand; the
+        import is local because ``rq2.corpus`` imports back through this module.
+        """
+        relations = [BASELINE_RELATION]
+        if self.include_control_resample:
+            relations.append(CONTROL_RELATION)
+        relations.extend(self.template_relations)
+        if self.paraphrase_corpus is not None:
+            from ..rq2.corpus import corpus_variant_ids, load_corpus
+            relations.extend(corpus_variant_ids(load_corpus(self.paraphrase_corpus)))
+        return relations
 
 
 class RQ3Config(BaseModel):
     n_shared_inputs: int = 200
     divergence_threshold: Optional[float] = None
+    # Divergence cost is O(n_solutions * n_shared_inputs) subprocess spawns, so
+    # RQ3 must not inherit RQ2's full variant count: at 20 relations x 3 models x
+    # 200 inputs x 164 tasks that is ~2M spawns.  One seeded variant per family
+    # keeps the per-task solution count near the k=15 the tau_div calibration was
+    # derived at.  Templates are excluded — they are RQ2's control arm.
+    variant_sample_per_family: int = 1
 
 
 class RQ4Config(BaseModel):

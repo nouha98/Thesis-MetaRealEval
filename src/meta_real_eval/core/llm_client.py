@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 from typing import Optional
 
 from openai import AsyncOpenAI, RateLimitError, APIStatusError
@@ -13,6 +14,21 @@ from .cache import ResponseCache
 from .config import LLMConfig
 
 logger = logging.getLogger(__name__)
+
+# Some models on this endpoint write their chain-of-thought inline in
+# `message.content`, closed by a literal </think> tag, rather than in the
+# separate `reasoning_content` field OpenAI's schema has room for (confirmed:
+# soofi-s-isar-preview does this; qwen36-35b uses the separate field instead and
+# needs no stripping; gemma4-31b-it / qwen3-next-80b-a3b-instruct / and-2 never
+# emit either). Left unstripped, every caller downstream — pass@1 execution,
+# paraphrase validation, mutant extraction — would silently treat 10-30KB of
+# deliberation as the answer. Only the text after the LAST closing tag is kept;
+# an unclosed <think> with no matching tag is left alone rather than guessed at.
+_THINK_BLOCK_RE = re.compile(r"^.*</think>", re.DOTALL)
+
+
+def _strip_reasoning(text: str) -> str:
+    return _THINK_BLOCK_RE.sub("", text, count=1)
 
 
 class _TokenBucket:
@@ -128,7 +144,7 @@ class InnkubeClient:
                     max_tokens=max_tokens,
                     n=n,
                 )
-                return [c.message.content or "" for c in response.choices]
+                return [_strip_reasoning(c.message.content or "") for c in response.choices]
 
             except RateLimitError:
                 delay = cfg.retry_base_delay_s * (2 ** attempt)

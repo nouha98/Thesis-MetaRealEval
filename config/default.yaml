@@ -13,7 +13,6 @@ llm:
   models:
     - id: gemma4-31b-it
     - id: qwen3-next-80b-a3b-instruct
-    #- id: qwen35-397b
     - id: qwen36-35b 
   max_concurrent_requests: 5    # asyncio semaphore: in-flight HTTP requests per process
   requests_per_minute: 20       # token-bucket rate: sustained throughput cap (tune upward if no 429s)
@@ -60,8 +59,22 @@ rq2:
   # judging paraphrases with the models being ranked filters on the dependent
   # variable and drives RQ2 toward a null by construction.
   # scripts/generate_paraphrases.py refuses to run if either is in llm.models.
-  generator_model: null
-  judge_model: null
+  #
+  # Same model for both roles is not the original intent (independence between
+  # generator and judge is preferable) but is what this Innkube endpoint's
+  # catalog allows: GET /v1/models lists only 7 ids total, and only two of the
+  # non-embedding/reranker ones sit outside llm.models —
+  # qwen-agentworld-35b-a3b and soofi-s-isar-preview. qwen-agentworld was tried
+  # first and rejected: it reports its reasoning in a separate
+  # `reasoning_content` field whose length scales with task difficulty and does
+  # not reliably terminate — on HumanEval/32 it was still reasoning (40k+
+  # characters, finish_reason="length") at a 12,000-token budget, with zero
+  # tokens left for the actual rewrite. soofi-s-isar-preview reasons inline in
+  # `content` behind a literal </think> tag (stripped generically by
+  # InnkubeClient) and reliably reaches finish_reason="stop" within 8192 tokens
+  # on every task tried, including HumanEval/32.
+  generator_model: soofi-s-isar-preview
+  judge_model: soofi-s-isar-preview
 
 rq3:
   n_shared_inputs: 200          # shared random inputs for pairwise divergence

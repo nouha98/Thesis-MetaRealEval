@@ -15,9 +15,11 @@ import pytest
 from meta_real_eval.core.config import Config
 from meta_real_eval.rq2.corpus import (
     CorpusError,
+    _normalize,
     corpus_variant_ids,
     family_of,
     load_corpus,
+    signature_prefix,
     strip_fence,
     structural_gate,
     tasks_sha256,
@@ -79,6 +81,62 @@ def test_reorder_family_may_move_examples_but_not_change_them():
 # ---------------------------------------------------------------------------
 # Rejects — one case per reason
 # ---------------------------------------------------------------------------
+
+NO_IMPORT_ORIGINAL = (
+    '\n\n'
+    'def is_palindrome(string: str) -> bool:\n'
+    '    """ Test if given string is a palindrome """\n'
+    '    return string == string[::-1]\n'
+    '\n\n'
+    'def make_palindrome(string: str) -> str:\n'
+    '    """ Find the shortest palindrome that begins with a supplied string.\n'
+    '    >>> make_palindrome(\'cat\')\n'
+    '    \'catac\'\n'
+    '    """\n'
+)
+
+
+def test_accepts_a_rewrite_of_a_task_with_no_import_statement():
+    # 45 of 164 HumanEval prompts have no import and so open with a blank line
+    # (verified: `t.prompt.startswith("\n\n")` for 45/164). A chat completion
+    # reliably drops that leading blank line as a response-formatting artifact
+    # regardless of what the original has (confirmed live against
+    # soofi-s-isar-preview) — this must not read as a changed specification.
+    # The rewrite touches only the entry point's own docstring — is_palindrome
+    # is a helper here, and changing *its* text is a separate invariant
+    # (test_signature_prefix_anchors_on_the_entry_point_not_the_first_quote).
+    candidate = NO_IMPORT_ORIGINAL.lstrip("\n").replace(
+        "Find the shortest palindrome that begins with a supplied string.",
+        "Build the shortest palindrome sharing the given string as a prefix.",
+    )
+    assert structural_gate(NO_IMPORT_ORIGINAL, candidate, "make_palindrome",
+                           "lexical") is None
+
+
+def test_true_no_op_is_still_caught_even_with_leading_blank_line_stripped():
+    # The other direction of the same bug: a candidate that is a genuine no-op
+    # except for having lost the original's leading blank line must still be
+    # rejected — that dropped blank line must not be enough to make it read as
+    # "changed".
+    stripped_no_op = NO_IMPORT_ORIGINAL.lstrip("\n")
+    assert structural_gate(NO_IMPORT_ORIGINAL, stripped_no_op, "make_palindrome",
+                           "lexical") == "identical_to_original"
+
+
+def test_accepts_a_rewrite_that_collapses_blank_lines_between_defs():
+    # PEP8 spacing between top-level defs (two blank lines) routinely comes back
+    # as one blank line from a chat completion — a formatting artifact, not a
+    # content change (confirmed live: reproducible on HumanEval/10). Again, the
+    # rewrite touches only the entry point's own docstring.
+    original = NO_IMPORT_ORIGINAL.lstrip("\n")
+    candidate = original.replace("\n\n\ndef make_palindrome", "\n\ndef make_palindrome")
+    candidate = candidate.replace(
+        "Find the shortest palindrome that begins with a supplied string.",
+        "Build the shortest palindrome sharing the given string as a prefix.",
+    )
+    assert candidate != original
+    assert structural_gate(original, candidate, "make_palindrome", "lexical") is None
+
 
 def test_rejects_byte_identical_no_op():
     # The defect this whole module exists for: a no-op prompt produces the same
@@ -164,6 +222,34 @@ def test_rejects_written_function_body():
     assert gate(candidate) is not None
 
 
+def test_signature_prefix_anchors_on_the_entry_point_not_the_first_quote():
+    # 5 of 164 HumanEval tasks (e.g. HumanEval/32) define a helper function --
+    # with its own docstring -- before the entry point. The first `"""` in the
+    # prompt then belongs to the helper, not the entry point, so anchoring there
+    # would take the helper's docstring as "the signature" and reject every
+    # rewrite of these 5 tasks as text_before_signature, forever.
+    original = (
+        'import math\n\n\n'
+        'def helper(x):\n'
+        '    """A private helper, not the task."""\n'
+        '    return x\n\n\n'
+        'def entry(y):\n'
+        '    """ The real specification.\n'
+        '    >>> entry(1)\n'
+        '    1\n'
+        '    """\n'
+    )
+    prefix = signature_prefix(original, "entry")
+    # The prefix must reach entry's own docstring open, not stop at helper's --
+    # the old code anchored on the first `"""` in the whole prompt, which
+    # belongs to helper, and would have truncated the prefix there.
+    assert prefix.endswith('def entry(y):\n    """')
+    assert prefix.count('"""') == 3          # helper's pair, plus entry's open
+
+    candidate = original.replace("The real specification.", "The actual spec.")
+    assert structural_gate(original, candidate, "entry", "lexical") is None
+
+
 def test_allows_a_statement_the_original_already_had_inside_the_function():
     # HumanEval/115 puts `import math` inside the function, ahead of its
     # docstring. A "docstring and nothing else" rule would reject every rewrite
@@ -190,7 +276,20 @@ def test_rejects_extra_def():
 
 def test_rejects_duplicate_of_sibling():
     candidate = ORIGINAL.replace("Check if", "Determine whether")
-    assert gate(candidate, seen={candidate}) == "duplicate_of_sibling"
+    # `seen` holds normalised strings (generate_family populates it that way —
+    # see _normalize), so a caller must normalise before adding, not pass the
+    # raw text as generated.
+    assert gate(candidate, seen={_normalize(candidate)}) == "duplicate_of_sibling"
+
+
+def test_seen_check_is_insensitive_to_blank_line_count():
+    # Two candidates differing only in how many blank lines separate the
+    # import from the def are the same rewrite in substance; generate_family's
+    # dedup must catch that, not just literal byte-identity.
+    candidate = ORIGINAL.replace("Check if", "Determine whether")
+    fewer_blank_lines = candidate.replace("\n\n\ndef", "\n\ndef")
+    assert fewer_blank_lines != candidate
+    assert gate(fewer_blank_lines, seen={_normalize(candidate)}) == "duplicate_of_sibling"
 
 
 # ---------------------------------------------------------------------------
@@ -302,3 +401,46 @@ def test_relations_without_a_corpus_are_the_template_arm_only():
 def test_control_resample_can_be_switched_off():
     cfg = Config.model_validate({"rq2": {"include_control_resample": False}})
     assert "control_resample" not in cfg.rq2.relations
+
+
+# ---------------------------------------------------------------------------
+# Blank lines between an example and its output are formatting, not a change
+# ---------------------------------------------------------------------------
+
+def test_a_blank_line_before_the_expected_output_is_not_an_example_change():
+    """`examples_changed` was the single most common Gate A rejection in the
+    pilot, and this shape was one of the ways to earn it spuriously: the
+    expected-output line was read only from the immediately following line, so a
+    rewrite that spaced its examples out lost that line from *its* list alone and
+    failed the comparison.  Skipping blanks is a no-op on all 164 original
+    HumanEval prompts, so it removes the false rejection without loosening the
+    real check -- which the next test pins down."""
+    spaced = (
+        'def f(x: int) -> bool:\n'
+        '    """ Report whether x counts as small.\n'
+        '    >>> f(1)\n'
+        '\n'
+        '    True\n'
+        '\n'
+        '    >>> f(9)\n'
+        '\n'
+        '    False\n'
+        '    """\n'
+    )
+    assert structural_gate(TWO_EXAMPLES, spaced, "f", "lexical") is None
+
+
+def test_blank_line_tolerance_does_not_hide_an_altered_output():
+    spaced_and_wrong = (
+        'def f(x: int) -> bool:\n'
+        '    """ Report whether x counts as small.\n'
+        '    >>> f(1)\n'
+        '\n'
+        '    False\n'
+        '    >>> f(9)\n'
+        '\n'
+        '    False\n'
+        '    """\n'
+    )
+    assert structural_gate(TWO_EXAMPLES, spaced_and_wrong, "f",
+                           "lexical") == "examples_changed"

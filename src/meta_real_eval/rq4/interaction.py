@@ -73,11 +73,13 @@ def compute_tau_at_degradation_level(
 
     baseline_ok = _complete("original")
     baseline_vec = _rank_vector(pass_at1.get("original", {}), model_ids)
+    complete_relations: list[str] = []
     tau_per_relation: dict[str, float | None] = {}
     for relation in relations:
         if not baseline_ok or not _complete(relation):
             tau_per_relation[relation] = None
             continue
+        complete_relations.append(relation)
         variant_vec = _rank_vector(pass_at1.get(relation, {}), model_ids)
         tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
 
@@ -91,7 +93,16 @@ def compute_tau_at_degradation_level(
         "tau_b_by_arm": by_arm,
         "mean_tau_b_all_relations": float(np.mean(defined)) if defined else None,
         "tau_b_per_relation": tau_per_relation,
-        "degenerate_relations": [r for r, t in tau_per_relation.items() if t is None],
+        # Two different facts about a None, split the way rq2/ranking.py splits
+        # them: `degenerate` had a complete cell under the degraded suite but
+        # every model tied under it (no ordering to preserve); `incomplete` had
+        # no cell at all (a model came back empty here, or the baseline itself
+        # was incomplete). Collapsing them under one "degenerate_relations" key
+        # is the same mistake RQ2's coverage gate made — a relation could look
+        # like a gap in the data when it was actually a tied, fully-observed
+        # ranking (see rq2/corpus.py::MIN_FAMILIES_COVERED).
+        "degenerate_relations": [r for r in complete_relations if tau_per_relation[r] is None],
+        "incomplete_relations": [r for r in relations if r not in complete_relations],
         "pass_at_1": pass_at1,
     }
 

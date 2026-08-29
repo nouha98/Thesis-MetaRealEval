@@ -43,6 +43,9 @@ from meta_real_eval.core.logging_setup import setup as setup_logging  # noqa: E4
 from meta_real_eval.rq2.corpus import (                        # noqa: E402
     CORPUS_VERSION,
     FAMILIES,
+    GENERATION_MAX_TOKENS,
+    GENERATION_TEMPERATURE,
+    MIN_FAMILIES_COVERED,
     N_PER_FAMILY,
     PROMPT_TEMPLATE_VERSION,
     generate_task_variants,
@@ -127,6 +130,41 @@ async def build(cfg: Config, tasks, generator_model: str, judge_model: str,
                   n_per_family, cfg)
 
 
+def _coverage_block(corpus_tasks: dict, n_per_family: int) -> dict:
+    """Per-family fill counts and MIN_FAMILIES_COVERED pass/fail, as a manifest field.
+
+    Coverage is a property of the committed artifact, not something every
+    reader has to recompute from generation_gaps.json -- scripts/analyze_results.py
+    still recomputes it independently from rankings.json (the "recomputed here
+    rather than trusted" discipline the rest of that file already follows), but
+    this block is what `scripts/paraphrase_report.py` and a human skimming the
+    corpus file see without cross-referencing a sidecar.
+    """
+    per_family_filled = {fam: 0 for fam in FAMILIES}
+    n_meeting_threshold = 0
+    for entry in corpus_tasks.values():
+        families_here = {v["family"] for v in entry["variants"]}
+        for fam in families_here:
+            per_family_filled[fam] += 1
+        if len(families_here) >= MIN_FAMILIES_COVERED:
+            n_meeting_threshold += 1
+
+    n_tasks = len(corpus_tasks)
+    return {
+        "min_families_covered": MIN_FAMILIES_COVERED,
+        "n_tasks_meeting_threshold": n_meeting_threshold,
+        "n_tasks_total": n_tasks,
+        "per_family_tasks_filled": per_family_filled,   # tasks with >=1 variant in that family
+        "per_family_expected": n_tasks,
+        "per_family_slots_filled": {
+            fam: sum(1 for e in corpus_tasks.values()
+                     for v in e["variants"] if v["family"] == fam)
+            for fam in FAMILIES
+        },
+        "per_family_slots_expected": n_tasks * n_per_family,
+    }
+
+
 def _write(out_path: Path, corpus_tasks: dict, generator_model: str,
            judge_model: str, n_per_family: int, cfg: Config) -> dict:
     corpus = {
@@ -134,14 +172,15 @@ def _write(out_path: Path, corpus_tasks: dict, generator_model: str,
             "corpus_version": CORPUS_VERSION,
             "generator_model": generator_model,
             "judge_model": judge_model,
-            "temperature": 0.7,
-            "max_tokens": 1024,
+            "temperature": GENERATION_TEMPERATURE,
+            "max_tokens": GENERATION_MAX_TOKENS,
             "prompt_template_version": PROMPT_TEMPLATE_VERSION,
             "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "n_tasks": len(corpus_tasks),
             "families": FAMILIES,
             "n_per_family": n_per_family,
             "mock": cfg.project.mock,
+            "coverage": _coverage_block(corpus_tasks, n_per_family),
         },
         "tasks": corpus_tasks,
     }
@@ -195,9 +234,16 @@ def main(argv=None) -> None:
 
     filled = sum(len(t["variants"]) for t in corpus["tasks"].values())
     expected = len(corpus["tasks"]) * len(FAMILIES) * args.n_per_family
+    cov = corpus["manifest"]["coverage"]
     print(f"\nWrote {args.out}")
     print(f"  tasks     : {len(corpus['tasks'])}")
     print(f"  variants  : {filled}/{expected} slots filled")
+    print(f"  coverage  : {cov['n_tasks_meeting_threshold']}/{cov['n_tasks_total']} tasks "
+          f"meet >= {MIN_FAMILIES_COVERED}/{len(FAMILIES)} families "
+          "(rq2.corpus.MIN_FAMILIES_COVERED)")
+    for fam in FAMILIES:
+        print(f"    {fam:10s} {cov['per_family_tasks_filled'][fam]:3d}/{cov['per_family_expected']} "
+              f"tasks have >=1 variant")
     print(f"  sha256    : {corpus['manifest']['sha256']}")
     try:
         shown = "./" + args.out.resolve().relative_to(REPO_ROOT).as_posix()

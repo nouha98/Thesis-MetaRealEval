@@ -127,8 +127,38 @@ def _model_pass_at1(pass_rates: dict, relation: str) -> dict[str, float]:
 
 
 def _rank_vector(scores: dict[str, float], model_ids: list[str]) -> list[float]:
-    """Convert {model_id: score} to a list of scores in fixed model order."""
+    """Convert {model_id: score} to a list of scores in fixed model order.
+
+    Only ever called with a *complete* ``scores`` dict — every caller checks
+    :func:`_relation_is_complete` first. The ``0.0`` default is a defensive
+    backstop, not an imputation path: filling an absent model in with 0.0 would
+    enter "this model got everything wrong" into the leaderboard.
+    """
     return [scores.get(mid, 0.0) for mid in model_ids]
+
+
+def _relation_is_complete(pass_rates: dict, relation: str, model_ids: list[str]) -> bool:
+    """True when every model under test has a non-empty sample for ``relation``.
+
+    False covers two very different situations that both mean "no observation
+    here": the corpus never filled this variant slot for this task (a generation
+    gap), and a model's cell came back empty. Neither is a score, so neither may
+    produce a delta or a rank movement — see the None-not-0.0 handling in
+    :func:`compute_ranking_stability`.
+    """
+    return len(_model_pass_at1(pass_rates, relation)) == len(model_ids)
+
+
+def _mean_or_none(values) -> Optional[float]:
+    """Mean over the defined values only; None when there are none.
+
+    Used for the per-model summaries, whose per-relation entries are None for
+    every relation this task has no data for. ``np.mean`` of an empty list is
+    nan with a warning, and a 0.0 default would read as "no movement observed"
+    when the truth is "nothing was observed".
+    """
+    defined = [v for v in values if v is not None]
+    return float(np.mean(defined)) if defined else None
 
 
 def _tau_b(vec_a: list[float], vec_b: list[float]) -> Optional[float]:
@@ -179,20 +209,31 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
     # a fabricated 0.0 standing in for the absent model.
     incomplete_relations: list[str] = []
     baseline_complete = len(baseline_scores) == len(model_ids)
+    complete_relations: list[str] = []
     tau_per_relation: dict[str, Optional[float]] = {}
     for relation in relations:
-        variant_scores = _model_pass_at1(pass_rates, relation)
-        if not baseline_complete or len(variant_scores) != len(model_ids):
+        if not baseline_complete or not _relation_is_complete(pass_rates, relation, model_ids):
             incomplete_relations.append(relation)
             tau_per_relation[relation] = None
             continue
-        variant_vec = _rank_vector(variant_scores, model_ids)
+        complete_relations.append(relation)
+        variant_vec = _rank_vector(_model_pass_at1(pass_rates, relation), model_ids)
         tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
+
+    # A relation that HAS data but whose tau_b is still None is degenerate: every
+    # model scored the same, so there is no ordering to preserve.  Kept apart from
+    # `incomplete_relations` because the two are different facts about the run and
+    # get different treatment downstream — a degenerate relation is an observation
+    # of a task on which the leaderboard could not move, whereas an incomplete one
+    # is an observation that was never made.  Collapsing them (the old
+    # `degenerate_relations` key listed both) is what let a *generated* family be
+    # reported as a *generation gap*.
+    degenerate_relations = [r for r in complete_relations if tau_per_relation[r] is None]
 
     if incomplete_relations:
         logger.warning(
-            "%s: %d relation(s) missing a model's completions (%s) — excluded "
-            "from tau_b rather than scored 0.0",
+            "%s: %d relation(s) with no usable cell (%s) — excluded from tau_b, "
+            "delta_pass@1 and rank_change rather than scored 0.0",
             label, len(incomplete_relations), ", ".join(incomplete_relations),
         )
 
@@ -200,12 +241,20 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
     by_arm = collapse_tau_by_arm(tau_per_relation)
 
     # 2. Per-model sensitivity: delta pass@1 against the baseline relation.
-    delta_pass_at_1 = {
+    #
+    # None, never 0.0, for a relation with no usable cell.  The old code read the
+    # absent relation through `.get(model_id, 0.0)`, so a variant the corpus never
+    # filled produced `delta = 0.0 - baseline`, i.e. a fabricated collapse to zero
+    # that then entered `mean_abs_delta_pass_at_1` as this model's largest
+    # observed sensitivity.  At the pilot's ~22% unfilled slot rate that artefact
+    # would have dominated the per-model sensitivity figures.
+    delta_pass_at_1: dict[str, dict[str, Optional[float]]] = {
         model_id: {
-            relation: round(
-                _model_pass_at1(pass_rates, relation).get(model_id, 0.0)
-                - baseline_scores.get(model_id, 0.0),
-                6,
+            relation: (
+                round(_model_pass_at1(pass_rates, relation)[model_id]
+                      - baseline_scores[model_id], 6)
+                if baseline_complete and relation in set(complete_relations)
+                else None
             )
             for relation in relations
         }
@@ -213,18 +262,34 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
     }
 
     # 3. Per-model rank movement: positive = moved to a better (lower-numbered)
-    # rank; negative = moved to a worse one.  Always defined (see module docstring).
-    baseline_ranks = _rank_positions(baseline_scores, model_ids)
-    rank_change = {
+    # rank; negative = moved to a worse one.  Defined for every relation that has
+    # data — including a fully-tied one, which yields exactly 0 (see the module
+    # docstring) — and None for one that has none.  The old code ranked the empty
+    # score dict, which `_rank_vector` turned into an all-zero vector: all models
+    # tied at the mid rank, so an absent variant invented a rank movement of up to
+    # +/-1 place for every model at the ends of the leaderboard.
+    baseline_ranks = _rank_positions(baseline_scores, model_ids) if baseline_complete else {}
+    variant_ranks = {
+        relation: _rank_positions(_model_pass_at1(pass_rates, relation), model_ids)
+        for relation in complete_relations
+    }
+    rank_change: dict[str, dict[str, Optional[float]]] = {
         model_id: {
-            relation: round(
-                baseline_ranks[model_id]
-                - _rank_positions(_model_pass_at1(pass_rates, relation), model_ids)[model_id],
-                4,
+            relation: (
+                round(baseline_ranks[model_id] - variant_ranks[relation][model_id], 4)
+                if relation in variant_ranks and baseline_complete
+                else None
             )
             for relation in relations
         }
         for model_id in model_ids
+    }
+
+    # Generation coverage, read off the relations that carry data rather than off
+    # the tau values (see the two coverage keys below).
+    generated_families = {
+        family for family in (relation_arm(r)[1] for r in complete_relations)
+        if family is not None
     }
 
     write_json(out, "rankings.json", {
@@ -240,17 +305,45 @@ def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
         "mean_tau_b_all_relations": float(np.mean(defined)) if defined else None,
         "n_relations_defined": len(defined),
         "n_relations_total": len(tau_per_relation),
-        "degenerate_relations": [r for r, t in tau_per_relation.items() if t is None],
+        "degenerate_relations": degenerate_relations,
         "incomplete_relations": incomplete_relations,
         "baseline_complete": baseline_complete,
+        # --- two different coverage facts, deliberately not merged ------------
+        #
+        # `families_generated` is GENERATION coverage: the families for which this
+        # task actually has a usable variant cell, whatever the leaderboard then
+        # did with it. This is what rq2.corpus.MIN_FAMILIES_COVERED was defined
+        # against ("at least this many of the 5 families have >=1 accepted
+        # variant") and what analyze_results.py's coverage gate reads.
+        #
+        # `families_with_defined_tau` is a STATISTICAL fact: the families that
+        # produced at least one non-degenerate tau_b. A family can be fully
+        # generated and still land here empty — that happens exactly when all
+        # models tie under it, i.e. on the tasks where the ranking was *most*
+        # stable.
+        #
+        # These were previously one key, computed from the tau values, so a task
+        # whose models happened to tie was reported as short of paraphrases. That
+        # made the exclusion a filter on the dependent variable: the tasks
+        # dropped for "insufficient coverage" were disproportionately the stable
+        # ones, which biases the surviving mean tau_b downward and overstates
+        # ranking instability. Measured on the 164-task template run, 5/164 tasks
+        # tie across all models at baseline and would have been excluded this way
+        # with a fully generated corpus.
+        "families_generated": sorted(generated_families),
+        "n_families_generated": len(generated_families),
+        "families_with_defined_tau": sorted(by_arm["llm_by_family"]),
+        "n_families_with_defined_tau": len(by_arm["llm_by_family"]),
         "delta_pass_at_1": delta_pass_at_1,
+        # None, not 0.0, when a model has no defined delta anywhere on this task:
+        # "nothing was observed" must not average in as "no movement observed".
         "mean_abs_delta_pass_at_1": {
-            model_id: float(np.mean([abs(d) for d in deltas.values()])) if deltas else 0.0
+            model_id: _mean_or_none([abs(d) for d in deltas.values() if d is not None])
             for model_id, deltas in delta_pass_at_1.items()
         },
         "rank_change": rank_change,
         "mean_abs_rank_change": {
-            model_id: float(np.mean([abs(c) for c in changes.values()])) if changes else 0.0
+            model_id: _mean_or_none([abs(c) for c in changes.values() if c is not None])
             for model_id, changes in rank_change.items()
         },
     })

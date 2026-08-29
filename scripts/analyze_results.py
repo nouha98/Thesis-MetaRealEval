@@ -33,6 +33,7 @@ from meta_real_eval.core.config import (  # noqa: E402
     write_divergence_threshold,
 )
 from meta_real_eval.rq2.ranking import collapse_tau_by_arm  # noqa: E402
+from meta_real_eval.rq2.corpus import FAMILIES, MIN_FAMILIES_COVERED  # noqa: E402
 from meta_real_eval.analysis.statistics import (  # noqa: E402
     bootstrap_ci,
     cliffs_delta,
@@ -322,8 +323,7 @@ def _sign(a: float, b: float) -> int:
     return (a > b) - (a < b)
 
 
-def _understatement(template: list[float], llm: list[float],
-                    control: list[float]) -> dict:
+def _understatement(paired: list[dict]) -> dict:
     """How much instability the template arm misses, measured against the floor.
 
     Both arms are compared to the same resampling floor, so the answer is stated
@@ -331,13 +331,22 @@ def _understatement(template: list[float], llm: list[float],
     floor every tau_b is implicitly compared against a perfect 1.0, which is what
     made a grand mean of 0.909 read as "stable".
 
-    Paired per task where both arms exist: the arms are measured on the same
-    tasks, so the difference of the paired means is the honest comparison.
+    ``paired`` must already be filtered to tasks where BOTH a template value and
+    an LLM value exist, by the caller — that is the fix for a real bug: this
+    function used to receive two lists built independently
+    (``per_arm_tau["template"]`` and ``per_arm_tau["llm"]``), one task could
+    contribute to one without the other, and the two means it differenced were
+    then computed over two different, uncontrolled task samples. Nothing here
+    enforces that any more; it trusts the caller, and the caller enforces it by
+    construction (a paired dict is only built from records with both values).
     """
-    if not template or not llm:
-        return {"n": 0, "note": "needs both a template and an LLM arm"}
+    if not paired:
+        return {"n": 0, "note": "no task has both a template and an LLM arm"}
 
-    floor = sum(control) / len(control) if control else 1.0
+    control_vals = [r["control"] for r in paired if r["control"] is not None]
+    floor = sum(control_vals) / len(control_vals) if control_vals else 1.0
+    template = [r["template"] for r in paired]
+    llm = [r["llm"] for r in paired]
     template_mean = sum(template) / len(template)
     llm_mean = sum(llm) / len(llm)
     template_drop = floor - template_mean
@@ -358,11 +367,15 @@ def _understatement(template: list[float], llm: list[float],
         "llm_minus_template_tau_b": llm_mean - template_mean,
         "understatement_ratio": ratio,
         "template_finds_no_instability_beyond_the_floor": template_drop <= 1e-9,
-        "n_tasks_template": len(template),
-        "n_tasks_llm": len(llm),
+        "n_tasks_paired": len(paired),
+        "n_tasks_control_defined": len(control_vals),
         "note": (
-            "Both arms are stated as a drop below the resampling floor, so the "
-            "comparison does not assume a perfect 1.0 baseline. "
+            "Paired per task: every task here has both a template value and an "
+            "LLM value, and (if the corpus was in play) meets "
+            "rq2.corpus.MIN_FAMILIES_COVERED, so the two means are computed over "
+            "the identical task sample rather than two independently-filtered "
+            "ones. Both arms are stated as a drop below the resampling floor, so "
+            "the comparison does not assume a perfect 1.0 baseline. "
             "understatement_ratio > 1 means the LLM corpus finds that many times "
             "more ranking movement than the templates do; it is undefined when "
             "the template arm sits at or above the floor, which happens whenever "
@@ -399,13 +412,27 @@ def analyze_rq2() -> dict:
       exists to avoid.
     """
     task_dirs = sorted((RESULTS / "rq2" / "evaluate").iterdir())
-    per_task = []                       # one task-level mean tau_b each
+    per_task = []                       # one task-level mean tau_b each (coverage-passing only)
     per_relation_tau = defaultdict(list)
     # arm -> [one task-level value each]; families are collapsed inside the arm
     # before the task contributes, so a task with 15 LLM variants still counts
-    # once. "control" is the resampling noise floor, not a treatment.
+    # once. "control" is the resampling noise floor, not a treatment. Only
+    # populated for tasks that pass the coverage gate (see MIN_FAMILIES_COVERED).
     per_arm_tau = defaultdict(list)
     per_family_tau = defaultdict(list)
+    # Tasks with an LLM arm too thin to trust (see MIN_FAMILIES_COVERED),
+    # reported so the exclusion is visible rather than silent.
+    excluded_for_coverage: list[dict] = []
+    # One entry per task where BOTH a template and an LLM value exist -- the fix
+    # for the paired-mean bug: template_understatement used to difference two
+    # means built from independent per-arm lists, so a task missing one arm
+    # still contributed to the other and the two means were computed over two
+    # different, uncontrolled samples.
+    paired_arms: list[dict] = []
+    # Complete-case sensitivity check: the headline recomputed on only the
+    # tasks with all 5 families filled, so agreement with the primary (>=4)
+    # figure is the evidence that residual missingness isn't driving the result.
+    complete_case_task_tau: list[float] = []
     per_model_abs_delta = defaultdict(list)
     per_model_signed_delta = defaultdict(lambda: defaultdict(list))
     per_model_abs_rank_change = defaultdict(list)
@@ -419,6 +446,12 @@ def analyze_rq2() -> dict:
     n_tasks = 0
     n_degenerate_pairs = 0
     n_pairs = 0
+    n_legacy_coverage = 0
+    # The coverage gate's own sensitivity ladder: the same headline recomputed
+    # with no gate at all. Together with complete_case_task_tau (5/5) this brackets
+    # the primary (>=4) figure, so "does the gate change the conclusion?" is a
+    # reported number rather than an assumption. See coverage_sensitivity below.
+    ungated_task_tau: list[float] = []
 
     for td in task_dirs:
         if not td.is_dir():
@@ -430,15 +463,67 @@ def analyze_rq2() -> dict:
         n_tasks += 1
         r = load(rankings_path)
 
-        if r.get("mean_tau_b") is not None:
-            per_task.append({"task": td.name, "mean_tau_b": r["mean_tau_b"]})
-
         # Recomputed here rather than trusted from rankings.json, so results
         # written by an older version of ranking.py still aggregate correctly.
         by_arm = collapse_tau_by_arm(r.get("tau_b_per_relation", {}))
-        for arm in ("control", "template", "llm"):
-            if by_arm[arm] is not None:
-                per_arm_tau[arm].append(by_arm[arm])
+
+        # GENERATION coverage — how many families this task actually has variant
+        # cells for — read from ranking.py, which knows which relations carried
+        # data. Deliberately NOT len(by_arm["llm_by_family"]), which counts only
+        # the families that produced a *defined* tau_b: a family is generated but
+        # tau-undefined exactly when every model ties under it, so gating on the
+        # tau count would exclude tasks for being STABLE and bias the surviving
+        # mean tau_b downward. See rq2/ranking.py's two coverage keys.
+        #
+        # Runs produced before that split have neither key; they fall back to the
+        # old tau-derived count so old result trees still aggregate, and are
+        # counted here so the fallback is visible instead of silent.
+        if "n_families_generated" in r:
+            n_families_covered = r["n_families_generated"]
+            families_covered = r.get("families_generated", [])
+        else:
+            n_families_covered = len(by_arm["llm_by_family"])
+            families_covered = sorted(by_arm["llm_by_family"])
+            # Only a task that HAS an LLM arm was ever gated, so only that task
+            # was mis-gated by the old rule. A template-only run is exempt either
+            # way and must not raise a warning it cannot act on.
+            if by_arm["llm"] is not None:
+                n_legacy_coverage += 1
+
+        # A task with no LLM arm at all (template-only run, corpus not
+        # configured) is exempt from the coverage rule -- there is nothing to
+        # under-cover, and its 'primary' value already falls back to the
+        # (always-complete) template arm. A task WITH an LLM arm must meet
+        # MIN_FAMILIES_COVERED, or its LLM mean is an average over so few
+        # families that one easy/hard family could dominate it, and comparing
+        # it against the template arm's complete coverage would not be a fair
+        # comparison. See rq2/corpus.py::MIN_FAMILIES_COVERED.
+        covered = by_arm["llm"] is None or n_families_covered >= MIN_FAMILIES_COVERED
+
+        if by_arm["primary"] is not None:
+            ungated_task_tau.append(by_arm["primary"])
+        if covered and by_arm["primary"] is not None:
+            per_task.append({"task": td.name, "mean_tau_b": by_arm["primary"]})
+        elif not covered:
+            excluded_for_coverage.append({
+                "task": td.name,
+                "n_families_covered": n_families_covered,
+                "families_covered": families_covered,
+            })
+
+        if covered:
+            for arm in ("control", "template", "llm"):
+                if by_arm[arm] is not None:
+                    per_arm_tau[arm].append(by_arm[arm])
+            if by_arm["template"] is not None and by_arm["llm"] is not None:
+                paired_arms.append({"task": td.name, "control": by_arm["control"],
+                                    "template": by_arm["template"], "llm": by_arm["llm"]})
+            if n_families_covered == len(FAMILIES) and by_arm["llm"] is not None:
+                complete_case_task_tau.append(by_arm["primary"])
+        # Per-family diagnostics are intentionally NOT gated by task-level
+        # coverage: a task lacking `reorder` still contributes a legitimate
+        # observation to `lexical`'s aggregate, and excluding it would throw
+        # away real data the coverage rule was never meant to protect.
         for family, value in by_arm["llm_by_family"].items():
             per_family_tau[family].append(value)
 
@@ -449,17 +534,27 @@ def analyze_rq2() -> dict:
             else:
                 per_relation_tau[relation].append(tau)
 
+        # None means "this task/relation produced no usable cell" -- a corpus
+        # generation gap or an empty model cell. It is skipped, never appended:
+        # ranking.py stopped imputing it as 0.0 (which for a delta meant
+        # `0 - baseline`, a fabricated collapse to zero, and for a rank change
+        # meant a fabricated move to the mid rank), and appending the None's
+        # replacement here would just reintroduce the same artefact one level up.
         for model, v in r.get("mean_abs_delta_pass_at_1", {}).items():
-            per_model_abs_delta[model].append(v)
+            if v is not None:
+                per_model_abs_delta[model].append(v)
         for model, deltas in r.get("delta_pass_at_1", {}).items():
             for relation, d in deltas.items():
-                per_model_signed_delta[model][relation].append(d)
+                if d is not None:
+                    per_model_signed_delta[model][relation].append(d)
 
         for model, v in r.get("mean_abs_rank_change", {}).items():
-            per_model_abs_rank_change[model].append(v)
+            if v is not None:
+                per_model_abs_rank_change[model].append(v)
         for model, changes in r.get("rank_change", {}).items():
             for relation, c in changes.items():
-                per_model_signed_rank_change[model][relation].append(c)
+                if c is not None:
+                    per_model_signed_rank_change[model][relation].append(c)
 
         if not pass_rates_path.exists():
             continue
@@ -515,6 +610,14 @@ def analyze_rq2() -> dict:
         lo, hi = bootstrap_ci(values)
         return {"mean": sum(values) / len(values), "ci_lower": lo, "ci_upper": hi, "n": len(values)}
 
+    complete_case_mean = (
+        sum(complete_case_task_tau) / len(complete_case_task_tau)
+        if complete_case_task_tau else None
+    )
+    complete_case_ci = (
+        bootstrap_ci(complete_case_task_tau) if len(complete_case_task_tau) > 1 else None
+    )
+
     return {
         "n_tasks": n_tasks,
         "ranking_stability": {
@@ -527,10 +630,62 @@ def analyze_rq2() -> dict:
             "by_llm_family": {
                 fam: _mean_ci(vals) for fam, vals in per_family_tau.items()
             },
-            "template_understatement": _understatement(
-                per_arm_tau.get("template", []), per_arm_tau.get("llm", []),
-                per_arm_tau.get("control", []),
-            ),
+            "template_understatement": _understatement(paired_arms),
+            "coverage": {
+                "min_families_covered": MIN_FAMILIES_COVERED,
+                "n_tasks_passing": len(task_tau),
+                "n_tasks_excluded": len(excluded_for_coverage),
+                "excluded_tasks": excluded_for_coverage,
+                "n_tasks_legacy_coverage_fallback": n_legacy_coverage,
+                "note": (
+                    "A task with no LLM arm at all (template-only run) is exempt "
+                    "-- there is nothing to under-cover. A task WITH an LLM arm "
+                    "must have >=1 GENERATED variant in >=4 of the 5 families or "
+                    "it is excluded from grand_mean_tau_b, by_arm, and "
+                    "template_understatement; per-family diagnostics "
+                    "(by_llm_family) are NOT gated by this, so a covered task's "
+                    "individual families still contribute even when the task "
+                    "itself falls short elsewhere. Counted on families that were "
+                    "GENERATED, not on families that produced a defined tau_b: a "
+                    "family is generated but tau-undefined precisely when all "
+                    "models tie under it, so counting tau instead would exclude "
+                    "tasks for being stable and bias this mean downward. "
+                    "n_tasks_legacy_coverage_fallback counts tasks whose "
+                    "rankings.json predates that split and was scored the old "
+                    "way; re-run the evaluate phase to clear it."
+                ),
+            },
+            "coverage_sensitivity": {
+                "ungated": _mean_ci(ungated_task_tau),
+                "primary_gate": _mean_ci(task_tau),
+                "complete_case": _mean_ci(complete_case_task_tau),
+                "note": (
+                    "The coverage gate's effect on the headline, as three numbers "
+                    "over three nested task samples: no gate at all (every task "
+                    "with any LLM arm), the primary >=4/5 gate, and the strict "
+                    "5/5 complete case. Three means that agree within their CIs "
+                    "say the gate is not selecting the result and the finding "
+                    "generalises past the subset that survives it; a monotone "
+                    "trend across the three says the opposite, and says which "
+                    "direction the missing paraphrases push. This is the "
+                    "statistic to quote when asked whether restricting RQ2 to "
+                    "well-covered tasks weakens the conclusion."
+                ),
+            },
+            "complete_case_sensitivity": {
+                "n_families_required": len(FAMILIES),
+                "mean_tau_b": complete_case_mean,
+                "ci_lower": complete_case_ci[0] if complete_case_ci else None,
+                "ci_upper": complete_case_ci[1] if complete_case_ci else None,
+                "n": len(complete_case_task_tau),
+                "note": (
+                    "grand_mean_tau_b restricted to tasks with all 5 families "
+                    "filled (a strict subset of the >=4 coverage gate). Agreement "
+                    "with grand_mean_tau_b above is the evidence that ragged fill "
+                    "in the primary sample is not driving the headline result; "
+                    "a large gap between the two says the opposite."
+                ),
+            },
             "by_relation": {
                 rel: _mean_ci(vals) for rel, vals in per_relation_tau.items()
             },
@@ -546,7 +701,8 @@ def analyze_rq2() -> dict:
                 "'template' is the deterministic transforms, 'llm' is the "
                 "validated paraphrase corpus collapsed variant -> family -> "
                 "task. grand_mean_tau_b is the primary arm (llm when the corpus "
-                "is in play, template otherwise)."
+                "is in play, template otherwise), computed only over tasks that "
+                "pass the coverage gate below."
             ),
         },
         "model_sensitivity": {
@@ -556,13 +712,16 @@ def analyze_rq2() -> dict:
                 "overall_pass@1": (
                     model_correct[model] / model_n[model] if model_n[model] else float("nan")
                 ),
+                # A relation every task lacked now yields an empty list rather
+                # than a list of fabricated zeros, so it is reported as absent
+                # instead of as "measured, no effect".
                 "mean_delta_pass@1_by_relation": {
                     rel: sum(d) / len(d)
-                    for rel, d in per_model_signed_delta[model].items()
+                    for rel, d in per_model_signed_delta[model].items() if d
                 },
                 "mean_rank_change_by_relation": {
                     rel: sum(c) / len(c)
-                    for rel, c in per_model_signed_rank_change[model].items()
+                    for rel, c in per_model_signed_rank_change[model].items() if c
                 },
             }
             for model in per_model_abs_delta
@@ -1017,11 +1176,39 @@ def main(argv=None) -> None:
     u = rs.get("template_understatement", {})
     if u.get("n") != 0:
         ratio = u.get("understatement_ratio")
-        print(f"  templates vs LLM corpus: drop below the floor "
-              f"{u['template_drop_from_floor']:+.3f} (template) vs "
+        print(f"  templates vs LLM corpus (paired, n={u.get('n_tasks_paired', 0)} tasks): "
+              f"drop below the floor {u['template_drop_from_floor']:+.3f} (template) vs "
               f"{u['llm_drop_from_floor']:+.3f} (llm)"
               + (f", ratio {ratio:.2f}x" if ratio is not None
                  else "  [templates find no instability beyond the floor]"))
+
+    cov = rs.get("coverage", {})
+    if cov.get("n_tasks_excluded"):
+        print()
+        print(f"Coverage: {cov['n_tasks_excluded']} task(s) excluded from the primary "
+              f"analysis (< {cov['min_families_covered']}/5 LLM families filled):")
+        for x in cov["excluded_tasks"]:
+            fams = ",".join(x["families_covered"]) or "none"
+            print(f"  {x['task']:20s} {x['n_families_covered']}/5 families ({fams})")
+
+    if cov.get("n_tasks_legacy_coverage_fallback"):
+        print(f"  NOTE: {cov['n_tasks_legacy_coverage_fallback']} task(s) predate the "
+              "generated-vs-defined coverage split and were gated the old way "
+              "(on defined tau_b, which excludes STABLE tasks). Re-run the RQ2 "
+              "evaluate phase to rewrite rankings.json.")
+
+    cs = rs.get("coverage_sensitivity", {})
+    if cs:
+        print()
+        print("Coverage-gate sensitivity — the headline over three nested task samples.")
+        print("Three agreeing means say the >=4/5 gate is not selecting the result:")
+        for name, label in (("ungated", "no gate (>=1)"),
+                            ("primary_gate", f"primary (>={MIN_FAMILIES_COVERED}/5)"),
+                            ("complete_case", "complete case (5/5)")):
+            v = cs.get(name, {})
+            if v.get("n"):
+                print(f"  {label:22s} mean tau_b={v['mean']:.3f}  "
+                      f"CI=[{v['ci_lower']:.3f}, {v['ci_upper']:.3f}]  n={v['n']}")
 
     print()
     print("By individual relation (mean tau_b vs original, 95% CI bootstrapped over tasks):")

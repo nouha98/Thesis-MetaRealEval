@@ -81,7 +81,12 @@ def diagnose(task, model_id: str, cache: ResponseCache, full: bool) -> None:
         if entry is None:
             continue
         found_any = True
-        print(f"\n--- cache entry: salt={salt!r} ---")
+        choices = entry["choices"]
+        distinct = len(set(choices))
+        note = "  <-- ALL IDENTICAL: n is not producing independent samples" \
+            if distinct == 1 and len(choices) > 1 else ""
+        print(f"\n--- cache entry: salt={salt!r} "
+              f"({distinct} distinct of {len(choices)}){note} ---")
 
         for idx, raw in enumerate(entry["choices"]):
             code = _extract_code(raw, task.prompt)
@@ -116,9 +121,56 @@ def diagnose(task, model_id: str, cache: ResponseCache, full: bool) -> None:
     print()
 
 
+def survey_cache(cache_dir: Path) -> None:
+    """Report how many multi-sample cache entries came back all-identical.
+
+    Every entry is a full n-sample response, so this answers "does this endpoint
+    honour n>1?" across every call the project has already made -- RQ1, RQ2 and
+    all -- without needing to rebuild a single key. It matters beyond RQ1: RQ2
+    asks for n_completions samples per (task, variant, model) and reads their
+    disagreement as sampling noise, which is only meaningful if the samples are
+    actually independent draws.
+    """
+    total = degenerate = 0
+    ratios: list[tuple[int, int]] = []
+    for path in cache_dir.rglob("*.json"):
+        try:
+            choices = json.loads(path.read_text(encoding="utf-8"))["choices"]
+        except (json.JSONDecodeError, KeyError, OSError):
+            continue
+        if len(choices) < 2:
+            continue
+        total += 1
+        distinct = len(set(choices))
+        ratios.append((distinct, len(choices)))
+        if distinct == 1:
+            degenerate += 1
+
+    print(f"cache: {cache_dir}")
+    if not total:
+        print("No multi-sample (n>1) entries found.")
+        return
+
+    print(f"Multi-sample (n>1) entries: {total}")
+    print(f"  all-identical (distinct==1): {degenerate}  ({100*degenerate/total:.1f}%)")
+    print(f"  some variation:              {total-degenerate}  "
+          f"({100*(total-degenerate)/total:.1f}%)")
+    print("\ndistinct/n distribution:")
+    from collections import Counter
+    for (distinct, n), count in sorted(Counter(ratios).items()):
+        print(f"  {distinct}/{n}: {count}")
+    if degenerate:
+        print("\nAny all-identical entry means that request's n samples were not\n"
+              "independent draws -- oversampling and sampling-noise baselines\n"
+              "computed from those entries are measuring nothing.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="config/default.yaml")
+    parser.add_argument("--survey", action="store_true",
+                        help="Scan the whole response cache and report how often an "
+                             "n>1 request came back as n identical completions")
     parser.add_argument("--tasks", type=int, nargs="*", default=None,
                         help="Task indices to inspect (default: every task with a "
                              "generation_failed.json)")
@@ -128,6 +180,11 @@ def main() -> None:
 
     cfg = Config.from_yaml(args.config)
     cache = ResponseCache(cfg.llm.cache_dir)
+
+    if args.survey:
+        survey_cache(cfg.llm.cache_dir)
+        return
+
     generate_dir = Path(cfg.project.output_dir) / "rq1" / "generate"
 
     pairs = find_failed_pairs(generate_dir)

@@ -46,7 +46,7 @@ from ..stage0.corpus_builder import Mutant
 from ..stage0.equivalence import check_equivalence, compute_canonical_outputs
 from .ast_fallback import generate_ast_fallback_mutants
 from .kill_rate import compute_kill_matrix, summarise
-from .llm_mutator import generate_llm_mutants
+from .llm_mutator import FAULT_HINTS, generate_llm_mutants
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +79,7 @@ async def _generate_with_retries(task, model_id: str, client: InnkubeClient) -> 
             mutants = await generate_llm_mutants(
                 task=task, model_id=model_id, client=client, n_mutants=3,
                 cache_salt=f"llm-mutant-attempt-{attempt}",
+                fault_hint=FAULT_HINTS[(attempt - 1) % len(FAULT_HINTS)],
             )
         except Exception as exc:
             mutants = []

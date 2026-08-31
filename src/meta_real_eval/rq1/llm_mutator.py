@@ -55,8 +55,14 @@ async def generate_llm_mutants(
     model_id: str,
     client: InnkubeClient,
     n_mutants: int = 3,
+    cache_salt: str | None = None,
 ) -> list[Mutant]:
-    """Ask the LLM to generate n_mutants semantic mutants for one task."""
+    """Ask the LLM to generate n_mutants semantic mutants for one task.
+
+    ``cache_salt`` should be unique per retry attempt -- otherwise a caller
+    retrying after an empty result just replays the same cached completions
+    instead of resampling (see InnkubeClient.complete's docstring).
+    """
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},
         {"role": "user", "content": _build_user_message(task)},
@@ -70,6 +76,7 @@ async def generate_llm_mutants(
             temperature=0.9,
             max_tokens=1024,
             n=n_mutants + 2,
+            cache_salt=cache_salt,
         )
     except Exception as exc:
         logger.warning("LLM mutant generation failed for %s: %s", task.task_id, exc)

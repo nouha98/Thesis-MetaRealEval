@@ -78,6 +78,7 @@ async def _generate_with_retries(task, model_id: str, client: InnkubeClient) -> 
         try:
             mutants = await generate_llm_mutants(
                 task=task, model_id=model_id, client=client, n_mutants=3,
+                cache_salt=f"llm-mutant-attempt-{attempt}",
             )
         except Exception as exc:
             mutants = []

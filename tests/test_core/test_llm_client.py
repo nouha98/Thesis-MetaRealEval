@@ -4,7 +4,9 @@ import asyncio
 import pytest
 from meta_real_eval.core.cache import ResponseCache
 from meta_real_eval.core.config import LLMConfig, LLMModelConfig
-from meta_real_eval.core.llm_client import InnkubeClient, _strip_reasoning
+from types import SimpleNamespace
+
+from meta_real_eval.core.llm_client import InnkubeClient, _message_text, _strip_reasoning
 
 
 @pytest.fixture
@@ -63,3 +65,40 @@ def test_strip_reasoning_is_a_no_op_without_a_closing_tag():
 
 def test_strip_reasoning_is_a_no_op_for_plain_content():
     assert _strip_reasoning("return a + b") == "return a + b"
+
+
+# ---------------------------------------------------------------------------
+# _message_text
+# ---------------------------------------------------------------------------
+#
+# Regression: qwen36-35b puts its entire answer in `reasoning_content`
+# instead of `content`, per the comment above _THINK_BLOCK_RE. Reading only
+# `message.content` (the old behaviour) silently returned "" for every one
+# of its completions -- confirmed live via results/model_check, where the
+# API call reports status "OK" but every extracted mutant has code: "".
+
+def test_message_text_prefers_content_when_present():
+    message = SimpleNamespace(content="return a + b", reasoning_content="ignored")
+    assert _message_text(message) == "return a + b"
+
+
+def test_message_text_falls_back_to_reasoning_content_when_content_is_blank():
+    message = SimpleNamespace(content="", reasoning_content="def f():\n    return 1\n")
+    assert _message_text(message) == "def f():\n    return 1\n"
+
+
+def test_message_text_falls_back_when_content_is_whitespace_only():
+    message = SimpleNamespace(content="   \n", reasoning_content="the real answer")
+    assert _message_text(message) == "the real answer"
+
+
+def test_message_text_handles_missing_reasoning_content_attribute():
+    """A model with neither field populated (pydantic's model_extra omits an
+    attribute the API never sent) must not raise -- just report no text."""
+    message = SimpleNamespace(content=None)
+    assert _message_text(message) == ""
+
+
+def test_message_text_handles_reasoning_content_being_none():
+    message = SimpleNamespace(content="", reasoning_content=None)
+    assert _message_text(message) == ""

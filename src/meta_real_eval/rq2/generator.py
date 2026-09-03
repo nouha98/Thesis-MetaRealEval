@@ -87,13 +87,38 @@ def build_task_variants(task: HumanEvalTask, cfg: Config) -> dict[str, tuple[str
     return variants
 
 
+def _has_real_completion(completions: list[str]) -> bool:
+    """True if at least one completion is more than whitespace.
+
+    A non-empty list of blank strings is not a success: a model that routes
+    its answer to a field this client doesn't read (or that exhausts its
+    token budget before emitting one) returns exactly that, and a bare
+    `if completions:` would accept it as n genuine samples instead of
+    retrying -- recording a real pass@1 of 0.0 for a cell that never
+    actually got a completion.
+    """
+    return any(c.strip() for c in completions)
+
+
 async def _complete_with_retries(
     task, relation: str, model_id: str, messages: list[dict],
     cfg: Config, client: InnkubeClient, cache_salt: str | None = None,
 ) -> tuple[list[str], str | None]:
-    """Fetch one (relation, model) cell, retrying while it comes back empty."""
+    """Fetch one (relation, model) cell, retrying while it comes back empty.
+
+    The attempt number is folded into every request's cache salt. Without it,
+    a blank first attempt gets cached under the same key `cache_salt` alone
+    would produce, and every "retry" is really just client.complete() serving
+    that cached blank result back -- confirmed empirically: with a fixed
+    salt, 3 configured attempts made exactly 1 real API call. Only the first
+    attempt keeps the caller's own `cache_salt` unmodified, so a relation with
+    no salt of its own (most of them -- see build_task_variants) still gets
+    its ordinary, cacheable request on attempt 1; only a genuine retry adds
+    the per-attempt suffix.
+    """
     last_error: str | None = None
     for attempt in range(1, MAX_GENERATE_ATTEMPTS + 1):
+        attempt_salt = cache_salt if attempt == 1 else f"{cache_salt or relation}-retry-{attempt}"
         try:
             completions = await client.complete(
                 model=model_id,
@@ -101,13 +126,13 @@ async def _complete_with_retries(
                 temperature=cfg.rq2.temperature,
                 max_tokens=1024,
                 n=cfg.rq2.n_completions,
-                cache_salt=cache_salt,
+                cache_salt=attempt_salt,
             )
         except Exception as exc:
             completions = []
             last_error = f"{type(exc).__name__}: {exc}"
 
-        if completions:
+        if _has_real_completion(completions):
             return completions, None
 
         last_error = last_error or "model returned zero completions"

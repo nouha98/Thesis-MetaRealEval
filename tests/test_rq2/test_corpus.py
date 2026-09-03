@@ -16,10 +16,12 @@ from meta_real_eval.core.config import Config
 from meta_real_eval.rq2.corpus import (
     CorpusError,
     _normalize,
+    assemble,
     corpus_variant_ids,
     family_of,
     load_corpus,
     signature_prefix,
+    split_spec,
     strip_fence,
     structural_gate,
     tasks_sha256,
@@ -147,6 +149,48 @@ def test_rejects_byte_identical_no_op():
 
 def test_rejects_empty():
     assert gate("   \n") == "empty"
+
+
+# ---------------------------------------------------------------------------
+# Regression: persona's docstring can go blank without `candidate` going blank
+# ---------------------------------------------------------------------------
+#
+# Found via manual review of data/paraphrases/review_sheet.md: when a persona
+# response omits the ---BODY--- sentinel, _parse_persona_response's fallback
+# treats the *entire* response as framing, leaving the docstring blank.
+# `assemble()` still produces a substantial, non-empty `candidate` (framing +
+# signature + suffix), so the plain `candidate.strip()` "empty" check above
+# cannot see it -- persona is the one family where a non-empty preamble is
+# legal, which is what makes this reachable there and nowhere else. Confirmed
+# against the committed v1 corpus: 259/356 (73%) of its persona variants had
+# exactly this shape before this check existed.
+
+def test_rejects_persona_candidate_with_framing_but_no_docstring_body():
+    prefix, _, suffix = split_spec(ORIGINAL, ENTRY)
+    framing = (
+        "As a data engineer building industrial analytics pipelines, you need "
+        "to check whether two nearby readings drift within a tolerance band."
+    )
+    candidate = assemble(prefix, "", suffix, framing=framing)
+    assert gate(candidate, family="persona") == "empty_docstring_body"
+
+
+def test_persona_with_real_framing_and_a_real_docstring_still_passes():
+    prefix, body, suffix = split_spec(ORIGINAL, ENTRY)
+    framing = "You are reviewing sensor readings for duplicates."
+    candidate = assemble(prefix, body, suffix, framing=framing)
+    assert gate(candidate, family="persona") is None
+
+
+def test_empty_docstring_body_check_is_scoped_to_persona():
+    # Every other family already had *some* protection against a blank
+    # rewrite -- not via the "empty" check (candidate = prefix + suffix is
+    # non-blank there too), but accidentally, via examples_changed once the
+    # docstring's own >>> lines disappear. That accidental backstop is why the
+    # bug was invisible outside persona: this locks in it's still there.
+    prefix, _, suffix = split_spec(ORIGINAL, ENTRY)
+    candidate = assemble(prefix, "", suffix)
+    assert gate(candidate, family="lexical") == "examples_changed"
 
 
 def test_rejects_changed_signature():

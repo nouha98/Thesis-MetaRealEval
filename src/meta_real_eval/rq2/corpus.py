@@ -512,6 +512,20 @@ def structural_gate(
     if family != "persona" and preamble.strip():
         return "text_before_signature"
 
+    # persona's whole point is a framing paragraph *plus* a rewritten docstring
+    # -- not a framing paragraph *instead of* one. When the model's raw response
+    # omits the ---BODY--- sentinel, _parse_persona_response's fallback treats
+    # the entire response as framing and leaves this docstring blank. `candidate`
+    # as a whole stays non-empty (the framing alone is substantial), so the
+    # `candidate.strip()` check above cannot see this -- only every OTHER family
+    # forces preamble to be empty, which is what made this reachable for persona
+    # alone. Checked live against the committed v1 corpus: 259/356 (73%) of its
+    # persona variants had an empty docstring body under this definition.
+    _, _, orig_suffix = split_spec(original, entry_point)
+    docstring_body = body[:-len(orig_suffix)] if orig_suffix and body.endswith(orig_suffix) else body
+    if family == "persona" and not docstring_body.strip():
+        return "empty_docstring_body"
+
     code = signature + body
     try:
         tree = ast.parse(code)

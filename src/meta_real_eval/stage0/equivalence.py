@@ -262,6 +262,22 @@ def _generate_inputs(
 TIMEOUT = "__timeout__"
 
 
+def _error_signature(stderr: str) -> str:
+    """A comparably distinctive tag for a subprocess failure.
+
+    Every Python traceback opens with the same ~60-char boilerplate
+    ("Traceback (most recent call last):\n  File "<string>", line N, in ...")
+    regardless of what actually went wrong, so truncating stderr from the
+    *front* collapses almost any two distinct exceptions to the same string —
+    a mutant raising IndexError would then compare equal to a canonical
+    solution raising ZeroDivisionError on the same input and be misread as
+    "no divergence". The exception type and message are on the last non-blank
+    line instead, so anchor there.
+    """
+    lines = [line for line in stderr.strip().splitlines() if line.strip()]
+    return lines[-1][:200] if lines else stderr.strip()[:200]
+
+
 def _run_one(code: str, entry_point: str, args: tuple, timeout_s: float) -> Any:
     """Return the output for a single input, or a sentinel string on error/timeout."""
     call = f"\n__result__ = {entry_point}(*{repr(args)})\nprint(repr(__result__))"
@@ -269,7 +285,7 @@ def _run_one(code: str, entry_point: str, args: tuple, timeout_s: float) -> Any:
     if result.timed_out:
         return TIMEOUT
     if not result.passed:
-        return f"__error__:{result.stderr[:60]}"
+        return f"__error__:{_error_signature(result.stderr)}"
     return result.stdout.strip()
 
 

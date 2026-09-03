@@ -17,6 +17,19 @@ from ..stage0.corpus_builder import Mutant
 
 logger = logging.getLogger(__name__)
 
+# Generous on purpose: qwen36-35b reasons in a separate `reasoning_content`
+# field before answering (see InnkubeClient._message_text), and that
+# deliberation alone can run past 1024 tokens even for a trivial function --
+# live-probed empirically (2026-09-03): at max_tokens=1024 it hits
+# finish_reason="length" with an EMPTY `content` on every attempt, for a
+# task as simple as `def add(a, b): return a + b`; raising the budget to
+# 4096 was enough there, but real HumanEval tasks reason longer than the
+# probe's toy example, so this mirrors rq2/corpus.py's GENERATION_MAX_TOKENS
+# rather than the smallest budget that happened to work on one easy case.
+# A low budget silently returns empty content -- indistinguishable from the
+# model producing nothing at all -- so err high.
+MUTANT_MAX_TOKENS = 8192
+
 _SYSTEM_PROMPT = (
     "You are a Python mutation testing expert. "
     "Given a correct Python function, introduce exactly ONE subtle semantic fault. "
@@ -61,6 +74,13 @@ def _extract_code(raw: str, prompt: str) -> str | None:
     if fenced:
         code = fenced.group(1).strip()
 
+    if not code:
+        # ast.parse("") succeeds -- an empty module is syntactically valid --
+        # so a blank completion (empty/whitespace-only, or ```python\n```
+        # with nothing between the fences) would otherwise be "extracted" as
+        # a zero-length mutant instead of being treated as a failed attempt.
+        return None
+
     try:
         ast.parse(code)
         return code
@@ -97,7 +117,7 @@ async def generate_llm_mutants(
             model=model_id,
             messages=messages,
             temperature=0.9,
-            max_tokens=1024,
+            max_tokens=MUTANT_MAX_TOKENS,
             n=n_mutants + 2,
             cache_salt=cache_salt,
         )

@@ -28,6 +28,7 @@ from meta_real_eval.core.cache import ResponseCache
 from meta_real_eval.core.config import Config
 from meta_real_eval.core.data_loader import load_humaneval
 from meta_real_eval.rq1.llm_mutator import (
+    MUTANT_MAX_TOKENS,
     _SYSTEM_PROMPT,
     _build_user_message,
     _extract_code,
@@ -36,10 +37,12 @@ from meta_real_eval.rq1.runner import MAX_GENERATE_ATTEMPTS
 
 # Mirrors the call in llm_mutator.generate_llm_mutants. Kept as named constants
 # so a drift between this script and the real call site is obvious rather than
-# silently producing cache misses that look like "no data".
+# silently producing cache misses that look like "no data". MAX_TOKENS is
+# imported rather than mirrored, since it's exactly the kind of value that
+# drifts silently otherwise (it already has once).
 N_MUTANTS = 3
 TEMPERATURE = 0.9
-MAX_TOKENS = 1024
+MAX_TOKENS = MUTANT_MAX_TOKENS
 
 
 def find_failed_pairs(results_dir: Path) -> list[tuple[str, str]]:

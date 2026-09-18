@@ -103,6 +103,7 @@ def process_task(task, cfg: Config, force: bool = False) -> None:
             "is_equivalent": result.is_equivalent,
             "reason": result.reason,
             "n_inputs_tested": result.n_inputs_tested,
+            "diverging_input": result.diverging_input,
         })
         if result.is_equivalent:
             n_equiv += 1

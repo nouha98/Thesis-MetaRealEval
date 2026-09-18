@@ -7,7 +7,7 @@ statistic value, p-value, and effect size where applicable.
 from __future__ import annotations
 
 import numpy as np
-from scipy.stats import wilcoxon, kendalltau, mannwhitneyu
+from scipy.stats import wilcoxon, mannwhitneyu, norm
 
 
 def wilcoxon_test(a: list[float], b: list[float]) -> dict:
@@ -59,12 +59,53 @@ def bootstrap_ci(
     return float(lo), float(hi)
 
 
-def kendall_tau_b(a: list[float], b: list[float]) -> dict:
-    """Kendall tau_b between two rank vectors."""
-    result = kendalltau(a, b)
+def pages_l_test(blocks: list[list[float]], descending: bool = True) -> dict:
+    """Page's L trend test for an ordered alternative (RQ4 H1b).
+
+    ``blocks`` is one list per block (here: per task), each holding the k
+    measurements in treatment order (here: tau_b at each degradation level,
+    ordered 0%, 20%, 50%, 80%). Blocks of differing length, or containing a
+    None, are dropped — Page's L needs a complete ranking within each block.
+
+    ``descending=True`` tests the H1b alternative "values decrease as the
+    ordered condition increases" by reversing the treatment weighting.
+
+    Page's L is a *rank* statistic: values are ranked 1..k **within each
+    block**, and L = sum_j(j * R_j) over the rank sums R_j. The normal
+    approximation below is only valid because n is the number of tasks
+    (~164), not 1 — with a single block there are just k! = 24 possible
+    arrangements and no meaningful asymptotics.
+    """
+    clean = [b for b in blocks
+             if len(b) == len(blocks[0]) and all(v is not None for v in b)] if blocks else []
+    n, k = len(clean), len(clean[0]) if clean else 0
+    if n == 0 or k < 3:
+        return {"L": None, "n_blocks": n, "k_levels": k,
+                "note": "Page's L needs >=3 ordered levels and >=1 complete block"}
+
+    from scipy.stats import rankdata
+
+    rank_sums = np.zeros(k)
+    for block in clean:
+        values = [-v for v in block] if descending else list(block)
+        rank_sums += rankdata(values, method="average")
+
+    weights = np.arange(1, k + 1)
+    L = float(np.sum(weights * rank_sums))
+
+    mean_L = n * k * (k + 1) ** 2 / 4.0
+    var_L = n * (k ** 3 - k) ** 2 / (144.0 * (k - 1))
+    z = (L - mean_L) / np.sqrt(var_L) if var_L > 0 else 0.0
+    p = float(norm.sf(z))                      # one-tailed: L large => trend present
+
     return {
-        "tau_b": float(result.statistic),
-        "p_value": float(result.pvalue),
+        "L": round(L, 4),
+        "z": round(float(z), 4),
+        "p_value": round(p, 6),
+        "n_blocks": n,
+        "k_levels": k,
+        "trend_present": bool(p < 0.05),
+        "direction": "decreasing" if descending else "increasing",
     }
 
 

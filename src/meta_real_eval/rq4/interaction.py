@@ -107,39 +107,15 @@ def compute_tau_at_degradation_level(
     }
 
 
-def pages_l_trend_test(tau_by_level: dict[float, float]) -> dict:
-    """Page's L statistic for monotonic trend in tau_b across ordered degradation levels.
-
-    tau_by_level: {degradation_fraction: mean_tau_b}
-
-    Returns {L, p_value_approx, monotonic}.
-    Under H1b we expect tau_b to *decrease* (or instability to increase) as
-    degradation increases.
-    """
-    levels = sorted(tau_by_level.keys())
-    values = [tau_by_level[l] for l in levels]
-    k = len(levels)
-    if k < 3:
-        return {"L": None, "note": "Need at least 3 levels for Page's L"}
-
-    # Page's L = sum(rank_i * col_sum_i) for a one-group version
-    # Here we use a simplified formulation: L = sum(i * v_i) for expected ascending trend
-    # We test for descending tau_b (ascending instability) so we use -values
-    L = sum((i + 1) * v for i, v in enumerate([-v for v in values]))
-    # Normal approximation (for small k, this is very rough)
-    n = 1  # single "block"
-    mean_L = n * k * (k + 1) ** 2 / 4
-    var_L = n * k ** 2 * (k ** 2 - 1) * (k + 2) / 144
-    z = (L - mean_L) / (var_L ** 0.5) if var_L > 0 else 0.0
-
-    from scipy.stats import norm
-    p = float(norm.sf(z))  # one-tailed
-
-    return {
-        "L": round(L, 4),
-        "z": round(z, 4),
-        "p_value_approx": round(p, 4),
-        "monotonic_decrease_in_tau": p < 0.05,
-        "levels": levels,
-        "tau_values": values,
-    }
+# H1b's Page's L trend test lives in analysis/statistics.py and is run once over
+# all tasks by scripts/analyze_results.py, not per task here.
+#
+# It used to be computed per task, which cannot work: Page's L is a
+# randomized-block statistic, and one task is a single block (n=1) whose k=4
+# arrangements have no usable asymptotics. That version also fed *raw* tau
+# values into L while comparing the result against the null moments of a
+# rank-sum statistic, so L (range -10..-2 across the corpus) was tested against
+# mean_L=25 -- the z-score was hugely negative by construction and the test
+# returned p=1.0 on all 162 tasks, verdict False on 162/162. It could never
+# fire, whatever the data did. Tasks are the blocks; the trend is a property of
+# the corpus, so the test belongs where the per-task values are pooled.

@@ -1,10 +1,17 @@
 """Tests for Stage 0's differential-execution equivalence check."""
 
+import random
+
 from meta_real_eval.core.data_loader import HumanEvalTask
 from meta_real_eval.stage0.corpus_builder import Mutant
 from meta_real_eval.stage0.equivalence import (
+    _CAPTURE_CACHE,
+    _capture_test_inputs,
     _error_signature,
+    _extract_test_inputs,
+    _mutate_str,
     _run_one,
+    _string_pool,
     check_equivalence,
 )
 
@@ -81,3 +88,95 @@ def test_mutant_raising_a_different_exception_is_not_equivalent(monkeypatch):
     )
     assert result.is_equivalent is False
     assert result.reason == "diverged"
+    # The verdict records which input settled it, so it can be re-examined
+    # later without re-deriving the seeded input stream.
+    assert result.diverging_input == repr((5, 0))
+
+
+# ---------------------------------------------------------------------------
+# Input capture
+# ---------------------------------------------------------------------------
+#
+# Regression: _extract_test_inputs scrapes literal argument tuples out of the
+# check() source, so it recovers nothing when the argument is an expression.
+# HumanEval/32, /38 and /50 pass the result of a helper defined in the prompt,
+# leaving their equivalence verdicts resting entirely on random padding -- which
+# is how mutants that the suite demonstrably kills were filed as "equivalent".
+
+_HELPER_TASK = HumanEvalTask(
+    task_id="Synthetic/capture", task_index=0,
+    prompt="def encode(s):\n    return s[::-1]\n\n\ndef decode(s):\n",
+    canonical_solution="    return s[::-1]\n",
+    test=(
+        "def check(candidate):\n"
+        "    for word in ['alpha', 'beta', 'gamma']:\n"
+        "        encoded = encode(word)\n"
+        "        assert candidate(encoded) == word\n"
+    ),
+    entry_point="decode",
+)
+
+
+def test_capture_recovers_inputs_the_regex_scraper_cannot():
+    _CAPTURE_CACHE.clear()
+
+    scraped = _extract_test_inputs(_HELPER_TASK.test, _HELPER_TASK.entry_point)
+    captured = _capture_test_inputs(_HELPER_TASK)
+
+    assert scraped == []                      # the old path sees nothing at all
+    assert captured == [("ahpla",), ("ateb",), ("ammag",)]
+
+
+def test_capture_is_deterministic_for_a_random_check():
+    """check() bodies that draw random inputs must still capture reproducibly."""
+    task = HumanEvalTask(
+        task_id="Synthetic/random", task_index=0,
+        prompt="def f(n):\n", canonical_solution="    return n * 2\n",
+        test=("def check(candidate):\n"
+              "    import random\n"
+              "    for _ in range(5):\n"
+              "        assert candidate(random.randint(0, 10**6)) is not None\n"),
+        entry_point="f",
+    )
+    _CAPTURE_CACHE.clear()
+    first = _capture_test_inputs(task, seed=42)
+    _CAPTURE_CACHE.clear()
+    again = _capture_test_inputs(task, seed=42)
+    _CAPTURE_CACHE.clear()
+    other = _capture_test_inputs(task, seed=7)
+
+    assert first == again                     # same seed, same inputs
+    assert first != other                     # and the seed actually drives it
+
+
+def test_capture_keeps_only_replayable_arguments():
+    """_run_one replays an input via repr(), so non-round-trippable args are dropped."""
+    task = HumanEvalTask(
+        task_id="Synthetic/object", task_index=0,
+        prompt="def f(x):\n", canonical_solution="    return 1\n",
+        test=("def check(candidate):\n"
+              "    candidate(object())\n"       # repr is <object object at 0x...>
+              "    candidate(7)\n"),
+        entry_point="f",
+    )
+    _CAPTURE_CACHE.clear()
+    assert _capture_test_inputs(task) == [(7,)]
+
+
+# ---------------------------------------------------------------------------
+# Structure-aware padding
+# ---------------------------------------------------------------------------
+#
+# Regression: _random_str draws from "a-z 0-9", which contains no bracket, dot
+# or dash, so padding inputs for a bracket-matching or date-parsing task all
+# take the same early-exit path and cannot distinguish any mutant.
+
+def test_string_pool_reaches_inside_containers():
+    assert sorted(_string_pool([(["()(", ")"],), ("ab",)])) == ["()(", ")", "ab"]
+
+
+def test_mutated_strings_stay_in_the_example_alphabet():
+    rng = random.Random(0)
+    alphabet = set("()")
+    for _ in range(50):
+        assert set(_mutate_str("(()", rng)) <= alphabet

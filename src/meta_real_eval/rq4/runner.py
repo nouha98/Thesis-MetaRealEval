@@ -39,7 +39,7 @@ from ..rq2.evaluator import _run_completion, pass_at_k
 from ..rq2.ranking import _rank_vector
 from .consistency import DEFAULT_DIVERGENCE_THRESHOLD, build_consistency_assertions
 from .degradation import degrade_all_levels
-from .interaction import compute_tau_at_degradation_level, pages_l_trend_test
+from .interaction import compute_tau_at_degradation_level
 
 logger = logging.getLogger(__name__)
 
@@ -77,19 +77,14 @@ def run_degrade_one(task, cfg: Config, force: bool = False) -> None:
         )
         results[str(level)] = {**summary, "degradation_level": level}
 
-    # Page's L over the task-level tau_b at each degradation level. Levels whose
-    # tau_b is undefined (every model tied) are dropped rather than imputed.
-    tau_by_level = {
-        float(lv): d["mean_tau_b"]
-        for lv, d in results.items()
-        if d["mean_tau_b"] is not None
-    }
-    trend = pages_l_trend_test(tau_by_level)
-    results["trend_test"] = trend
-
+    # No per-task trend test here: Page's L is a randomized-block statistic and
+    # one task is a single block. The per-level tau_b values written above are
+    # the blocks; scripts/analyze_results.py pools them across tasks and runs
+    # the test once (see analysis.statistics.pages_l_test).
     write_json(out, "degradation_analysis.json", results)
     mark_done(out)
-    logger.info("Degrade %s: trend p=%.3f", label, trend.get("p_value_approx", float("nan")))
+    defined = [d["mean_tau_b"] for d in results.values() if d.get("mean_tau_b") is not None]
+    logger.info("Degrade %s: tau_b defined at %d/%d level(s)", label, len(defined), len(results))
 
 
 # ---------------------------------------------------------------------------
@@ -202,9 +197,10 @@ def run_analyze(cfg: Config, tasks) -> None:
 
     Two questions are answered here:
 
-    H1b (trend)  - does ranking stability decay monotonically as the oracle is
-                   degraded?  Page's L, already computed per task in the degrade
-                   phase; summarised across tasks.
+    H1b (trend) is NOT computed here. Page's L is a randomized-block statistic
+    whose blocks are the tasks, so it is run once over the pooled per-task
+    tau_b values in scripts/analyze_results.py (analysis.statistics.pages_l_test)
+    rather than per task and counted up.
 
     H1a (recovery) - do the MT consistency assertions restore the ranking that
                    degradation destroyed?  For each degradation level we correlate
@@ -218,8 +214,8 @@ def run_analyze(cfg: Config, tasks) -> None:
     out.mkdir(parents=True, exist_ok=True)
 
     model_ids = cfg.model_ids()
-    all_trends: list[dict] = []
     all_augment: list[dict] = []
+    n_tasks_seen = 0
     # level -> {"degraded": [...], "augmented": [...], "tasks": [...]}
     recovery: dict[str, dict[str, list]] = {}
     n_uncalibrated = 0
@@ -232,9 +228,7 @@ def run_analyze(cfg: Config, tasks) -> None:
         d = a = None
         try:
             d = read_json(degrade_out, "degradation_analysis.json")
-            trend = dict(d.get("trend_test", {}))
-            trend["task_id"] = task.task_id
-            all_trends.append(trend)
+            n_tasks_seen += 1
         except FileNotFoundError:
             pass
         try:
@@ -282,7 +276,6 @@ def run_analyze(cfg: Config, tasks) -> None:
                 slot["tau_degraded"].append(tau_d)
                 slot["tau_augmented"].append(tau_a)
 
-    write_json(out, "trend_summary.json", all_trends)
     write_json(out, "augment_summary.json", all_augment)
 
     # --- H1a: paired augmented-vs-degraded rank recovery, one pair per task ---
@@ -306,12 +299,9 @@ def run_analyze(cfg: Config, tasks) -> None:
         recovery_stats[key] = stats
 
     n_with_ca = sum(1 for r in all_augment if r.get("has_consistency_assertions"))
-    sig_monotonic = [t for t in all_trends if t.get("monotonic_decrease_in_tau")]
 
     high_level = {
-        "n_tasks": len(all_trends),
-        "n_monotonic_significant": len(sig_monotonic),
-        "fraction": len(sig_monotonic) / max(len(all_trends), 1),
+        "n_tasks": n_tasks_seen,
         "n_tasks_with_consistency_assertions": n_with_ca,
         "n_tasks_uncalibrated_threshold": n_uncalibrated,
         "rank_recovery_by_level": recovery_stats,
@@ -328,9 +318,9 @@ def run_analyze(cfg: Config, tasks) -> None:
     write_json(out, "high_level.json", high_level)
 
     logger.info(
-        "RQ4 analyze: %d/%d tasks show significant monotonic tau_b decrease; "
-        "%d task(s) carry consistency assertions",
-        len(sig_monotonic), len(all_trends), n_with_ca,
+        "RQ4 analyze: %d task(s) aggregated; %d carry consistency assertions. "
+        "H1b's trend test runs across tasks in scripts/analyze_results.py.",
+        n_tasks_seen, n_with_ca,
     )
     for key, stats in recovery_stats.items():
         logger.info(

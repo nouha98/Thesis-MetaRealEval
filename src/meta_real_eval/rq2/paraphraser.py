@@ -79,6 +79,28 @@ def _split_docstring(prompt: str) -> tuple[str, str, str]:
     return signature, description, examples
 
 
+def _split_closing_quote(text: str) -> tuple[str, str]:
+    """Split ``text`` into (body, closing_quote_line_onward).
+
+    ``_split_docstring`` keeps the docstring's closing ``\"\"\"``/``'''`` inside
+    ``examples``, because in the original prompt order it is the last thing in
+    the docstring. ``reorder`` moves ``examples`` earlier than ``description``,
+    so reassembling with the closing quote still attached to ``examples``
+    closes the docstring before ``description`` — leaving ``description``
+    stranded as dead code outside the function (confirmed: every one of the 76
+    HumanEval prompts this relation actually changes produced a SyntaxError
+    once a completion was appended). Splitting the quote off and re-appending
+    it after ``description`` keeps the docstring open across the reordered
+    content instead.
+    """
+    for quote in ('"""', "'''"):
+        idx = text.rfind(quote)
+        if idx != -1:
+            line_start = text.rfind("\n", 0, idx) + 1
+            return text[:line_start], text[line_start:]
+    return text, ""
+
+
 def apply_relation(prompt: str, relation: str) -> str:
     """Return the transformed prompt for the given relation name."""
     if relation == "original":
@@ -97,10 +119,15 @@ def apply_relation(prompt: str, relation: str) -> str:
         return sig + formal_preamble + desc + examples
 
     if relation == "reorder":
-        # Move examples before description (shuffle context order)
+        # Move examples before description (shuffle context order). The
+        # docstring's closing quote travels with `examples` (see
+        # _split_docstring), so it is split off and re-appended after `desc`
+        # rather than left in the middle — otherwise the docstring closes
+        # before `desc`, stranding it outside the function as dead code.
         sig, desc, examples = _split_docstring(prompt)
         if examples:
-            return sig + examples + desc
+            examples_body, closing = _split_closing_quote(examples)
+            return sig + examples_body + desc + closing
         return prompt  # nothing to reorder
 
     if relation == "terse":

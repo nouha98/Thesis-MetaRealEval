@@ -1,5 +1,7 @@
 """Tests for deterministic metamorphic prompt transforms."""
 
+import ast
+
 import pytest
 from meta_real_eval.rq2.paraphraser import apply_relation, apply_all_relations
 
@@ -49,6 +51,36 @@ def test_apply_all_returns_all_relations():
     relations = ["original", "persona", "formal", "reorder", "terse"]
     result = apply_all_relations(SAMPLE_PROMPT, relations)
     assert set(result.keys()) == set(relations)
+
+
+# ---------------------------------------------------------------------------
+# Regression: reorder used to leave the docstring's closing quote attached to
+# `examples`, so moving examples ahead of the description closed the
+# docstring early and stranded the description as dead code outside the
+# function. Measured on the real corpus: 76/76 prompts this relation actually
+# changes produced a SyntaxError once a completion was appended -- the
+# previous test above never caught it because it only checks that ">>>"
+# appears before "Check if" in the string, not that the result still parses.
+# ---------------------------------------------------------------------------
+
+def test_reorder_keeps_the_docstring_valid():
+    result = apply_relation(SAMPLE_PROMPT, "reorder")
+    ast.parse(result)  # raises SyntaxError if the docstring closed early
+    # The description must still be inside the docstring, not ejected after it.
+    closing_quote_idx = result.rindex('"""')
+    assert result.index("Check if") < closing_quote_idx
+
+
+def test_reorder_keeps_the_docstring_valid_on_every_humaneval_prompt():
+    """The real thing the bug broke: every prompt reorder actually changes
+    must still parse once a real completion is appended, not just the sample."""
+    from meta_real_eval.core.data_loader import load_humaneval
+
+    for task in load_humaneval():
+        reordered = apply_relation(task.prompt, "reorder")
+        if reordered == task.prompt:
+            continue
+        ast.parse(reordered + task.canonical_solution)
 
 
 def test_reorder_is_a_no_op_without_examples():

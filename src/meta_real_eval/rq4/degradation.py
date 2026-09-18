@@ -13,22 +13,6 @@ import copy
 import random
 
 
-def _collect_assert_indices(test_code: str) -> list[int]:
-    """Return indices of ast.Assert nodes in the check() function body."""
-    try:
-        tree = ast.parse(test_code)
-    except SyntaxError:
-        return []
-    indices: list[int] = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == "check":
-            for i, stmt in enumerate(node.body):
-                if isinstance(stmt, ast.Assert):
-                    indices.append(i)
-            break
-    return indices
-
-
 def degrade(test_code: str, removal_fraction: float, seed: int = 42) -> str:
     """Return a copy of test_code with ``removal_fraction`` of asserts removed.
 

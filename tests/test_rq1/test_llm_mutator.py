@@ -76,3 +76,56 @@ async def test_generate_llm_mutants_requests_the_generous_budget():
     client = _FakeClient()
     await generate_llm_mutants(task, "some-model", client, n_mutants=1)
     assert client.last_call["max_tokens"] == MUTANT_MAX_TOKENS
+
+
+# ---------------------------------------------------------------------------
+# Regression: both "is this the canonical solution?" and "have I already
+# accepted this?" used to be byte comparisons -- and the second did not exist
+# at all. Measured over the 164-task corpus that let through 7 mutants that
+# were the canonical solution reformatted, and left 47% of the accepted
+# population duplicating a sibling (1456 mutants, 772 distinct), which inflates
+# the LLM sample size with copies rather than observations.
+# ---------------------------------------------------------------------------
+
+_TASK = HumanEvalTask(
+    task_id="HumanEval/0", task_index=0,
+    prompt="def f(a, b):\n", canonical_solution="    return a + b\n",
+    test="def check(candidate):\n    pass\n", entry_point="f",
+)
+
+
+class _ScriptedClient:
+    """Returns a fixed list of completions, ignoring the request."""
+
+    def __init__(self, completions):
+        self._completions = completions
+
+    async def complete(self, **kwargs):
+        return self._completions
+
+
+async def test_reformatted_echo_of_canonical_is_rejected():
+    # Same AST as prompt+canonical, different layout and a comment.
+    echo = "def f(a, b):\n    # add them\n    return a+b\n"
+    mutants = await generate_llm_mutants(
+        _TASK, "m", _ScriptedClient([echo]), n_mutants=3)
+    assert mutants == []
+
+
+async def test_sibling_differing_only_in_formatting_is_rejected():
+    fault = "def f(a, b):\n    return a - b\n"
+    reworded = "def f(a, b):\n    # subtle fault\n    return a-b\n"
+    mutants = await generate_llm_mutants(
+        _TASK, "m", _ScriptedClient([fault, reworded]), n_mutants=3)
+    assert len(mutants) == 1
+
+
+async def test_distinct_faults_are_all_kept():
+    completions = [
+        "def f(a, b):\n    return a - b\n",
+        "def f(a, b):\n    return a * b\n",
+        "def f(a, b):\n    return b + a + 1\n",
+    ]
+    mutants = await generate_llm_mutants(
+        _TASK, "m", _ScriptedClient(completions), n_mutants=3)
+    assert len(mutants) == 3

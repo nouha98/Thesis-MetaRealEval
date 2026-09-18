@@ -221,6 +221,7 @@ def _filter_llm_equivalents(task, llm_mutants, cfg: Config, out) -> set[str]:
                 "is_equivalent": result.is_equivalent,
                 "reason": result.reason,
                 "n_inputs_tested": result.n_inputs_tested,
+                "diverging_input": result.diverging_input,
             })
             if result.is_equivalent:
                 equivalent.add(result.mutant_id)

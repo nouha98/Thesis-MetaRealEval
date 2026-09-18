@@ -38,6 +38,7 @@ from meta_real_eval.analysis.statistics import (  # noqa: E402
     bootstrap_ci,
     cliffs_delta,
     mannwhitney_test,
+    pages_l_test,
     roc_auc,
     spearman_rho,
     wilcoxon_test,
@@ -135,6 +136,63 @@ def _sdl_stmt_kind(description: str) -> str | None:
 
 def _rate(killed: int, total: int) -> float:
     return killed / total if total else 0.0
+
+
+def _llm_corpus_quality() -> dict:
+    """Duplication in the LLM mutant corpus, and the kill rate without it.
+
+    A model asked for three distinct faults often returns one fault three
+    times; byte-identical copies then enter the population as separate trials,
+    inflating n without adding evidence and weighting a repeated fault by how
+    many times it happened to be repeated. Mutants are compared AST-normalised,
+    so a fault whose comment was reworded counts once.
+
+    Reported as a sensitivity line, not a correction: the headline stays the
+    full population, and this says how much the duplication moves it.
+    """
+    import ast
+
+    def norm(code: str) -> str:
+        try:
+            return ast.unparse(ast.parse(code))
+        except SyntaxError:
+            return code.strip()
+
+    n_mutants = n_unique = 0
+    total = killed = uniq_total = uniq_killed = 0
+    for td in sorted((RESULTS / "rq1" / "evaluate").iterdir()):
+        if not td.is_dir() or not (td / "kill_matrix.json").exists():
+            continue
+        gen = RESULTS / "rq1" / "generate" / td.name / "llm_mutants.json"
+        if not gen.exists():
+            continue
+        km = {r["mutant_id"]: r for r in load(td / "kill_matrix.json")}
+        seen: set[str] = set()
+        mutants = load(gen)
+        n_mutants += len(mutants)
+        n_unique += len({norm(m["code"]) for m in mutants})
+        for m in mutants:
+            row = km.get(m["mutant_id"])
+            if row is None:          # excluded as equivalent
+                continue
+            total += 1
+            killed += int(row["is_killed"])
+            key = norm(m["code"])
+            if key in seen:
+                continue
+            seen.add(key)
+            uniq_total += 1
+            uniq_killed += int(row["is_killed"])
+
+    return {
+        "llm_mutants": n_mutants,
+        "llm_mutants_unique": n_unique,
+        "redundancy_pct": (1 - n_unique / n_mutants) * 100 if n_mutants else 0.0,
+        "llm_kill_rate_full": _rate(killed, total),
+        "llm_kill_rate_deduplicated": _rate(uniq_killed, uniq_total),
+        "n_evaluated_full": total,
+        "n_evaluated_deduplicated": uniq_total,
+    }
 
 
 def analyze_rq1() -> dict:
@@ -268,6 +326,7 @@ def analyze_rq1() -> dict:
     stratified = bool(sdl_by_kind) and n_sdl_unlabelled == 0
 
     return {
+        "corpus_quality": _llm_corpus_quality(),
         "per_task_adequacy": per_task_adequacy,
         "pooled_chi2_kill_rate_trad_vs_llm": _chi2(trad_killed, trad_total, llm_killed, llm_total),
         "n_tasks_with_both_categories": n_tasks_both,
@@ -867,6 +926,7 @@ def analyze_rq4() -> dict:
         return {"available": False, "note": "results/rq4/degrade not found"}
 
     per_task: dict[str, dict] = {}
+    trend_blocks: list[list[float]] = []
     n_with_ca = 0
     n_uncalibrated = 0
     n_identical_to_degraded = 0
@@ -884,6 +944,13 @@ def analyze_rq4() -> dict:
         tau_intact = d.get(intact, {}).get("mean_tau_b")
         tau_worst = d.get(worst, {}).get("mean_tau_b")
 
+        # One block for Page's L (H1b): this task's tau_b across the ordered
+        # levels. Kept only when every level is defined — Page's L ranks within
+        # a block, so a block with a hole cannot be ranked.
+        block = [d.get(str(lv), {}).get("mean_tau_b") for lv in levels]
+        if all(v is not None for v in block):
+            trend_blocks.append(block)
+
         row = {
             "levels": levels,
             "mean_tau_b_intact": tau_intact,
@@ -892,8 +959,6 @@ def analyze_rq4() -> dict:
                 tau_intact - tau_worst
                 if tau_intact is not None and tau_worst is not None else None
             ),
-            "monotonic_decrease_in_tau": d.get("trend_test", {}).get(
-                "monotonic_decrease_in_tau"),
         }
 
         ap = augment_root / td.name / "augment_analysis.json"
@@ -920,6 +985,9 @@ def analyze_rq4() -> dict:
         "n_tasks_with_consistency_assertions": n_with_ca,
         "n_tasks_uncalibrated_threshold": n_uncalibrated,
         "n_tasks_augmentation_had_no_effect": n_identical_to_degraded,
+        # H1b, tested once over the whole corpus: tasks are the blocks,
+        # degradation levels the ordered treatments.
+        "trend_test_h1b": pages_l_test(trend_blocks, descending=True),
         "rank_recovery": load(summary_path) if summary_path.exists() else None,
         "per_task": per_task,
     }
@@ -1115,6 +1183,15 @@ def main(argv=None) -> None:
         print(f"Pooled chi-square (ignores task pairing): chi2={c['chi2']:.3f}  p={c['p_value']:.4g}")
     print(f"\nTasks with >=1 surviving LLM mutant: {rq1['n_tasks_with_surviving_llm_mutants']} / "
           f"{rq1['n_tasks_with_both_categories']}")
+
+    cq = rq1.get("corpus_quality")
+    if cq and cq["llm_mutants"]:
+        print(f"\nLLM corpus redundancy: {cq['llm_mutants']} mutants, "
+              f"{cq['llm_mutants_unique']} distinct ({cq['redundancy_pct']:.1f}% duplicated)")
+        print(f"  kill rate, full population : {cq['llm_kill_rate_full']*100:.1f}% "
+              f"(n={cq['n_evaluated_full']})")
+        print(f"  kill rate, deduplicated    : {cq['llm_kill_rate_deduplicated']*100:.1f}% "
+              f"(n={cq['n_evaluated_deduplicated']})   <- sensitivity, not a correction")
 
     # --- robustness: does the gap survive dropping predetermined-kill SDL? ---
     print()
@@ -1317,6 +1394,16 @@ def main(argv=None) -> None:
                       f"recovery={st['mean_recovery']:+.3f}  "
                       f"p={w['p_value']:.4g}  delta={w.get('cliffs_delta', float('nan')):+.3f}  "
                       f"n={st['n_tasks']}")
+
+        tt = rq4.get("trend_test_h1b") or {}
+        print("\nMonotone trend in tau_b across degradation levels (Page's L; H1b):")
+        if tt.get("L") is None:
+            print(f"  UNAVAILABLE: {tt.get('note')}")
+        else:
+            print(f"  L={tt['L']:.1f}  z={tt['z']:+.3f}  p={tt['p_value']:.4g}  "
+                  f"(n={tt['n_blocks']} tasks x k={tt['k_levels']} levels)")
+            print(f"  monotone {tt['direction']} trend: "
+                  f"{'SUPPORTED' if tt['trend_present'] else 'not supported'} at alpha=0.05")
 
     print()
     print("=" * 70)

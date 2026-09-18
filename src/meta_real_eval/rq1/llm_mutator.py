@@ -64,6 +64,22 @@ def _build_user_message(task: HumanEvalTask, fault_hint: str = "") -> str:
     )
 
 
+def _normalise(code: str) -> str:
+    """Code with formatting, comments and docstring indentation collapsed away.
+
+    Two mutants that differ only in layout are the same fault; comparing raw
+    text counts them as two observations.  Falls back to the stripped source
+    when the code does not parse, so an unparseable candidate is still
+    comparable rather than crashing the caller.
+    """
+    import ast
+
+    try:
+        return ast.unparse(ast.parse(code))
+    except SyntaxError:
+        return code.strip()
+
+
 def _extract_code(raw: str, prompt: str) -> str | None:
     """Strip markdown fences if present and validate that code parses."""
     import ast
@@ -125,15 +141,26 @@ async def generate_llm_mutants(
         logger.warning("LLM mutant generation failed for %s: %s", task.task_id, exc)
         return []
 
+    canonical_norm = _normalise(task.prompt + task.canonical_solution)
+    seen: set[str] = set()
+
     mutants: list[Mutant] = []
     for idx, raw in enumerate(raw_completions):
         code = _extract_code(raw, task.prompt)
         if code is None:
             logger.debug("Skipping unparseable LLM mutant %d for %s", idx, task.task_id)
             continue
-        # Skip if identical to canonical
-        if code.strip() == (task.prompt + task.canonical_solution).strip():
+        norm = _normalise(code)
+        # Skip if identical to canonical, or to a sibling we already accepted.
+        # Both comparisons are AST-normalised rather than byte-wise: a model
+        # that echoes the function back with different formatting, or returns
+        # the same fault three times over with the comment reworded, is not
+        # supplying a new observation. Byte comparison missed both -- measured
+        # over the 164-task corpus, 47% of accepted mutants duplicated a
+        # sibling and 7 were the canonical solution reformatted.
+        if norm == canonical_norm or norm in seen:
             continue
+        seen.add(norm)
         mutants.append(Mutant(
             # Tag the id with the sourcing model, not a generic "LLM_N" --
             # once mutants from every model land in the same task's corpus,

@@ -34,7 +34,7 @@ from ..core.llm_client import InnkubeClient
 from ..core.logging_setup import setup as setup_logging
 from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from ..rq2.evaluator import build_solution_code
-from .divergence import compute_divergence
+from .divergence import _pick_best_completion, compute_divergence
 from .sbc_scorer import compute_sbc_score
 
 logger = logging.getLogger(__name__)
@@ -135,10 +135,13 @@ def run_execute_one(task, cfg: Config, force: bool = False) -> None:
     result["selected_relations"] = selected
     write_json(out, "divergence.json", result)
     mark_done(out)
+    rate = result["pairwise_disagreement_rate"]
     logger.info(
-        "Divergence %s: %.3f (%d solutions from %d relations, %d inputs)",
-        label, result["pairwise_disagreement_rate"],
+        "Divergence %s: %s (%d solutions from %d relations, %d inputs, "
+        "%d comparable pair-observations, %d excluded as error)",
+        label, f"{rate:.3f}" if rate is not None else "undefined (no comparable outputs)",
         result["n_solutions"], len(sampled_data), result["n_inputs"],
+        result.get("n_comparable_pairs", 0), result.get("n_pairs_excluded_error", 0),
     )
 
 
@@ -164,6 +167,20 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, force: bool = Fal
         logger.warning("Missing RQ2 completions for %s", label)
         return
 
+    # The same pass/fail outcomes the execute phase used to pick its
+    # representative solution. Without them this phase scores a different
+    # completion than the one whose label the analysis attaches to the score --
+    # see the loop below.
+    eval_out = task_dir(cfg, "rq2", label, phase="evaluate")
+    try:
+        pass_rates: dict | None = read_json(eval_out, "pass_rates.json")
+    except FileNotFoundError:
+        pass_rates = None
+        logger.warning(
+            "pass_rates.json missing for %s — SBC will score the first completion "
+            "rather than the benchmark-passing one; run rq2 evaluate first", label,
+        )
+
     model_id = cfg.model_ids()[0]
     sbc_results: dict[str, dict] = {}
 
@@ -178,7 +195,18 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, force: bool = Fal
         for mid, completions in model_completions.items():
             if not completions:
                 continue
-            best = completions[0]
+            # Score the SAME solution the execute phase scored. This used to
+            # take completions[0] unconditionally, while analyze_results.py
+            # joins each SBC score to the `passes_benchmark` label of the
+            # solution _pick_best_completion chose -- the first *passing* one.
+            # When those differ, the score describes one program and the label
+            # another, which is why SBC's ROC-AUC came out at 0.464: chance.
+            flags = None
+            if pass_rates:
+                flags = pass_rates.get(relation, {}).get(mid, {}).get("per_completion")
+            best, _passes = _pick_best_completion(
+                completions, task, cfg.execution.timeout_s, pass_flags=flags,
+            )
             code = build_solution_code(best, task.prompt, task.entry_point)
             key = f"{relation}/{mid}"
             try:

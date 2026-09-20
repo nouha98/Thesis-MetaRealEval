@@ -29,6 +29,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from collections import Counter
+
+from scipy.stats import norm
+
 from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
 from ..core.data_loader import load_humaneval, task_label
@@ -136,7 +140,9 @@ def run_augment_one(task, cfg: Config, force: bool = False) -> None:
     results: dict = {
         "has_consistency_assertions": bool(ca_code),
         "n_consistency_assertions": n_assertions,
-        "divergence_rate": divergence_data.get("pairwise_disagreement_rate", 0.0),
+        # None when RQ3 found no comparable outputs at all; kept as null rather
+        # than coerced to 0.0, which would read as "the solutions agree".
+        "divergence_rate": divergence_data.get("pairwise_disagreement_rate"),
         "threshold_calibrated": cfg.rq3.divergence_threshold is not None,
         "divergence_threshold_used": (
             cfg.rq3.divergence_threshold
@@ -168,6 +174,34 @@ BASELINE_LEVEL = "0.0"
 BASELINE_RELATION = "original"
 
 
+def _mde(a: list[float], b: list[float], alpha: float = 0.05, power: float = 0.80) -> dict:
+    """Smallest mean paired difference this sample size could detect.
+
+    Reported so a null result can be read as informative rather than merely
+    underpowered: "no recovery detected, and we could have detected 0.02"
+    says something, while "no recovery detected" on its own does not.
+
+    A normal approximation to the paired t-test (z_alpha/2 + z_power) * sd /
+    sqrt(n). The actual test is Wilcoxon signed-rank, which is somewhat less
+    efficient under normality and more efficient under heavy tails, so treat
+    this as an order-of-magnitude guide rather than an exact bound.
+    """
+    n = len(a)
+    if n < 2:
+        return {"mde": None, "note": "need at least 2 pairs"}
+    diffs = [x - y for x, y in zip(a, b)]
+    mean = sum(diffs) / n
+    var = sum((d - mean) ** 2 for d in diffs) / (n - 1)
+    sd = var ** 0.5
+    if sd == 0:
+        return {"mde": 0.0, "n": n, "sd_of_differences": 0.0,
+                "note": "every pair differs by the same amount"}
+    z = norm.ppf(1 - alpha / 2) + norm.ppf(power)
+    return {"mde": float(z * sd / (n ** 0.5)), "n": n, "sd_of_differences": float(sd),
+            "alpha": alpha, "power": power,
+            "note": "normal approximation to a paired t-test; the test used is Wilcoxon"}
+
+
 def _rank_recovery(baseline_scores: dict, scores: dict, model_ids: list[str]) -> float | None:
     """Spearman rho between a suite's model ranking and the intact-suite ranking.
 
@@ -190,6 +224,47 @@ def _pass_at_1(analysis: dict, level_key: str) -> dict | None:
     if not isinstance(level, dict):
         return None
     return level.get("pass_at_1", {}).get(BASELINE_RELATION)
+
+
+def task_stratum(intact_scores: dict) -> str:
+    """Classify a task by what the INTACT suite can still distinguish.
+
+    Both RQ4 manipulations are monotone, which pins what each stratum can show
+    (verified over the corpus: degradation never lowered a score in 1,476
+    observations, augmentation never raised one):
+
+    ``saturated``      every model at pass@1 = 1.0. Removing assertions cannot
+                       raise a score that is already 1.0, so *degradation is
+                       provably inert here* and rho against the intact ranking
+                       is 1.0 by construction, not by measurement. Augmentation
+                       can still lower scores, so these tasks contribute only
+                       downward movement -- which is exactly how a mean recovery
+                       comes out negative without the augmentation having failed
+                       at anything.
+    ``floor``          every model at 0.0. The mirror case: augmentation cannot
+                       lower a 0.0, but degradation can raise one, so these are
+                       inert for H1a while still informative for H1b. Kept
+                       separate from ``saturated`` rather than lumped in as
+                       "degenerate", because the two are inert for *opposite*
+                       manipulations.
+    ``discriminating`` everything else -- the only stratum where both arms have
+                       room to move, and therefore where H1a has a valid
+                       estimand.
+
+    Computed from the intact suite at level 0.0, before any degradation or
+    augmentation is applied. That makes it a pre-treatment covariate, so
+    conditioning on it is stratification rather than selection on the outcome.
+    It would only be circular if the stratum were derived from the same tau_b
+    or rho values it is then used to filter.
+    """
+    values = list(intact_scores.values())
+    if not values:
+        return "unknown"
+    if all(v == 1.0 for v in values):
+        return "saturated"
+    if all(v == 0.0 for v in values):
+        return "floor"
+    return "discriminating"
 
 
 def run_analyze(cfg: Config, tasks) -> None:
@@ -219,6 +294,7 @@ def run_analyze(cfg: Config, tasks) -> None:
     # level -> {"degraded": [...], "augmented": [...], "tasks": [...]}
     recovery: dict[str, dict[str, list]] = {}
     n_uncalibrated = 0
+    strata: Counter = Counter()
 
     for task in tasks:
         label = task_label(task)
@@ -250,6 +326,8 @@ def run_analyze(cfg: Config, tasks) -> None:
         baseline = _pass_at_1(d, BASELINE_LEVEL)
         if baseline is None:
             continue
+        stratum = task_stratum(baseline)
+        strata[stratum] += 1
 
         for level in cfg.rq4.degradation_levels:
             key = str(level)
@@ -265,12 +343,13 @@ def run_analyze(cfg: Config, tasks) -> None:
                 continue                      # keep the pairing intact: drop both or neither
             slot = recovery.setdefault(
                 key,
-                {"degraded": [], "augmented": [], "tasks": [],
+                {"degraded": [], "augmented": [], "tasks": [], "strata": [],
                  "tau_degraded": [], "tau_augmented": []},
             )
             slot["degraded"].append(rho_deg)
             slot["augmented"].append(rho_aug)
             slot["tasks"].append(task.task_id)
+            slot["strata"].append(stratum)
             tau_d, tau_a = d[key].get("mean_tau_b"), a[key].get("mean_tau_b")
             if tau_d is not None and tau_a is not None:
                 slot["tau_degraded"].append(tau_d)
@@ -279,9 +358,9 @@ def run_analyze(cfg: Config, tasks) -> None:
     write_json(out, "augment_summary.json", all_augment)
 
     # --- H1a: paired augmented-vs-degraded rank recovery, one pair per task ---
-    recovery_stats: dict[str, dict] = {}
-    for key, slot in sorted(recovery.items(), key=lambda kv: float(kv[0])):
-        deg, aug = slot["degraded"], slot["augmented"]
+    def _paired_stats(aug: list[float], deg: list[float]) -> dict:
+        if not deg:
+            return {"n_tasks": 0, "note": "no task in this stratum"}
         stats = {
             "n_tasks": len(deg),
             "mean_rho_degraded": sum(deg) / len(deg),
@@ -289,6 +368,25 @@ def run_analyze(cfg: Config, tasks) -> None:
         }
         stats["mean_recovery"] = stats["mean_rho_augmented"] - stats["mean_rho_degraded"]
         stats["wilcoxon_augmented_vs_degraded"] = wilcoxon_test(aug, deg)
+        stats["minimum_detectable_effect"] = _mde(aug, deg)
+        return stats
+
+    recovery_stats: dict[str, dict] = {}
+    for key, slot in sorted(recovery.items(), key=lambda kv: float(kv[0])):
+        deg, aug = slot["degraded"], slot["augmented"]
+        stats = _paired_stats(aug, deg)
+
+        # Same statistic restricted to the only stratum where H1a has an
+        # estimand. Saturated tasks pin rho_degraded at 1.0 by construction
+        # while still admitting downward movement under augmentation, so
+        # including them drives mean recovery negative whatever the
+        # augmentation does. Reported alongside, never instead of, the full
+        # corpus figure above.
+        by_stratum: dict[str, dict] = {}
+        for name in ("discriminating", "saturated", "floor"):
+            idx = [i for i, s in enumerate(slot["strata"]) if s == name]
+            by_stratum[name] = _paired_stats([aug[i] for i in idx], [deg[i] for i in idx])
+        stats["by_stratum"] = by_stratum
         # Secondary, in the proposal's own vocabulary. With only 3 models tau_b
         # takes just four possible values, so it is coarse - see the note below.
         tau_d, tau_a = slot["tau_degraded"], slot["tau_augmented"]
@@ -304,6 +402,7 @@ def run_analyze(cfg: Config, tasks) -> None:
         "n_tasks": n_tasks_seen,
         "n_tasks_with_consistency_assertions": n_with_ca,
         "n_tasks_uncalibrated_threshold": n_uncalibrated,
+        "task_strata": dict(strata),
         "rank_recovery_by_level": recovery_stats,
         "note": (
             "rank recovery correlates each suite's model ranking against the "
@@ -313,6 +412,20 @@ def run_analyze(cfg: Config, tasks) -> None:
             "relative to cross-variant consensus, not to ground truth. With 3 "
             "models tau_b can only take the values {-1, -1/3, 1/3, 1}, so it is "
             "reported as a coarse secondary descriptive statistic only."
+        ),
+        "stratum_note": (
+            "task_strata classifies each task by what the INTACT suite can still "
+            "distinguish, so it is a pre-treatment covariate, not the outcome. "
+            "Both manipulations are monotone: degradation never lowers a score "
+            "and augmentation never raises one. A 'saturated' task (every model "
+            "at pass@1 = 1.0) therefore cannot move under degradation at all -- "
+            "its rho of 1.0 is arithmetic, not evidence -- while augmentation "
+            "can still lower it, so saturated tasks contribute only downward "
+            "movement and push mean recovery negative however well the "
+            "augmentation works. 'floor' tasks are the mirror case. Read "
+            "rank_recovery_by_level[level]['by_stratum']['discriminating'] as "
+            "the H1a result; the pooled figure beside it is the sensitivity "
+            "check, not the estimate."
         ),
     }
     write_json(out, "high_level.json", high_level)

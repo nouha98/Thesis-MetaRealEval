@@ -102,3 +102,70 @@ def test_message_text_handles_missing_reasoning_content_attribute():
 def test_message_text_handles_reasoning_content_being_none():
     message = SimpleNamespace(content="", reasoning_content=None)
     assert _message_text(message) == ""
+
+
+# ---------------------------------------------------------------------------
+# finish_reason plumbing. A completion truncated at the token cap is non-empty,
+# so callers cannot tell it from a wrong answer unless the reason survives the
+# cache round-trip. Entries written before finish reasons were recorded must
+# stay readable -- an old cache is worth keeping, but it must not be mistaken
+# for a run of clean stops.
+# ---------------------------------------------------------------------------
+
+async def test_finish_reasons_survive_the_cache_round_trip(tmp_path):
+    from meta_real_eval.core.cache import ResponseCache
+    from meta_real_eval.core.config import LLMConfig
+    from meta_real_eval.core.llm_client import InnkubeClient
+
+    cache = ResponseCache(tmp_path)
+    client = InnkubeClient(LLMConfig(), cache, mock=False)
+
+    async def fake_call(model, messages, temperature, max_tokens, n):
+        return ["cut off"], ["length"]
+
+    client._call_with_retry = fake_call
+    messages = [{"role": "user", "content": "hi"}]
+
+    first, reasons = await client.complete_with_meta("m", messages)
+    assert (first, reasons) == (["cut off"], ["length"])
+
+    # Second call is served from cache; the reason must come back with it.
+    client._call_with_retry = None          # any real call would now raise
+    cached, cached_reasons = await client.complete_with_meta("m", messages)
+    assert (cached, cached_reasons) == (["cut off"], ["length"])
+
+
+async def test_a_pre_finish_reason_cache_entry_reports_unknown(tmp_path):
+    from meta_real_eval.core.cache import ResponseCache
+    from meta_real_eval.core.config import LLMConfig
+    from meta_real_eval.core.llm_client import InnkubeClient
+
+    cache = ResponseCache(tmp_path)
+    client = InnkubeClient(LLMConfig(), cache, mock=False)
+    messages = [{"role": "user", "content": "hi"}]
+
+    # Exactly what the old code wrote: choices, no finish_reasons.
+    key = cache.key("m", messages, temperature=0.8, max_tokens=1024, n=1)
+    cache.put(key, {"choices": ["def f(): return 1"]})
+
+    completions, reasons = await client.complete_with_meta(
+        "m", messages, temperature=0.8, max_tokens=1024, n=1,
+    )
+    assert completions == ["def f(): return 1"]
+    assert reasons == ["unknown"], "an unrecorded reason must not read as 'stop'"
+
+
+async def test_complete_still_returns_plain_strings(tmp_path):
+    """The narrow wrapper keeps every existing call site working unchanged."""
+    from meta_real_eval.core.cache import ResponseCache
+    from meta_real_eval.core.config import LLMConfig
+    from meta_real_eval.core.llm_client import InnkubeClient
+
+    client = InnkubeClient(LLMConfig(), ResponseCache(tmp_path), mock=False)
+
+    async def fake_call(model, messages, temperature, max_tokens, n):
+        return ["answer"], ["stop"]
+
+    client._call_with_retry = fake_call
+    out = await client.complete("m", [{"role": "user", "content": "hi"}])
+    assert out == ["answer"]

@@ -43,9 +43,28 @@ def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description="RQ2: ranking instability")
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--phase", choices=["generate", "evaluate"], required=True)
+    parser.add_argument(
+        "--only-model", default=None, metavar="MODEL_ID",
+        help="generate phase only: regenerate just this model and MERGE the "
+             "result into the existing completions.json, leaving every other "
+             "model's cells untouched. Without it, narrowing llm.models to one "
+             "model rewrites completions.json from scratch and discards the rest.",
+    )
     add_task_selection_args(parser)
     add_force_arg(parser)
     args = parser.parse_args(argv)
+
+    if args.only_model and args.phase != "generate":
+        parser.error("--only-model applies to --phase generate")
+    if args.only_model and not args.force:
+        # Every finished task still carries its _done.marker, so without --force
+        # the run would skip all of them and report success having regenerated
+        # nothing. Fail loudly instead of quietly doing no work.
+        parser.error(
+            "--only-model needs --force: tasks already marked done would all be "
+            "skipped. --force with --only-model drops the marker but KEEPS "
+            "completions.json, so the other models' cells are merged, not lost."
+        )
 
     cfg = Config.from_yaml(args.config)
     setup_logging("rq2", args.phase, log_dir=Path("logs"))
@@ -54,7 +73,7 @@ def main(argv=None) -> None:
     logger.info("RQ2 phase=%s, %d task(s)%s", args.phase, len(tasks), " (forced)" if args.force else "")
 
     if args.phase == "generate":
-        asyncio.run(run_generate(cfg, tasks, force=args.force))
+        asyncio.run(run_generate(cfg, tasks, force=args.force, only_model=args.only_model))
     else:
         for task in tasks:
             evaluate_task(task, cfg, force=args.force)

@@ -46,7 +46,7 @@ from ..stage0.corpus_builder import Mutant
 from ..stage0.equivalence import check_equivalence, compute_canonical_outputs
 from .ast_fallback import generate_ast_fallback_mutants
 from .kill_rate import compute_kill_matrix, summarise
-from .llm_mutator import FAULT_HINTS, generate_llm_mutants
+from .llm_mutator import FAULT_HINTS, generate_llm_mutants, repair_mutant_code
 
 logger = logging.getLogger(__name__)
 
@@ -265,6 +265,39 @@ def run_evaluate_one(task, cfg: Config, force: bool = False) -> None:
         else:
             logger.warning("No LLM mutants found for %s — using traditional only "
                             "(rq1 generate phase not yet run?)", label)
+
+    # Validity filter over the STORED LLM corpus.
+    #
+    # generate applies the same rule via llm_mutator._extract_code, but the
+    # mutants on disk were written before it existed, and this phase reads their
+    # `code` verbatim -- so without repeating the check here the fix would only
+    # take effect after paying to regenerate the whole corpus. Repair first
+    # (re-attaching prompt imports and helpers rescues a mutant that merely
+    # dropped `from typing import List`), drop only what still cannot define the
+    # entry point.
+    repaired_llm: list[dict] = []
+    invalid: list[str] = []
+    for m in llm_raw:
+        code = repair_mutant_code(m["code"], task.prompt, task.entry_point)
+        if code is None:
+            invalid.append(m["mutant_id"])
+        else:
+            repaired_llm.append({**m, "code": code})
+
+    if invalid:
+        logger.warning(
+            "%s: dropped %d/%d LLM mutant(s) that cannot define %s — they are "
+            "killed by any suite regardless of its quality, so counting them "
+            "inflates the kill rate. See llm_invalid_mutants.json.",
+            label, len(invalid), len(llm_raw), task.entry_point,
+        )
+        write_json(out, "llm_invalid_mutants.json", {
+            "task_id": task.task_id,
+            "n_dropped": len(invalid),
+            "n_total": len(llm_raw),
+            "mutant_ids": invalid,
+        })
+    llm_raw = repaired_llm
 
     all_mutants = [
         Mutant(

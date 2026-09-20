@@ -129,3 +129,76 @@ async def test_distinct_faults_are_all_kept():
     mutants = await generate_llm_mutants(
         _TASK, "m", _ScriptedClient(completions), n_mutants=3)
     assert len(mutants) == 3
+
+
+# ---------------------------------------------------------------------------
+# Mutant validity. A mutant is evidence about the TEST SUITE only if it is a
+# runnable program with one fault in it. A fragment that cannot define the
+# function under test is killed by every suite for a reason unrelated to the
+# suite's quality, so it inflates the kill rate with free kills. Measured on
+# the recorded corpus: 40 of 684 LLM-mutant kills were NameError/SyntaxError
+# rather than assertion failures.
+# ---------------------------------------------------------------------------
+
+PROMPT = (
+    "from typing import List\n"
+    "\n"
+    "\n"
+    "def filter_by_substring(strings: List[str], substring: str) -> List[str]:\n"
+    '    """Filter strings containing substring."""\n'
+)
+
+
+def test_a_bare_return_fragment_is_not_a_mutant():
+    """The real HumanEval/7 case: a return with no enclosing def."""
+    assert _extract_code(
+        "return [x for x in strings if x in substring]",
+        PROMPT, "filter_by_substring",
+    ) is None
+
+
+def test_a_function_of_the_wrong_name_is_not_a_mutant():
+    assert _extract_code(
+        "def something_else(a):\n    return a\n", PROMPT, "filter_by_substring",
+    ) is None
+
+
+def test_a_valid_mutant_is_accepted():
+    code = _extract_code(
+        "def filter_by_substring(strings, substring):\n"
+        "    return [x for x in strings if substring in x][:-1]\n",
+        PROMPT, "filter_by_substring",
+    )
+    assert code is not None
+    assert "filter_by_substring" in code
+
+
+def test_a_mutant_missing_the_prompts_import_gets_it_back():
+    """The real HumanEval/1 case: NameError on `List`, scored as a kill."""
+    code = _extract_code(
+        "def filter_by_substring(strings: List[str], substring: str) -> List[str]:\n"
+        "    return []\n",
+        PROMPT, "filter_by_substring",
+    )
+    assert code is not None
+    assert "from typing import List" in code
+    compile(code, "<mutant>", "exec")          # would raise NameError at run time otherwise
+
+
+def test_a_mutant_missing_a_prompt_helper_gets_it_back():
+    prompt = (
+        "def _helper(n):\n"
+        "    return n * 2\n"
+        "\n"
+        "\n"
+        "def entry(n):\n"
+        '    """Doc."""\n'
+    )
+    code = _extract_code("def entry(n):\n    return _helper(n) + 1\n", prompt, "entry")
+    assert code is not None
+    assert "_helper" in code
+
+
+def test_omitting_the_entry_point_keeps_the_old_parse_only_behaviour():
+    """Callers that pass no entry point (older paths) are unaffected."""
+    assert _extract_code("return 1", PROMPT) == "return 1"

@@ -50,10 +50,18 @@ def build_consistency_assertions(
         majority vote is undefined;
       * RQ3 found no input carrying a leave-one-out safe majority.
     """
-    rate = divergence_data.get("pairwise_disagreement_rate", 0.0)
+    rate = divergence_data.get("pairwise_disagreement_rate")
     effective_threshold = (
         threshold if threshold is not None else DEFAULT_DIVERGENCE_THRESHOLD
     )
+
+    if rate is None:
+        # RQ3 found no comparable pair on this task -- every candidate output
+        # was a crash or a timeout, so there is no evidence the solutions
+        # diverge and no basis for an oracle. Distinct from a rate of 0.0,
+        # which is positive evidence that they agree.
+        logger.debug("No comparable outputs for %s - no assertions built", task.task_id)
+        return "", 0
 
     if rate < effective_threshold:
         return "", 0

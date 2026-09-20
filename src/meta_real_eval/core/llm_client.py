@@ -122,10 +122,42 @@ class InnkubeClient:
         paraphrase generator's retry budget replay its first attempt forever.
         Callers that pass nothing keep their existing keys, so adding this
         parameter invalidates no cache entry.
+
+        Callers that need to tell a *truncated* completion from a genuinely bad
+        one should use :meth:`complete_with_meta` instead.
+        """
+        completions, _finish_reasons = await self.complete_with_meta(
+            model, messages, temperature=temperature, max_tokens=max_tokens,
+            n=n, cache_salt=cache_salt,
+        )
+        return completions
+
+    async def complete_with_meta(
+        self,
+        model: str,
+        messages: list[dict],
+        *,
+        temperature: float = 0.8,
+        max_tokens: int = 1024,
+        n: int = 1,
+        cache_salt: Optional[str] = None,
+    ) -> tuple[list[str], list[str]]:
+        """Return ``(completions, finish_reasons)``.
+
+        ``finish_reason == "length"`` means the model ran out of budget
+        mid-answer. That is an *infrastructure* outcome, not a wrong answer, and
+        the two are indistinguishable once the reason is dropped: a truncated
+        completion fails to parse and enters the leaderboard as a real 0. This
+        matters most for models that reason inline before answering, where the
+        budget is consumed by deliberation and the answer never arrives.
+
+        Entries written before finish reasons were recorded have no
+        ``finish_reasons`` key; they report ``"unknown"`` so an old cache stays
+        usable and is never mistaken for a run of clean stops.
         """
         if self._mock:
             stub = f"# mock [{model}]\ndef solution():\n    pass\n"
-            return [stub] * n
+            return [stub] * n, ["stop"] * n
 
         cache_key = self._cache.key(
             model, messages,
@@ -134,14 +166,25 @@ class InnkubeClient:
         )
         if cached := self._cache.get(cache_key):
             logger.debug("Cache hit %s", cache_key[:12])
-            return cached["choices"]
+            choices = cached["choices"]
+            return choices, cached.get("finish_reasons") or ["unknown"] * len(choices)
 
         async with self._semaphore:
             await self._rate_limiter.acquire()
-            choices = await self._call_with_retry(model, messages, temperature, max_tokens, n)
+            choices, finish_reasons = await self._call_with_retry(
+                model, messages, temperature, max_tokens, n
+            )
 
-        self._cache.put(cache_key, {"choices": choices})
-        return choices
+        truncated = sum(1 for r in finish_reasons if r == "length")
+        if truncated:
+            logger.warning(
+                "%s: %d/%d completion(s) hit the %d-token cap (finish_reason=length) "
+                "— raise max_tokens or the answer is being cut off mid-generation.",
+                model, truncated, len(finish_reasons), max_tokens,
+            )
+
+        self._cache.put(cache_key, {"choices": choices, "finish_reasons": finish_reasons})
+        return choices, finish_reasons
 
     async def _call_with_retry(
         self,
@@ -150,7 +193,7 @@ class InnkubeClient:
         temperature: float,
         max_tokens: int,
         n: int,
-    ) -> list[str]:
+    ) -> tuple[list[str], list[str]]:
         cfg = self._config
         for attempt in range(cfg.retry_max_attempts):
             try:
@@ -161,7 +204,10 @@ class InnkubeClient:
                     max_tokens=max_tokens,
                     n=n,
                 )
-                return [_strip_reasoning(_message_text(c.message)) for c in response.choices]
+                return (
+                    [_strip_reasoning(_message_text(c.message)) for c in response.choices],
+                    [(c.finish_reason or "unknown") for c in response.choices],
+                )
 
             except RateLimitError:
                 delay = cfg.retry_base_delay_s * (2 ** attempt)

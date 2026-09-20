@@ -59,6 +59,14 @@ class RQ2Config(BaseModel):
     n_completions: int = 10
     temperature: float = 0.8
 
+    # Generation budget per completion. Mirrors rq1/llm_mutator.py's
+    # MUTANT_MAX_TOKENS, and for the same reason: a model that reasons before
+    # answering spends this budget on deliberation first, so a low cap returns
+    # a completion truncated mid-thought -- which is indistinguishable from a
+    # wrong answer once it fails to parse, and enters the leaderboard as a real
+    # zero. Err high; an unused budget costs nothing.
+    max_tokens: int = 8192
+
     # Template control arm (src/meta_real_eval/rq2/paraphraser.py).  Kept so the
     # LLM corpus can be compared against it — "templates understate instability
     # by X" is then a measured result rather than a speculative limitation.

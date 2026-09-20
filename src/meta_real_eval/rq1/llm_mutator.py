@@ -80,8 +80,39 @@ def _normalise(code: str) -> str:
         return code.strip()
 
 
-def _extract_code(raw: str, prompt: str) -> str | None:
-    """Strip markdown fences if present and validate that code parses."""
+def repair_mutant_code(code: str, prompt: str, entry_point: str) -> str | None:
+    """Make a mutant runnable, or return None if it cannot be.
+
+    A mutant is evidence about the *test suite* only if it is a working program
+    with one fault seeded in it. A fragment that cannot define the function
+    under test is killed by every suite, for a reason that has nothing to do
+    with the suite's quality, so it inflates the kill rate with free kills and
+    flatters the benchmark. Measured on the recorded corpus, 40 of 684 recorded
+    LLM-mutant kills were NameError or SyntaxError rather than assertion
+    failures -- 34 from one model, a quarter of its kills -- including bare
+    fragments like ``return [x for x in strings if x in substring]`` with no
+    enclosing ``def``.
+
+    Repair before rejecting: a mutant that merely dropped the prompt's ``from
+    typing import List`` is a real fault we should keep, not a lost
+    observation, so imports and prompt-defined helpers are re-attached first.
+    Only what still cannot define the entry point is discarded.
+
+    Shared by generation (so new corpora never store junk) and evaluation (so
+    an existing corpus is filtered without paying to regenerate it). The checks
+    come from the RQ2 evaluator rather than being restated, so both RQs agree
+    on what "runnable" means.
+    """
+    from ..rq2.evaluator import _defines_entry_point, _prompt_helpers, _prompt_imports
+
+    prelude = _prompt_imports(prompt) + _prompt_helpers(prompt, code, entry_point)
+    if prelude:
+        code = "\n".join(prelude) + "\n" + code
+    return code if _defines_entry_point(code, entry_point) else None
+
+
+def _extract_code(raw: str, prompt: str, entry_point: str | None = None) -> str | None:
+    """Strip markdown fences, then validate the candidate is a runnable mutant."""
     import ast
 
     code = raw.strip()
@@ -99,9 +130,12 @@ def _extract_code(raw: str, prompt: str) -> str | None:
 
     try:
         ast.parse(code)
-        return code
     except SyntaxError:
         return None
+
+    if entry_point is None:
+        return code
+    return repair_mutant_code(code, prompt, entry_point)
 
 
 async def generate_llm_mutants(
@@ -146,9 +180,10 @@ async def generate_llm_mutants(
 
     mutants: list[Mutant] = []
     for idx, raw in enumerate(raw_completions):
-        code = _extract_code(raw, task.prompt)
+        code = _extract_code(raw, task.prompt, task.entry_point)
         if code is None:
-            logger.debug("Skipping unparseable LLM mutant %d for %s", idx, task.task_id)
+            logger.debug("Skipping unusable LLM mutant %d for %s (does not parse, or "
+                         "does not define %s)", idx, task.task_id, task.entry_point)
             continue
         norm = _normalise(code)
         # Skip if identical to canonical, or to a sibling we already accepted.

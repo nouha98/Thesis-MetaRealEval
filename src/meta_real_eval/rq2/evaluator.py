@@ -13,7 +13,9 @@ import ast
 import logging
 import math
 import re
+import textwrap
 from concurrent.futures import ProcessPoolExecutor
+from typing import Callable
 
 from ..core.checkpoint import clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
@@ -87,6 +89,114 @@ def _defines_entry_point(code: str, entry_point: str) -> bool:
     )
 
 
+def _assembles_cleanly(code: str, entry_point: str) -> bool:
+    """True if `code` parses AND nothing leaked out past the entry-point def.
+
+    Stricter than :func:`_defines_entry_point`, and only meaningful on the
+    body-only path, where the body is appended *inside* the prompt's function.
+    Parsing alone is too weak an acceptance test there: a flat body appended to
+    the prompt can parse perfectly well with its statements sitting at module
+    level next to the function rather than inside it, and then die at run time
+    with NameError -- which scores as a wrong answer rather than a crash, so it
+    would hide from exactly the failure-mode audit that is supposed to catch it.
+
+    Requiring the entry-point definition to be the LAST top-level statement is
+    what rules that out: if any of the body escaped, it shows up as a sibling
+    statement after the def. Not valid on the module path, where a completion
+    may legitimately define a helper below the entry point.
+    """
+    try:
+        module = ast.parse(code)
+    except (SyntaxError, ValueError):
+        return False
+    indices = [
+        i for i, node in enumerate(module.body)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == entry_point
+    ]
+    return bool(indices) and indices[-1] == len(module.body) - 1
+
+
+# Candidate repairs for a body-only completion, in priority order.
+#
+# Models do not reliably emit the 4-space indent that makes a body a body, and
+# they get it wrong in two incompatible ways, so no single repair works.
+# Measured over the gemma corpus (1,637 body-only completions):
+#
+#   shape                  n    as-is   first+4   uniform+4
+#   already-indented     623     100%        0%          0%
+#   first line at 0,     389       2%       93%         10%
+#     rest >= 4
+#   fully flat           296       0%        0%        100%
+#   single line at 0     261       0%      100%        100%
+#   single line at 4      68     100%        0%          0%
+#
+# "first+4" restores an indent dropped from the first line only, leaving the
+# already-correct continuation lines where they are. "uniform+4" shifts the
+# whole block, for a body that was dedented as a unit. Each is wrong for the
+# other's shape, so the two are tried in turn and the first candidate that
+# assembles cleanly wins. Trying as-is FIRST guarantees no regression: a
+# well-formed body is never touched.
+#
+# Verified over the same corpus: this repairs 945 of the 946 broken bodies, and
+# NO completion is accepted by two rungs that produce different ASTs -- so the
+# ladder is deterministic and never has to guess between rival repairs.
+_REPAIR_LADDER: tuple[tuple[str, Callable[[str], str]], ...] = (
+    ("as-is",     lambda body: body),
+    ("first+4",   lambda body: "    " + body),
+    ("uniform+4", lambda body: textwrap.indent(body, "    ")),
+)
+
+
+def assemble_body(body: str, task_prompt: str, entry_point: str) -> tuple[str, str]:
+    """Append a body-only completion to its prompt, repairing indentation.
+
+    Returns ``(assembled_source, rung)`` where ``rung`` names the repair that
+    was accepted, or ``"unrepaired"`` when none assembled cleanly. Callers that
+    do not care about the rung use :func:`build_solution_code`; the rung is
+    exposed so a verification pass can report how often each repair fires, and
+    flag any completion that two rungs disagree over.
+    """
+    for rung, repair in _REPAIR_LADDER:
+        candidate = task_prompt + repair(body)
+        if _assembles_cleanly(candidate, entry_point):
+            return candidate, rung
+    # Nothing worked. Hand back the plain concatenation -- the pre-repair
+    # behaviour -- so the completion fails the same way it always did rather
+    # than failing differently because of a speculative fix.
+    return task_prompt + body, "unrepaired"
+
+
+def _prompt_helpers(task_prompt: str, code: str, entry_point: str) -> list[str]:
+    """Helper functions the prompt defines that a module completion left out.
+
+    HumanEval/10, /32, /38 and /50 define a helper above the entry point
+    (``is_palindrome``, ``poly``, ``encode_cyclic``, ``encode_shift``) and the
+    task's own tests call through it. A completion that restates the entry point
+    as a whole module but not the helper raises NameError -- a harness artifact,
+    not a wrong answer. This is the same reasoning as :func:`_prompt_imports`,
+    applied to definitions instead of imports.
+
+    The entry point itself is never re-attached: the completion supplies it, and
+    the prompt's copy has no body beyond the docstring.
+    """
+    try:
+        prompt_tree = ast.parse(task_prompt)
+        code_tree = ast.parse(code)
+    except (SyntaxError, ValueError):
+        return []
+    already_defined = {
+        node.name for node in code_tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    return [
+        ast.unparse(node) for node in prompt_tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name != entry_point
+        and node.name not in already_defined
+    ]
+
+
 def _prompt_imports(task_prompt: str) -> list[str]:
     """Top-level import statements the task prompt supplies.
 
@@ -145,13 +255,18 @@ def build_solution_code(completion: str, task_prompt: str, entry_point: str) -> 
     code = _extract_function_body(completion, entry_point)
 
     if not _defines_entry_point(code, entry_point):
-        # Body-only: the prompt supplies the signature and the imports.
-        return task_prompt + code
+        # Body-only: the prompt supplies the signature and the imports, and the
+        # body's indentation is repaired if the model dropped it (see
+        # _REPAIR_LADDER).
+        assembled, _rung = assemble_body(code, task_prompt, entry_point)
+        return assembled
 
-    # Complete module: re-attach the prompt's imports.  Repeating an import the
-    # model already wrote is harmless, so this needs no de-duplication.
-    imports = _prompt_imports(task_prompt)
-    return ("\n".join(imports) + "\n" + code) if imports else code
+    # Complete module: re-attach what the prompt supplied and the completion
+    # did not restate -- imports, then any helper defined above the entry point.
+    # Repeating an import the model already wrote is harmless, so the imports
+    # need no de-duplication; helpers do, or we would shadow the model's own.
+    prelude = _prompt_imports(task_prompt) + _prompt_helpers(task_prompt, code, entry_point)
+    return ("\n".join(prelude) + "\n" + code) if prelude else code
 
 
 # ---------------------------------------------------------------------------
@@ -196,12 +311,16 @@ def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None
 
     pass_rates: dict[str, dict[str, dict]] = {}
 
-    for relation, model_completions in completions_data.items():
-        pass_rates[relation] = {}
-        for model_id, completions in model_completions.items():
-            n = len(completions)
-            with ProcessPoolExecutor(max_workers=cfg.execution.cpu_workers) as pool:
-                futures = [
+    # One pool for the whole task, not one per (relation, model) cell. At ~21
+    # relations x 3 models that was 63 pool spin-ups per task and ~10k over the
+    # corpus, each paying Windows process-creation cost for 10 subprocess
+    # launches of actual work.
+    with ProcessPoolExecutor(max_workers=cfg.execution.cpu_workers) as pool:
+        futures_by_cell: dict[tuple[str, str], list] = {}
+        for relation, model_completions in completions_data.items():
+            pass_rates[relation] = {}
+            for model_id, completions in model_completions.items():
+                futures_by_cell[(relation, model_id)] = [
                     pool.submit(
                         _run_completion,
                         comp,
@@ -212,16 +331,19 @@ def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None
                     )
                     for comp in completions
                 ]
-                # Iterated in submission order (not as_completed) so per_completion[i]
-                # refers to completions[i].  RQ3 scores divergence as a classifier of
-                # "this solution passes the benchmark", which needs the individual
-                # outcomes — they were previously summed away and thrown out.
-                per_completion = []
-                for f in futures:
-                    try:
-                        per_completion.append(bool(f.result()))
-                    except Exception:
-                        per_completion.append(False)
+
+        # Collected in submission order (not as_completed) so per_completion[i]
+        # refers to completions[i].  RQ3 scores divergence as a classifier of
+        # "this solution passes the benchmark", which needs the individual
+        # outcomes — they were previously summed away and thrown out.
+        for (relation, model_id), futures in futures_by_cell.items():
+            per_completion = []
+            for f in futures:
+                try:
+                    per_completion.append(bool(f.result()))
+                except Exception:
+                    per_completion.append(False)
+            n = len(per_completion)
             correct = sum(per_completion)
 
             pass_rates[relation][model_id] = {

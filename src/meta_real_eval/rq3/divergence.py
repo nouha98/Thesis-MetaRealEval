@@ -34,6 +34,16 @@ ERROR_OUTPUT = "__error__"
 # divergence.json and the generated test block small.
 MAX_CONSENSUS_ENTRIES = 50
 
+# A consensus needs enough working references to mean anything. Below this many
+# solutions produced a value, "they all agree" is an accident of a small sample.
+MIN_VOTERS = 3
+
+# ...and those voters must be most of the solution set. An input where only a
+# handful of references ran is one the others crashed on, which usually means it
+# sits outside the task's domain -- exactly where a confident-looking consensus
+# is most likely to be wrong. See _build_consensus for the measured cases.
+MIN_VOTER_SHARE = 0.8
+
 
 def _pick_best_completion(
     completions: list[str],
@@ -154,7 +164,9 @@ def compute_divergence(
 
     if len(solutions) < 2:
         return {"n_solutions": len(solutions), "n_inputs": 0,
-                "pairwise_disagreement_rate": 0.0,
+                "pairwise_disagreement_rate": None,
+                "n_comparable_pairs": 0,
+                "n_pairs_excluded_error": 0,
                 "consensus": {"n_inputs_with_consensus": 0, "entries": []},
                 "solutions": [{k: v for k, v in s.items() if k != "code"}
                               for s in solutions]}
@@ -187,16 +199,34 @@ def compute_divergence(
         flat_outputs[i * n_inputs:(i + 1) * n_inputs] for i in range(len(solutions))
     ]
 
-    # Compute pairwise disagreement
-    total_comparisons = 0
+    # Pairwise disagreement, over comparable outputs only.
+    #
+    # A crash or timeout means "we do not know what this solution would have
+    # produced", so a pair where either side errored carries no information
+    # about whether the two behave alike. Comparing the ERROR_OUTPUT sentinels
+    # as if they were values made two crashed solutions *agree* with each other
+    # and disagree with everything that ran -- so the rate measured how many
+    # solutions were broken, not how far the working ones diverged. On the
+    # pre-repair corpus that was not a subtle effect: on 72 of 164 tasks the
+    # rate came out exactly g(n-g)/C(n,2), the algebraic signature of g crashing
+    # solutions standing against the rest, and the resulting ROC-AUC of 0.957
+    # was detecting broken extraction rather than wrong answers.
+    comparable = 0
+    excluded_error = 0
     disagreements = 0
     for i, j in combinations(range(len(solutions)), 2):
         for o_i, o_j in zip(all_outputs[i], all_outputs[j]):
-            total_comparisons += 1
+            if o_i == ERROR_OUTPUT or o_j == ERROR_OUTPUT:
+                excluded_error += 1
+                continue
+            comparable += 1
             if o_i != o_j:
                 disagreements += 1
 
-    rate = disagreements / total_comparisons if total_comparisons else 0.0
+    # None, not 0.0: with nothing comparable there is no evidence either way,
+    # and 0.0 would read as "these solutions agree perfectly" -- which would
+    # then gate a task out of RQ4 augmentation for the wrong reason.
+    rate = disagreements / comparable if comparable else None
 
     consensus, per_solution = _build_consensus(solutions, inputs, all_outputs)
 
@@ -205,7 +235,9 @@ def compute_divergence(
         "n_inputs": len(inputs),
         "pairwise_disagreement_rate": rate,
         "disagreements": disagreements,
-        "total_comparisons": total_comparisons,
+        "n_comparable_pairs": comparable,
+        "n_pairs_excluded_error": excluded_error,
+        "total_comparisons": comparable + excluded_error,
         "consensus": consensus,
         "solutions": per_solution,
     }
@@ -225,22 +257,41 @@ def _build_consensus(
     inputs: list[tuple],
     all_outputs: list[list[str]],
 ) -> tuple[dict, list[dict]]:
-    """Derive a majority-vote pseudo-oracle and score each solution against it.
+    """Derive a unanimous-vote pseudo-oracle and score each solution against it.
 
-    For every shared input we take the modal output across the k solutions and
-    keep it only if it is a *leave-one-out safe* strict majority: after dropping
-    one vote (the candidate under test may itself be one of the reference
-    solutions) it must still be a strict majority.  That is a static, per-task
-    approximation of proper leave-one-out — it costs no per-candidate code
-    generation and can only make the oracle more conservative.
+    For every shared input we keep the output only when **every** reference
+    solution that produced a value produced the *same* value, and enough of them
+    ran to make that meaningful (``MIN_VOTER_SHARE`` of the solution set).
 
-    Crucially the majority is counted against **all** reference solutions, not
-    just the ones that produced an output.  Error/timeout outputs never vote and
-    never become an expected value, but they still count in the denominator.
-    Without that, an input on which most solutions legitimately raise (an empty
-    list to a function that divides by len(xs)) would let the handful of
-    degenerate solutions that silently return None define the "expected" value —
-    and every correct candidate would then fail the assertion.
+    Why unanimity rather than a majority.  RQ4 turns each kept entry into an
+    assertion that candidates must satisfy, so a wrong entry does not merely add
+    noise -- it *fails correct solutions*, which is the one outcome the
+    experiment cannot absorb. A majority rule admits exactly that on inputs
+    outside the task's intended domain, where the fuzzer supplies values the
+    specification never contemplated and the references disagree about what
+    should happen. Measured on the recorded corpus:
+
+        HumanEval/55   fib(-72) == 0         14 of 17 voters (18 solutions)
+        HumanEval/100  make_a_pile(-72) == []  9 of 12 voters (12 solutions)
+        HumanEval/119  match_parens(...) == 'Yes'  16 of 18 voters
+
+    Each of those was a majority, each became an assertion, and each failed a
+    solution that passes the full benchmark -- dropping qwen3-next from 1.0 to
+    0.0 on two of the three tasks. All three are non-unanimous; all three are
+    excluded here, while the entries that carry real signal (``fib(10) == 55``
+    at 17/17, ``make_a_pile(3) == [3, 5, 7]`` at 12/12) survive. A task whose
+    references cannot agree unanimously ends up with no assertions, which is
+    the honest answer: there was no oracle to extract.
+
+    This does **not** close the domain problem. If every reference agrees on a
+    wrong out-of-domain value the entry is still kept, and a correct solution
+    that raises there still fails. The real fix is generating in-domain inputs;
+    until then, state the residual risk when reporting RQ4.
+
+    Error/timeout outputs never vote and never become an expected value, but
+    they still count in the denominator via ``MIN_VOTER_SHARE``: an input on
+    which most solutions legitimately raise must not let the few that silently
+    return None define the expected value.
 
     A solution that errors where a consensus does exist is counted as disagreeing
     with it (behavioural divergence, not missing data).
@@ -253,11 +304,14 @@ def _build_consensus(
     for idx in range(len(inputs)):
         column = [all_outputs[s][idx] for s in range(n_solutions)]
         voters = [o for o in column if o != ERROR_OUTPUT]
-        if len(voters) < 3:
-            continue                      # majority is undefined below 3 voters
-        expected, votes = Counter(voters).most_common(1)[0]
-        if (votes - 1) <= (n_solutions - 1) / 2:
-            continue                      # not a leave-one-out safe majority
+        if len(voters) < MIN_VOTERS:
+            continue                      # too few working references to agree
+        if len(voters) < MIN_VOTER_SHARE * n_solutions:
+            continue                      # too many failed to produce a value
+        distinct = Counter(voters)
+        if len(distinct) > 1:
+            continue                      # not unanimous -- see the docstring
+        expected, votes = distinct.most_common(1)[0]
         if not _is_literal(expected):
             # RQ4 embeds this value verbatim in generated assertion code. An
             # output whose repr is not a Python literal (a custom object's

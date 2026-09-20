@@ -2,8 +2,14 @@
 # LLM-bound single job: processes all tasks in one async process.
 # Rate limiting (requests_per_minute in config) controls Innkube load.
 #
-# Usage: sbatch scripts/slurm/submit_llm.sh <stage> <phase> [--force]
+# Usage: sbatch scripts/slurm/submit_llm.sh <stage> <phase> [extra runner args...]
 # Example: sbatch scripts/slurm/submit_llm.sh rq2 generate --force
+#          sbatch scripts/slurm/submit_llm.sh rq2 generate --only-model qwen36-35b --force
+#
+# Everything after <phase> is forwarded to the runner verbatim, so a new runner
+# flag works here without editing this script. It used to match only "--force"
+# in position 3, which silently DROPPED any other argument -- a regeneration
+# meant for one model would have run for all of them.
 #
 #SBATCH --job-name=submit_llm
 #SBATCH --cpus-per-task=2
@@ -13,17 +19,18 @@
 
 set -euo pipefail
 
-STAGE=${1:?Usage: submit_llm.sh <stage> <phase> [--force]}
-PHASE=${2:?Usage: submit_llm.sh <stage> <phase> [--force]}
-FORCE_ARGS=()
-[[ "${3:-}" == "--force" ]] && FORCE_ARGS=(--force)
+STAGE=${1:?Usage: submit_llm.sh <stage> <phase> [extra runner args...]}
+PHASE=${2:?Usage: submit_llm.sh <stage> <phase> [extra runner args...]}
+shift 2
+EXTRA_ARGS=("$@")
 
 export MRE_RUNNER_MODULE="meta_real_eval.${STAGE}.runner"
 source "${SLURM_SUBMIT_DIR:-$(dirname "$0")/../..}/scripts/slurm/_common.sh"
 
-echo "Job ${SLURM_JOB_ID}: ${STAGE} --phase ${PHASE} (LLM-bound, all tasks)${FORCE_ARGS:+ (forced)}"
+echo "Job ${SLURM_JOB_ID}: ${STAGE} --phase ${PHASE} (LLM-bound, all tasks)" \
+     "${EXTRA_ARGS[@]+${EXTRA_ARGS[*]}}"
 
 srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" -m meta_real_eval.${STAGE}.runner \
     --config config/default.yaml \
     --phase "${PHASE}" \
-    ${FORCE_ARGS[@]+"${FORCE_ARGS[@]}"}
+    ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}

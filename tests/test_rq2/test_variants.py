@@ -54,8 +54,9 @@ async def test_client_does_not_send_the_salt_to_the_api(tmp_path, monkeypatch):
     sent = {}
 
     class _Choice:
-        def __init__(self, text):
+        def __init__(self, text, finish_reason="stop"):
             self.message = type("M", (), {"content": text})()
+            self.finish_reason = finish_reason
 
     async def fake_create(**kwargs):
         sent.update(kwargs)

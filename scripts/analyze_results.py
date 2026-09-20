@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import sys
 from collections import Counter, defaultdict
 from itertools import combinations
@@ -382,6 +383,35 @@ def _sign(a: float, b: float) -> int:
     return (a > b) - (a < b)
 
 
+def task_strata() -> dict[str, str]:
+    """Classify every task by what the intact suite can still distinguish.
+
+    Shared with RQ4 (rq4.runner.task_stratum) so both report the same
+    partition. Computed from pass@1 under the *original* prompt and the intact
+    suite -- before any paraphrase or degradation -- which makes it a
+    pre-treatment covariate rather than the outcome.
+
+    This is the population question behind every RQ2-RQ4 statistic: a task where
+    all models score the same cannot exhibit ranking movement, so tau_b is
+    undefined there by construction and no amount of paraphrasing or suite
+    weakening can make it informative.
+    """
+    from meta_real_eval.rq4.runner import task_stratum
+
+    strata: dict[str, str] = {}
+    root = RESULTS / "rq2" / "evaluate"
+    if not root.exists():
+        return strata
+    for td in sorted(root.iterdir()):
+        path = td / "pass_rates.json"
+        if not path.exists():
+            continue
+        cells = load(path).get("original", {})
+        scores = {m: v["pass@1"] for m, v in cells.items() if v.get("n", 0) > 0}
+        strata[td.name] = task_stratum(scores)
+    return strata
+
+
 def _understatement(paired: list[dict]) -> dict:
     """How much instability the template arm misses, measured against the floor.
 
@@ -511,6 +541,12 @@ def analyze_rq2() -> dict:
     # the primary (>=4) figure, so "does the gate change the conclusion?" is a
     # reported number rather than an assumption. See coverage_sensitivity below.
     ungated_task_tau: list[float] = []
+    # The same headline restricted to tasks whose models actually differ under
+    # the intact suite. On a saturated task every model ties, so tau_b is
+    # undefined by construction -- those tasks contribute nothing to the mean
+    # but do inflate the "how many tasks did we look at" denominators.
+    strata = task_strata()
+    discriminating_task_tau: list[float] = []
 
     for td in task_dirs:
         if not td.is_dir():
@@ -563,6 +599,8 @@ def analyze_rq2() -> dict:
             ungated_task_tau.append(by_arm["primary"])
         if covered and by_arm["primary"] is not None:
             per_task.append({"task": td.name, "mean_tau_b": by_arm["primary"]})
+            if strata.get(td.name) == "discriminating":
+                discriminating_task_tau.append(by_arm["primary"])
         elif not covered:
             excluded_for_coverage.append({
                 "task": td.name,
@@ -679,6 +717,24 @@ def analyze_rq2() -> dict:
 
     return {
         "n_tasks": n_tasks,
+        "task_strata": {
+            **{k: sum(1 for v in strata.values() if v == k)
+               for k in ("discriminating", "saturated", "floor")},
+            "discriminating_mean_tau_b": _mean_ci(discriminating_task_tau),
+            "note": (
+                "Tasks classified by pass@1 under the original prompt and the "
+                "intact suite -- a pre-treatment covariate, not the outcome. A "
+                "'saturated' task has every model at 1.0 and a 'floor' task has "
+                "every model at 0.0; in both, the model-score vector is constant, "
+                "so tau_b is undefined by construction and no paraphrase can move "
+                "a ranking that does not exist. discriminating_mean_tau_b is "
+                "grand_mean_tau_b restricted to the tasks that can actually "
+                "exhibit ranking movement; quote it as the estimate and the "
+                "pooled figure as the sensitivity check. Note this measures "
+                "saturation FOR THIS MODEL PANEL, not of the benchmark in the "
+                "abstract -- a weaker model would de-saturate many of these tasks."
+            ),
+        },
         "ranking_stability": {
             "n_task_level_samples": len(task_tau),
             "grand_mean_tau_b": grand_mean,
@@ -812,6 +868,66 @@ def analyze_rq2() -> dict:
 # RQ3 — divergence as a detector of benchmark-failing solutions
 # ---------------------------------------------------------------------------
 
+def _split_half_validation(scores: list[float], labels: list[int], seed: int = 42) -> dict:
+    """Fit tau_div on half the tasks, report how it performs on the other half.
+
+    ``recommended_divergence_threshold`` is chosen by maximising Youden's J over
+    the same tasks it is then applied to, so its sensitivity and specificity are
+    in-sample and optimistic by construction -- the cut-off was picked *because*
+    it separates these particular points. That is fine for setting a gate, and
+    misleading if quoted as the gate's accuracy.
+
+    This fits on a seeded half and scores the held-out half, which is the number
+    to report. A large gap between the two says the threshold is fitted to noise
+    and will not transfer; agreement says the gate generalises.
+
+    The full-sample threshold is still what gets written to the config: it uses
+    all the data and this block is what keeps the claim about it honest.
+    """
+    if len(scores) < 8:
+        return {"available": False,
+                "note": "too few tasks with a defined divergence rate to split"}
+
+    indices = list(range(len(scores)))
+    random.Random(seed).shuffle(indices)
+    cut = len(indices) // 2
+    fit_idx, test_idx = indices[:cut], indices[cut:]
+
+    fit = youden_threshold([scores[i] for i in fit_idx], [labels[i] for i in fit_idx])
+    threshold = fit.get("threshold")
+    if threshold is None:
+        return {"available": False, "note": f"fit half degenerate: {fit.get('note')}"}
+
+    n_pos = sum(labels[i] for i in test_idx)
+    n_neg = len(test_idx) - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return {"available": False,
+                "note": "held-out half contains only one class; cannot validate"}
+
+    tp = sum(1 for i in test_idx if labels[i] and scores[i] >= threshold)
+    fp = sum(1 for i in test_idx if not labels[i] and scores[i] >= threshold)
+    sensitivity = tp / n_pos
+    specificity = 1 - fp / n_neg
+    return {
+        "available": True,
+        "threshold_from_fit_half": threshold,
+        "n_fit": len(fit_idx),
+        "n_held_out": len(test_idx),
+        "in_sample_youden_j": fit.get("youden_j"),
+        "held_out_sensitivity": sensitivity,
+        "held_out_specificity": specificity,
+        "held_out_youden_j": sensitivity + specificity - 1,
+        "held_out_roc_auc": roc_auc([scores[i] for i in test_idx],
+                                    [labels[i] for i in test_idx]).get("auc"),
+        "note": (
+            "Fitted on a seeded half, scored on the other. Quote the held-out "
+            "figures when reporting how well divergence gates tasks; the "
+            "in-sample Youden J above is optimistic because the cut-off was "
+            "chosen to maximise it on those same points."
+        ),
+    }
+
+
 def analyze_rq3() -> dict:
     """Score cross-variant divergence as a classifier, and calibrate tau_div.
 
@@ -841,14 +957,19 @@ def analyze_rq3() -> dict:
     task_scores: list[float] = []
     task_labels: list[int] = []         # 1 = task has >=1 failing solution
     per_task_divergence: dict[str, float] = {}
-    n_tasks = n_no_consensus = n_sbc_missing = 0
+    n_tasks = n_no_consensus = n_sbc_missing = n_rate_undefined = 0
 
     for td in sorted(root.iterdir()):
         if not td.is_dir() or not (td / "divergence.json").exists():
             continue
         dv = load(td / "divergence.json")
         n_tasks += 1
-        per_task_divergence[td.name] = dv.get("pairwise_disagreement_rate", 0.0)
+        # None when RQ3 had no comparable outputs on this task (every solution
+        # crashed). Recorded as null and excluded below, never coerced to 0.0 --
+        # that would enter the ROC as "these solutions agree perfectly", which
+        # is the opposite of what an all-crash task shows.
+        rate = dv.get("pairwise_disagreement_rate")
+        per_task_divergence[td.name] = rate
 
         sols = dv.get("solutions", [])
         # Older runs predate the consensus block; skip them rather than score
@@ -878,27 +999,33 @@ def analyze_rq3() -> dict:
         else:
             n_sbc_missing += 1
 
-        task_scores.append(dv.get("pairwise_disagreement_rate", 0.0))
-        task_labels.append(int(any(not x["passes_benchmark"] for x in scored)))
+        if rate is not None:
+            task_scores.append(rate)
+            task_labels.append(int(any(not x["passes_benchmark"] for x in scored)))
+        else:
+            n_rate_undefined += 1
 
     per_solution = roc_auc(sol_scores, sol_labels)
     per_task = roc_auc(task_scores, task_labels)
     calibration = youden_threshold(task_scores, task_labels)
+    defined_rates = [r for r in per_task_divergence.values() if r is not None]
+    holdout = _split_half_validation(task_scores, task_labels)
 
     return {
         "available": n_tasks > 0,
         "n_tasks": n_tasks,
         "n_tasks_without_consensus_block": n_no_consensus,
+        "n_tasks_with_undefined_divergence": n_rate_undefined,
         "n_solutions_scored": len(sol_scores),
         "mean_pairwise_divergence": (
-            sum(per_task_divergence.values()) / len(per_task_divergence)
-            if per_task_divergence else float("nan")
+            sum(defined_rates) / len(defined_rates) if defined_rates else None
         ),
         "roc_auc_per_solution": per_solution,
         "roc_auc_per_task": per_task,
         "n_tasks_without_sbc_scores": n_sbc_missing,
         "roc_auc_sbc_per_solution": roc_auc(sbc_scores, sbc_labels),
         "recommended_divergence_threshold": calibration,
+        "split_half_validation": holdout,
         "per_task_divergence": per_task_divergence,
         "note": (
             "Positive class is 'fails the benchmark', so AUC > 0.5 means higher "
@@ -1032,9 +1159,23 @@ def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
     deficits = [r["deficit"] for r in joined]
     drops = [r["tau_b_drop"] for r in joined]
 
+    # Split on whether the task HAS an oracle deficit, not on the median.
+    #
+    # The deficit is (traditional kill rate - LLM kill rate), and most tasks sit
+    # at exactly 0.0: the suite catches LLM-style faults just as well as textbook
+    # ones, which is the definition of *not* having a weak oracle. That makes 0.0
+    # the median, and a `deficit >= median` split then files every zero-deficit
+    # task under "weak" -- 126 of 144 tasks, against 18 "strong". Comparing a
+    # group that contains its own complement's defining property is not a
+    # contrast, and the imbalance leaves the test almost no power.
+    #
+    # `deficit > 0` is the substantive dichotomy the hypothesis is actually
+    # about: tasks whose tests miss realistic faults, versus tasks whose tests
+    # do not.
+    split_point = 0.0
+    weak = [r["tau_b_drop"] for r in joined if r["deficit"] > split_point]
+    strong = [r["tau_b_drop"] for r in joined if r["deficit"] <= split_point]
     median = sorted(deficits)[len(deficits) // 2]
-    weak = [r["tau_b_drop"] for r in joined if r["deficit"] >= median]
-    strong = [r["tau_b_drop"] for r in joined if r["deficit"] < median]
 
     correlation = (
         spearman_rho(deficits, drops) if len(set(deficits)) > 1 and len(set(drops)) > 1
@@ -1045,6 +1186,7 @@ def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
         "available": True,
         "n_joined_tasks": len(joined),
         "median_deficit": median,
+        "split_point": split_point,
         "spearman_deficit_vs_tau_b_drop": correlation,
         "weak_vs_strong_oracle": {
             "n_weak": len(weak), "n_strong": len(strong),
@@ -1057,7 +1199,11 @@ def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
             "deficit = traditional kill rate (excluding trivially-killed statement "
             "deletions where available) minus LLM-specific kill rate; larger = "
             "weaker oracle. tau_b_drop = ranking stability at 0% degradation minus "
-            "stability at the largest degradation level; larger = more unstable."
+            "stability at the largest degradation level; larger = more unstable. "
+            "The weak/strong split is deficit > 0 (the suite misses realistic "
+            "faults) versus deficit <= 0 (it does not), NOT a median split: most "
+            "tasks have a deficit of exactly 0.0, so the median IS 0.0 and a "
+            "'>= median' rule would file every zero-deficit task as weak-oracle."
         ),
     }
 

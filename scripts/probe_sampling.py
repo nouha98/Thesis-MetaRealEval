@@ -9,16 +9,30 @@ completions. Two explanations fit that, with opposite consequences:
   (b) the models genuinely have very low entropy on easy HumanEval prompts --
       the duplicates are real data and a finding in their own right.
 
-These are distinguishable. For the same prompt, ask for the samples two ways:
+The test that decides it is the SINGLE-CALL route: ask for k samples in one
+request (n=k) and count the distinct completions.
 
-  ONE CALL   n=k               -- k samples from a single request
-  k CALLS    n=1, unique salt  -- k samples from k independent requests
+  varied    the endpoint honours n, so duplicates in the stored data are the
+            model's behaviour (b), not cloning.
+  collapsed either (a), or a genuinely peaked distribution on this prompt. This
+            script cannot tell them apart -- try a --task or prompt where the
+            model should vary.
 
-Under (b) both routes give a similar distinct-count. Under (a) the single call
-collapses to 1 distinct while the separate calls stay varied.
+A second route, k separate n=1 requests, is also run and reported, but it is
+NOT a source of independent samples on this endpoint. The cache salt is folded
+into the LOCAL cache key only and is never sent to the API, so those k requests
+are byte-identical -- and the endpoint returns the same output for repeated
+identical requests (measured: 1 distinct of 10 for all three models, including
+512-token reasoning traces where a chance duplicate is impossible). A collapsed
+n=1 route is therefore expected and says nothing about entropy; it is printed
+so that quirk stays visible, and so nobody resamples by re-calling with n=1.
 
-Every request here uses a unique cache salt, so nothing is served from cache and
-no existing entry is overwritten. Cost is (k + 1) requests per model.
+The prompt here is a free-form user message with no system prompt, capped at
+--max-tokens, so distinct counts are not comparable with the pipeline's
+constrained short-answer completions.
+
+Every request uses a unique cache salt, so nothing is served from the local
+cache and no existing entry is overwritten. Cost is (k + 1) requests per model.
 
 Usage:
     python scripts/probe_sampling.py                    # task 0, all configured models
@@ -85,17 +99,22 @@ async def probe(task, model_id: str, client: InnkubeClient, k: int,
     d_separate = summarise(f"{k} calls n=1:", separate)
 
     print("    ->", end=" ")
-    if d_single <= 1 < d_separate:
-        print("ENDPOINT ARTIFACT: n>1 collapses, independent calls vary.")
-        print("       Treat n>1 results as unreliable; resample via separate")
-        print("       salted calls instead.")
-    elif d_single <= 1 and d_separate <= 1:
-        print("GENUINE LOW ENTROPY: this model/prompt is deterministic either way.")
-        print("       Duplicates are real model behaviour, not an API artifact.")
-    elif d_single > 1:
-        print("n>1 IS HONOURED here: the single call returned varied samples.")
+    if d_single > 1:
+        print("n>1 IS HONOURED: the single call returned varied samples, so")
+        print("       duplicates in the stored data are model behaviour, not cloning.")
+        if d_separate <= 1:
+            print("       Note: the n=1 route collapsed. Repeated identical n=1 requests")
+            print("       return identical output on this endpoint, so they are not")
+            print("       independent samples -- do not resample by re-calling with n=1.")
+    elif d_separate > 1:
+        print("SINGLE CALL COLLAPSED while separate n=1 calls varied: n>1 may be")
+        print("       mishandled. Treat n>1 results as unreliable and confirm with")
+        print("       another --task before relying on them.")
     else:
-        print("inconclusive for this prompt -- try another --task.")
+        print("INCONCLUSIVE: the single call collapsed to 1 distinct. That is either")
+        print("       cloning or a genuinely peaked distribution on this prompt, and")
+        print("       the n=1 route cannot separate them (identical requests replay).")
+        print("       Try a --task or prompt where the model should vary.")
 
 
 async def main_async(args) -> None:

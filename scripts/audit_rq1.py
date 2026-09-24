@@ -20,6 +20,11 @@ Checks
                 sites per mutant as a check on "exactly ONE fault".
 4. structure    Missing verdicts, orphan kill_matrix rows, and
                 kill_rate_summary.json disagreeing with kill_matrix.json.
+                An LLM mutant listed in llm_invalid_mutants.json was dropped
+                by rq1/runner.py before evaluation (it cannot define the
+                entry point even after repair) and correctly has no verdict
+                and no kill_matrix row -- that is counted separately, not
+                reported as a structural issue.
 5. fuzz-power   (--fuzz-power, opt-in) How much discriminating power each
                 task's fuzz set actually has: distinct canonical outputs, and
                 the split between inputs captured from the benchmark's own
@@ -59,7 +64,7 @@ from meta_real_eval.core.sandbox import execute                     # noqa: E402
 # The same normalisation the generator dedups with, imported rather than
 # restated: if the two ever drifted, the audit would report a duplication rate
 # the generator does not act on.
-from meta_real_eval.rq1.llm_mutator import _normalise                # noqa: E402
+from meta_real_eval.rq1.llm_mutator import _normalise, repair_mutant_code  # noqa: E402
 from meta_real_eval.stage0.equivalence import (                     # noqa: E402
     _capture_test_inputs,
     _generate_inputs,
@@ -105,6 +110,7 @@ def collect(tasks, cfg) -> dict:
     """Read every on-disk record once, and build the job lists from it."""
     kill_jobs, equiv_jobs = [], []
     recorded_kill, structure, corpus = {}, [], []
+    n_excluded_invalid = 0
 
     for task in tasks:
         label = task_label(task)
@@ -123,8 +129,30 @@ def collect(tasks, cfg) -> dict:
         km = load(ev / "kill_matrix.json")
         summary = load(ev / "kill_rate_summary.json") if (ev / "kill_rate_summary.json").exists() else {}
 
+        # rq1/runner.py::run_evaluate_one repairs each LLM mutant's code in
+        # memory (re-attaching prompt imports/helpers via repair_mutant_code)
+        # before it is ever equivalence-checked or run against the suite, and
+        # never writes the repaired source back to llm_mutants.json. A mutant
+        # that needed repair to run at all is listed here so its stored (raw,
+        # unrepaired) code is never mistaken for what was actually evaluated --
+        # auditing the raw version instead reproduces nothing, because it is a
+        # different, usually broken, program.
+        invalid_path = ev / "llm_invalid_mutants.json"
+        invalid_ids: set[str] = (
+            set(load(invalid_path)["mutant_ids"]) if invalid_path.exists() else set()
+        )
+
         code_of = {m["mutant_id"]: m["code"] for m in trad}
-        code_of.update({m["mutant_id"]: m["code"] for m in llm})
+        for m in llm:
+            mid = m["mutant_id"]
+            if mid in invalid_ids:
+                continue  # dropped before evaluation -- never had code to audit
+            repaired = repair_mutant_code(m["code"], task.prompt, task.entry_point)
+            # Should never be None here -- that is exactly what invalid_ids
+            # already covers -- but if the two ever disagree, auditing the
+            # stored code is closer to "what happened" than silently skipping
+            # a mutant the pipeline actually did evaluate.
+            code_of[mid] = repaired if repaired is not None else m["code"]
         km_ids = {r["mutant_id"] for r in km}
 
         # --- check 1 jobs: every recorded kill verdict ---
@@ -145,14 +173,24 @@ def collect(tasks, cfg) -> dict:
                                    task.entry_point, cfg.execution.timeout_s))
 
         # --- check 4: structure ---
+        # Mutants in invalid_ids were dropped before evaluation on purpose (see
+        # above); they correctly have no equivalence verdict and no kill_matrix
+        # row, so they are counted, not flagged as a structural issue.
+        n_excluded_invalid += len(invalid_ids)
         for m in llm:
-            if m["mutant_id"] not in llm_eq:
-                structure.append({"task": label, "mutant": m["mutant_id"],
+            mid = m["mutant_id"]
+            if mid in invalid_ids:
+                continue
+            if mid not in llm_eq:
+                structure.append({"task": label, "mutant": mid,
                                   "issue": "LLM mutant has no equivalence verdict"})
         for m in trad + llm:
-            eq = trad_eq.get(m["mutant_id"]) or llm_eq.get(m["mutant_id"]) or {}
-            if not eq.get("is_equivalent") and m["mutant_id"] not in km_ids:
-                structure.append({"task": label, "mutant": m["mutant_id"],
+            mid = m["mutant_id"]
+            if mid in invalid_ids:
+                continue
+            eq = trad_eq.get(mid) or llm_eq.get(mid) or {}
+            if not eq.get("is_equivalent") and mid not in km_ids:
+                structure.append({"task": label, "mutant": mid,
                                   "issue": "non-equivalent mutant missing from kill_matrix"})
         recomputed = {}
         for row in km:
@@ -180,7 +218,8 @@ def collect(tasks, cfg) -> dict:
         })
 
     return {"kill_jobs": kill_jobs, "equiv_jobs": equiv_jobs,
-            "recorded_kill": recorded_kill, "structure": structure, "corpus": corpus}
+            "recorded_kill": recorded_kill, "structure": structure, "corpus": corpus,
+            "n_excluded_invalid": n_excluded_invalid}
 
 
 def run_jobs(jobs, workers: int, desc: str) -> dict:
@@ -261,6 +300,8 @@ def report(out: dict) -> None:
     print("\n" + "=" * 78)
     print("CHECK 4 - structural integrity")
     print("=" * 78)
+    print(f"  correctly excluded before evaluation (llm_invalid_mutants.json): "
+          f"{out.get('n_excluded_invalid', 0)}")
     print(f"  issues : {len(struct)}")
     for s in struct[:20]:
         print(f"    ** {s}")
@@ -326,6 +367,7 @@ def main(argv=None) -> None:
             "per_task": [{k: v for k, v in c.items() if k != "by_model"} for c in corpus],
         },
         "structure": data["structure"],
+        "n_excluded_invalid": data["n_excluded_invalid"],
     }
     if args.fuzz_power:
         out["fuzz_power"] = measure_fuzz_power(tasks, cfg)

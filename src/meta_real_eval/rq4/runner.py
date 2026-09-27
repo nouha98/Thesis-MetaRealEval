@@ -122,7 +122,7 @@ def run_augment_one(task, cfg: Config, force: bool = False) -> None:
         logger.error("Missing RQ2 completions for %s", label)
         return
 
-    # Build consistency assertion code from RQ3's majority-vote consensus.
+    # Build consistency assertion code from RQ3's unanimous consensus.
     ca_code, n_assertions = build_consistency_assertions(
         task=task,
         divergence_data=divergence_data,
@@ -407,8 +407,8 @@ def run_analyze(cfg: Config, tasks) -> None:
         "note": (
             "rank recovery correlates each suite's model ranking against the "
             "intact-suite ranking (Spearman rho over pass@1 under the 'original' "
-            "prompt). The pseudo-oracle behind the augmentation is a majority "
-            "vote over paraphrase-derived solutions, so recovery is measured "
+            "prompt). The pseudo-oracle behind the augmentation is a unanimous "
+            "consensus over paraphrase-derived solutions, so recovery is measured "
             "relative to cross-variant consensus, not to ground truth. With 3 "
             "models tau_b can only take the values {-1, -1/3, 1/3, 1}, so it is "
             "reported as a coarse secondary descriptive statistic only."

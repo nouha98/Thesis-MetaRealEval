@@ -2,14 +2,14 @@
 
 A Consistency Assertion is an oracle-free cross-variant check.  When a task
 shows high pairwise divergence (solutions derived from different paraphrases
-disagree on shared inputs), the majority output across those solutions is used
+disagree on shared inputs), the unanimous output across those solutions is used
 as a *pseudo-oracle*: a candidate must reproduce the consensus output on every
-input where a majority exists.
+input where every solution that produced a value agrees.
 
 This is deliberately **not** ground truth.  H1a therefore measures ranking
 recovery *relative to a cross-variant consensus*, not relative to the correct
 answer — the pseudo-oracle is built from paraphrase-derived solutions, so a
-systematic error shared by a majority of them is invisible to it.  State that
+systematic error shared by all of them is invisible to it.  State that
 limitation whenever these numbers are reported.
 
 The generated code is appended to the (degraded) test block, so it runs at
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 # run is never mistaken for a calibrated one.
 DEFAULT_DIVERGENCE_THRESHOLD = 0.1
 
-# Minimum number of reference solutions for a majority to be meaningful.
+# Minimum number of reference solutions for a consensus to be meaningful.
 MIN_REFERENCE_SOLUTIONS = 3
 
 
@@ -47,8 +47,8 @@ def build_consistency_assertions(
       * divergence is below the threshold — the solutions already agree, so
         cross-variant checking adds no information;
       * fewer than MIN_REFERENCE_SOLUTIONS reference solutions exist — a
-        majority vote is undefined;
-      * RQ3 found no input carrying a leave-one-out safe majority.
+        consensus is undefined;
+      * RQ3 found no input carrying a unanimous consensus.
     """
     rate = divergence_data.get("pairwise_disagreement_rate")
     effective_threshold = (
@@ -76,7 +76,7 @@ def build_consistency_assertions(
 
     ep = task.entry_point
     lines = [
-        f"# Consistency assertions for {task.task_id} (majority-vote pseudo-oracle)",
+        f"# Consistency assertions for {task.task_id} (unanimous-consensus pseudo-oracle)",
         f"# Divergence rate {rate:.3f} >= threshold {effective_threshold}; "
         f"{len(entries)} consensus input(s)",
         "_ca_cases = [",

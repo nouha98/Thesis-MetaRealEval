@@ -474,6 +474,34 @@ def _understatement(paired: list[dict]) -> dict:
     }
 
 
+def _arm_vs_control(task_arm_reversal: list[dict[str, list[float]]]) -> dict:
+    """Direct paired test of each arm's reversal rate against the re-sampling control.
+
+    One value per task and arm (mean over that task's model pairs, each already
+    collapsed over the arm's variants), compared on the tasks where both arms have
+    a defined value. Exploratory: the primary reversal analysis reports each arm
+    against zero, which does not by itself say the arm exceeds the noise floor.
+    """
+    out = {}
+    for arm in ("llm", "template"):
+        a, c = [], []
+        for arms in task_arm_reversal:
+            if arms.get(arm) and arms.get("control"):
+                a.append(sum(arms[arm]) / len(arms[arm]))
+                c.append(sum(arms["control"]) / len(arms["control"]))
+        if len(a) < 2:
+            out[arm] = {"n_tasks": len(a), "note": "too few paired tasks"}
+            continue
+        out[arm] = {
+            "n_tasks": len(a),
+            "mean_arm": sum(a) / len(a),
+            "mean_control": sum(c) / len(c),
+            "mean_difference": (sum(a) - sum(c)) / len(a),
+            "wilcoxon": wilcoxon_test(a, c),
+        }
+    return out
+
+
 def analyze_rq2() -> dict:
     """Aggregate RQ2 across tasks.
 
@@ -530,6 +558,8 @@ def analyze_rq2() -> dict:
     pairwise_by_relation = defaultdict(lambda: defaultdict(list))
     # arm -> pair_key -> [one collapsed value per task]
     pairwise_pooled = defaultdict(lambda: defaultdict(list))
+    # one {arm: [collapsed value per model pair]} per task, for the direct arm comparison
+    task_arm_reversal: list[dict[str, list[float]]] = []
     model_correct = Counter()
     model_n = Counter()
     n_tasks = 0
@@ -682,11 +712,14 @@ def analyze_rq2() -> dict:
                 pairwise_by_relation[pair_key][relation].append(reversed_)
                 this_task_pair_values[pair_key][relation] = float(reversed_)
 
+        this_task_arms: dict[str, list[float]] = defaultdict(list)
         for pair_key, rel_values in this_task_pair_values.items():
             collapsed = collapse_tau_by_arm(rel_values)
             for arm in ("control", "template", "llm"):
                 if collapsed[arm] is not None:
                     pairwise_pooled[arm][pair_key].append(collapsed[arm])
+                    this_task_arms[arm].append(collapsed[arm])
+        task_arm_reversal.append(this_task_arms)
 
     task_tau = [r["mean_tau_b"] for r in per_task]
     grand_mean = sum(task_tau) / len(task_tau) if task_tau else float("nan")
@@ -854,6 +887,7 @@ def analyze_rq2() -> dict:
                 arm: {pair: _mean_ci(vals) for pair, vals in by_pair.items()}
                 for arm, by_pair in pairwise_pooled.items()
             },
+            "arm_vs_control_paired": _arm_vs_control(task_arm_reversal),
             "by_pair_and_relation": {
                 pair: {rel: _mean_ci(vals) for rel, vals in by_rel.items()}
                 for pair, by_rel in pairwise_by_relation.items()
@@ -1057,6 +1091,11 @@ def analyze_rq4() -> dict:
     n_with_ca = 0
     n_uncalibrated = 0
     n_identical_to_degraded = 0
+    # Ranking collapse: a discriminating task whose degraded suite scores every
+    # model identically. rho and tau_b are undefined there, so H1a's rank recovery
+    # and Page's L silently drop these tasks -- the ones degradation hurt most.
+    collapse_rows: list[list[bool]] = []          # per discriminating task, per non-intact level
+    collapse_stats: dict[str, dict] = {}
 
     for td in sorted(degrade_root.iterdir()):
         if not td.is_dir() or not (td / "degradation_analysis.json").exists():
@@ -1106,6 +1145,28 @@ def analyze_rq4() -> dict:
 
         per_task[td.name] = row
 
+        base = (d.get(intact, {}).get("pass_at_1") or {}).get("original")
+        if base and not _all_tied(base):            # discriminating on the intact suite
+            flags = []
+            for lv in levels[1:]:
+                key = str(lv)
+                deg = (d.get(key, {}).get("pass_at_1") or {}).get("original")
+                if deg is None:
+                    flags.append(False)
+                    continue
+                tied = _all_tied(deg)
+                flags.append(tied)
+                slot = collapse_stats.setdefault(
+                    key, {"n_collapsed": 0, "n_with_assertions": 0, "n_restored": 0})
+                if tied:
+                    slot["n_collapsed"] += 1
+                    if ap.exists() and a.get("has_consistency_assertions"):
+                        slot["n_with_assertions"] += 1
+                        aug = (a.get(key, {}).get("pass_at_1") or {}).get("original")
+                        if aug is not None and not _all_tied(aug):
+                            slot["n_restored"] += 1
+            collapse_rows.append(flags)
+
     return {
         "available": True,
         "n_tasks": len(per_task),
@@ -1116,7 +1177,40 @@ def analyze_rq4() -> dict:
         # degradation levels the ordered treatments.
         "trend_test_h1b": pages_l_test(trend_blocks, descending=True),
         "rank_recovery": load(summary_path) if summary_path.exists() else None,
+        "ranking_collapse": _ranking_collapse(collapse_rows, collapse_stats),
         "per_task": per_task,
+    }
+
+
+def _all_tied(pass_at_1: dict) -> bool:
+    """True when every model has the same pass@1 (the ranking carries no information)."""
+    return len(set(pass_at_1.values())) <= 1
+
+
+def _ranking_collapse(rows: list[list[bool]], stats: dict) -> dict:
+    """Collapse counts per degradation level, plus Cochran's Q across levels.
+
+    ``rows`` has one entry per task that discriminates on the intact suite, holding
+    whether the ranking is fully tied at each degraded level. The intact level is
+    0 collapsed by definition and is included as the first column of the test.
+    Post-hoc: added after seeing which tasks the rho and Page's L analyses drop.
+    """
+    if not rows:
+        return {"n_discriminating": 0}
+    from scipy.stats import chi2
+    table = [[0] + [int(f) for f in r] for r in rows]
+    k = len(table[0])
+    col = [sum(r[j] for r in table) for j in range(k)]
+    row_sums = [sum(r) for r in table]
+    total = sum(row_sums)
+    denom = k * total - sum(x * x for x in row_sums)
+    q = (k - 1) * (k * sum(c * c for c in col) - total * total) / denom if denom else None
+    return {
+        "n_discriminating": len(rows),
+        "by_level": stats,
+        "cochran_q": None if q is None else float(q),
+        "p_value": None if q is None else float(chi2.sf(q, k - 1)),
+        "note": "post-hoc; tasks where the degraded suite ties every model (original prompt)",
     }
 
 
@@ -1462,6 +1556,11 @@ def main(argv=None) -> None:
         for pair, s in sorted(pooled[arm].items(), key=lambda kv: -kv[1]["mean"]):
             print(f"    {pair:53s} {s['mean']*100:5.1f}%  "
                   f"CI=[{s['ci_lower']*100:.1f}%, {s['ci_upper']*100:.1f}%]  n={s['n']}")
+    for arm, t in rq2["pairwise_reversal_rate"].get("arm_vs_control_paired", {}).items():
+        if "wilcoxon" in t:
+            print(f"  [{arm} vs control, paired by task, n={t['n_tasks']}] "
+                  f"{t['mean_arm']*100:.1f}% vs {t['mean_control']*100:.1f}%  "
+                  f"Wilcoxon p={t['wilcoxon']['p_value']:.3g}")
 
     print()
     print("=" * 70)
@@ -1550,6 +1649,15 @@ def main(argv=None) -> None:
                   f"(n={tt['n_blocks']} tasks x k={tt['k_levels']} levels)")
             print(f"  monotone {tt['direction']} trend: "
                   f"{'SUPPORTED' if tt['trend_present'] else 'not supported'} at alpha=0.05")
+        rc = rq4.get("ranking_collapse") or {}
+        if rc.get("n_discriminating"):
+            print(f"\nRanking collapse (degraded suite ties every model; {rc['n_discriminating']} "
+                  f"discriminating tasks; post-hoc):")
+            for lv, s in rc["by_level"].items():
+                print(f"  degradation {lv}: collapsed={s['n_collapsed']}  "
+                      f"with assertions={s['n_with_assertions']}  restored={s['n_restored']}")
+            if rc.get("cochran_q") is not None:
+                print(f"  Cochran's Q={rc['cochran_q']:.2f}  p={rc['p_value']:.3g}")
 
     print()
     print("=" * 70)

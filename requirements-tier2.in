@@ -43,7 +43,14 @@ flask_socketio                   # 1 task(s), import flask_socketio  # distribut
 gensim                           # 1 task(s), import gensim  # distribution name not verified
 grimoirelab_toolkit              # 1 task(s), import grimoirelab_toolkit  # distribution name not verified
 h5py                             # 1 task(s), import h5py  # distribution name not verified
-homeassistant                    # 1 task(s), import homeassistant  # distribution name not verified
+# homeassistant                  # 1 task(s), import homeassistant -- the name exists on
+#                                 # PyPI, but a bare `pip install` resolves to the ancient
+#                                 # 0.7.0 release (pre-dates the modern calendar-versioned
+#                                 # platform), which fails to build (its own setup.py expects
+#                                 # a requirements.txt not present in the sdist). The modern
+#                                 # package's dependency tree is enormous and not obviously
+#                                 # what one task actually needs -- left out; that task will
+#                                 # be excluded by the M0 gate as missing_dependency.
 huggingface_hub                  # 1 task(s), import huggingface_hub
 IPython                          # 1 task(s), import IPython  # distribution name not verified
 jsonschema                       # 1 task(s), import jsonschema  # distribution name not verified

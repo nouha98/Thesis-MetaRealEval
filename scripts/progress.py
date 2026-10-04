@@ -16,8 +16,8 @@ from pathlib import Path
 # Allow running without installing the package
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from meta_real_eval.benchmarks import get_benchmark
 from meta_real_eval.core.config import Config
-from meta_real_eval.core.data_loader import load_humaneval
 
 
 STAGES = [
@@ -53,8 +53,8 @@ def main() -> None:
     args = parser.parse_args()
 
     cfg = Config.from_yaml(args.config)
-    tasks = load_humaneval(tasks=cfg.benchmark.tasks)
-    labels = [t.task_id.replace("/", "_") for t in tasks]
+    tasks = get_benchmark(cfg).load_tasks(cfg.benchmark.tasks)
+    labels = [t.label for t in tasks]
     n = len(labels)
     base = cfg.project.output_dir
 

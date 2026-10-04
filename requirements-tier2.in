@@ -25,7 +25,12 @@ ansible_compat                   # 1 task(s), import ansible_compat  # distribut
 attrs                            # 1 task(s), import attr
 authlib                          # 1 task(s), import authlib  # distribution name not verified
 bedrock_agentcore                # 1 task(s), import bedrock_agentcore  # distribution name not verified
-binhoHostAdapter                 # 1 task(s), import binhoHostAdapter  # distribution name not verified
+# binhoHostAdapter               # 1 task(s), import binhoHostAdapter -- no matching
+#                                 # PyPI distribution found (confirmed via `pip index
+#                                 # versions`, not just a failed guess); the one task
+#                                 # importing it will be excluded by the M0 gate as
+#                                 # missing_dependency. Left commented, not deleted, in
+#                                 # case a later scan or a different name resolves it.
 boto3                            # 1 task(s), import boto3  # distribution name not verified
 botocore                         # 1 task(s), import botocore  # distribution name not verified
 beautifulsoup4                   # 1 task(s), import bs4
@@ -57,7 +62,7 @@ pyperclip                        # 1 task(s), import pyperclip  # distribution n
 pysrt                            # 1 task(s), import pysrt  # distribution name not verified
 rasterio                         # 1 task(s), import rasterio  # distribution name not verified
 rdkit                            # 1 task(s), import rdkit  # distribution name not verified
-ruamel                           # 1 task(s), import ruamel  # distribution name not verified
+ruamel.yaml                      # 1 task(s), import ruamel  # bare "ruamel" is a namespace package, not installable alone
 soundfile                        # 1 task(s), import soundfile  # distribution name not verified
 spacy                            # 1 task(s), import spacy  # distribution name not verified
 statsmodels                      # 1 task(s), import statsmodels  # distribution name not verified

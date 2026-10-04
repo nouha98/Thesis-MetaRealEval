@@ -22,6 +22,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from meta_real_eval.benchmarks import get_benchmark  # noqa: E402
 from meta_real_eval.benchmarks.forkserver import run_scenarios  # noqa: E402
+from meta_real_eval.benchmarks.observe import nondeterminism_mask, traces_agree  # noqa: E402
 from meta_real_eval.core.config import Config  # noqa: E402
 from meta_real_eval.stage0.corpus_builder import generate_mutants  # noqa: E402
 
@@ -62,9 +63,17 @@ def main() -> int:
         for name, code in codes:
             fork, t_fork = _timed(code, task, pool, "fork", args.timeout)
             fresh, t_fresh = _timed(code, task, pool, "single", args.timeout)
+            fork_again, _ = _timed(code, task, pool, "fork", args.timeout)
+            fresh_again, _ = _timed(code, task, pool, "single", args.timeout)
+            # D5: a token that differs between two runs of the SAME mode is
+            # nondeterministic (e.g. process identity), and is ignored.
+            masks = [
+                nondeterminism_mask(a["tokens"], b["tokens"]) | nondeterminism_mask(c["tokens"], d["tokens"])
+                for a, b, c, d in zip(fork, fork_again, fresh, fresh_again)
+            ]
             differing = sum(
-                1 for a, b in zip(fork, fresh)
-                if a["status"] != b["status"] or a["tokens"] != b["tokens"]
+                1 for a, b, m in zip(fork, fresh, masks)
+                if a["status"] != b["status"] or not traces_agree(a["tokens"], b["tokens"], m)
             )
             n = max(len(pool.items), 1)
             row = {
@@ -73,13 +82,14 @@ def main() -> int:
                 "n_scenarios": len(pool.items),
                 "identical": differing == 0 and len(fork) == len(fresh),
                 "differing": differing,
+                "masked_keys": sum(len(m) for m in masks),
                 "fork_s_per_scenario": round(t_fork / n, 4),
                 "fresh_s_per_scenario": round(t_fresh / n, 4),
             }
             rows.append(row)
             print(f"{row['task_id']:38s} {name:12s} identical={row['identical']} "
-                  f"differing={differing}/{n} fork={row['fork_s_per_scenario']}s "
-                  f"fresh={row['fresh_s_per_scenario']}s", flush=True)
+                  f"differing={differing}/{n} masked_keys={row['masked_keys']} "
+                  f"fork={row['fork_s_per_scenario']}s fresh={row['fresh_s_per_scenario']}s", flush=True)
 
     out = args.out or Path(cfg.project.output_dir) / "prototype" / "prototype.json"
     out.parent.mkdir(parents=True, exist_ok=True)

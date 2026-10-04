@@ -17,9 +17,10 @@ import textwrap
 from concurrent.futures import ProcessPoolExecutor
 from typing import Callable
 
+from ..benchmarks import get_benchmark
+from ..benchmarks.base import SuiteResult, Task
 from ..core.checkpoint import clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
-from ..core.data_loader import HumanEvalTask, task_label
 from ..core.sandbox import execute
 
 logger = logging.getLogger(__name__)
@@ -280,7 +281,14 @@ def _run_completion(
     entry_point: str,
     timeout_s: float,
 ) -> bool:
-    """Return True if the completion passes the test."""
+    """Return True if the completion passes the test.
+
+    Tier 1 / HumanEval only -- the one-assert-block shape this function's
+    signature assumes. Kept for rq4, which still calls it directly (rq4's own
+    migration to the benchmark adapter is separate, later work). Evaluate_task
+    below does NOT use this; see _score_completion for the benchmark-agnostic
+    replacement both benchmarks go through.
+    """
     solution_code = build_solution_code(completion, task_prompt, entry_point)
 
     test = test_code + f"\ncheck({entry_point})\n"
@@ -288,9 +296,29 @@ def _run_completion(
     return result.passed
 
 
-def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None:
+def _score_completion(task: Task, completion: str, cfg: Config, timeout_s: float) -> SuiteResult:
+    """Build and run one completion through whichever benchmark ``cfg`` names.
+
+    Module-level and taking only picklable arguments (``task``, plain
+    strings, ``cfg``) so it can be submitted to a ``ProcessPoolExecutor``: the
+    worker process reconstructs its own benchmark instance rather than one
+    being pickled in from the parent. Benchmark construction touches no I/O
+    (task data already lives on ``task.meta``), so doing this once per call is
+    cheap, not once per worker process.
+    """
+    bench = get_benchmark(cfg)
+    code = bench.build_solution(task, completion)
+    return bench.run_suite(task, code, timeout_s=timeout_s)
+
+
+def _mean_or_none(values) -> float | None:
+    defined = [v for v in values if v is not None]
+    return sum(defined) / len(defined) if defined else None
+
+
+def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
     """Evaluate cached completions for one task and write pass rates."""
-    label = task_label(task)
+    label = task.label
     out = task_dir(cfg, "rq2", label, phase="evaluate")
 
     if force:
@@ -321,14 +349,7 @@ def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None
             pass_rates[relation] = {}
             for model_id, completions in model_completions.items():
                 futures_by_cell[(relation, model_id)] = [
-                    pool.submit(
-                        _run_completion,
-                        comp,
-                        task.prompt,
-                        task.test,
-                        task.entry_point,
-                        cfg.execution.timeout_s,
-                    )
+                    pool.submit(_score_completion, task, comp, cfg, cfg.execution.timeout_s)
                     for comp in completions
                 ]
 
@@ -337,12 +358,20 @@ def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None
         # "this solution passes the benchmark", which needs the individual
         # outcomes — they were previously summed away and thrown out.
         for (relation, model_id), futures in futures_by_cell.items():
-            per_completion = []
+            results: list[SuiteResult | None] = []
             for f in futures:
                 try:
-                    per_completion.append(bool(f.result()))
+                    results.append(f.result())
                 except Exception:
-                    per_completion.append(False)
+                    results.append(None)  # a worker-process crash scores as a fail, not a hang
+
+            # passed_all / pass@k: EXACT Tier 1 semantics (a completion either
+            # passes everything or it doesn't), now sourced from SuiteResult so
+            # the same code path covers Tier 2. `primary` is the benchmark's D3
+            # score (Tier 1: identical to passed_all; Tier 2: the continuous
+            # pass rate) -- additive, nothing downstream reads it yet.
+            per_completion = [bool(r.passed_all) if r is not None else False for r in results]
+            primary_scores = [r.primary if r is not None else None for r in results]
             n = len(per_completion)
             correct = sum(per_completion)
 
@@ -353,6 +382,8 @@ def evaluate_task(task: HumanEvalTask, cfg: Config, force: bool = False) -> None
                 "pass@1":  pass_at_k(n, correct, 1),
                 "pass@5":  pass_at_k(n, correct, 5),
                 "pass@10": pass_at_k(n, correct, 10),
+                "primary_scores": primary_scores,
+                "mean_primary": _mean_or_none(primary_scores),
             }
             logger.debug("  %s / %s / %s: pass@1=%.3f",
                          label, relation, model_id,

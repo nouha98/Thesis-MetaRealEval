@@ -1,0 +1,66 @@
+# Tier 2: RealClassEval (arXiv 2510.26130). See the Tier 2 plan for D1-D8.
+# Results go to a separate directory so Tier 1 is never overwritten.
+
+project:
+  output_dir: ./results_tier2
+  seed: 42
+  mock: false
+
+benchmark:
+  name: realclasseval
+  tasks: null                   # null = every gate-accepted task in the manifest
+  data_path: ./data/realclasseval/realclasseval_v1.jsonl.gz
+  manifest_path: ./data/realclasseval/manifest_v1.json
+  splits: [csn, post_cut-off]   # pre-cutoff (CodeSearchNet) and post-cutoff, a stratification factor
+  docstring_variant: full_docstr
+
+llm:
+  models:
+    - id: gemma4-31b-it
+    - id: qwen3-next-80b-a3b-instruct
+    - id: qwen36-35b
+  max_concurrent_requests: 5
+  requests_per_minute: 20
+  retry_max_attempts: 5
+  retry_base_delay_s: 2.0
+  cache_dir: ./cache/llm_responses
+
+execution:
+  # Whole-suite pytest timeout, the paper's value (30 s per test file).
+  timeout_s: 30
+  cpu_workers: 4
+
+stage0:
+  n_fuzz_inputs: 500            # D4 pool size for equivalence fuzzing
+
+rq1:
+  operators: [AOR, ROR, SDL]
+
+rq2:
+  n_completions: 10
+  temperature: 0.8
+  # Confirm in the M1 pilot that class completions are not truncated at this
+  # budget (review #13); raise it BEFORE M2 if they are.
+  max_tokens: 8192
+  # rq2/paraphraser.py's _split_docstring assumes a single function signature
+  # + docstring (Tier 1's shape); it has not been adapted for a class skeleton
+  # and would mis-split or corrupt one. M1(b) of the Tier 2 plan explicitly
+  # runs with original + control_resample only -- leave this empty until the
+  # template relations are ported (tracked, not done).
+  template_relations: []
+  include_control_resample: true
+  # The Tier 2 paraphrase corpus is built in M2; until then the template arm only.
+  paraphrase_corpus: null
+  corpus_sha256: null
+  generator_model: soofi-s-isar-preview
+  judge_model: soofi-s-isar-preview
+
+rq3:
+  n_shared_inputs: 200          # D4 pool size for divergence
+  variant_sample_per_family: 1
+  # Calibrated on Tier 2's own calibration half in M5 and frozen before the
+  # headline AUC (review #14). The Tier 1 threshold is never reused.
+  divergence_threshold: null
+
+rq4:
+  degradation_levels: [0.0, 0.2, 0.5, 0.8]

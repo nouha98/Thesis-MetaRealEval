@@ -35,18 +35,18 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from ..benchmarks import get_benchmark
 from ..core.cache import ResponseCache
 from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
-from ..core.data_loader import load_humaneval, task_label
 from ..core.llm_client import InnkubeClient
 from ..core.logging_setup import setup as setup_logging
 from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from ..stage0.corpus_builder import Mutant
-from ..stage0.equivalence import check_equivalence, compute_canonical_outputs
+from ..stage0.equivalence import check_equivalence_generic, compute_canonical_observations
 from .ast_fallback import generate_ast_fallback_mutants
-from .kill_rate import compute_kill_matrix, summarise
-from .llm_mutator import FAULT_HINTS, generate_llm_mutants, repair_mutant_code
+from .kill_rate import compute_kill_matrix_generic, summarise
+from .llm_mutator import FAULT_HINTS, generate_llm_mutants_generic
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +66,8 @@ GENERATE_RETRY_DELAY_S = 1.0
 # Generate phase
 # ---------------------------------------------------------------------------
 
-async def _generate_with_retries(task, model_id: str, client: InnkubeClient) -> tuple[list, str | None]:
-    """Call generate_llm_mutants for one model, retrying on empty output.
+async def _generate_with_retries(task, model_id: str, client: InnkubeClient, bench) -> tuple[list, str | None]:
+    """Call generate_llm_mutants_generic for one model, retrying on empty output.
 
     Returns (mutants, None) on success, or ([], last_error) once every
     attempt has come back empty.
@@ -76,8 +76,8 @@ async def _generate_with_retries(task, model_id: str, client: InnkubeClient) -> 
     last_error: str | None = None
     for attempt in range(1, MAX_GENERATE_ATTEMPTS + 1):
         try:
-            mutants = await generate_llm_mutants(
-                task=task, model_id=model_id, client=client, n_mutants=3,
+            mutants = await generate_llm_mutants_generic(
+                bench=bench, task=task, model_id=model_id, client=client, n_mutants=3,
                 cache_salt=f"llm-mutant-attempt-{attempt}",
                 fault_hint=FAULT_HINTS[(attempt - 1) % len(FAULT_HINTS)],
             )
@@ -90,15 +90,15 @@ async def _generate_with_retries(task, model_id: str, client: InnkubeClient) -> 
 
         last_error = last_error or "LLM returned zero usable mutants"
         logger.warning("LLM generation attempt %d/%d empty for %s (model=%s): %s",
-                        attempt, MAX_GENERATE_ATTEMPTS, task_label(task), model_id, last_error)
+                        attempt, MAX_GENERATE_ATTEMPTS, task.label, model_id, last_error)
         if attempt < MAX_GENERATE_ATTEMPTS:
             await asyncio.sleep(GENERATE_RETRY_DELAY_S)
 
     return [], last_error
 
 
-async def _generate_one(task, cfg: Config, client: InnkubeClient, force: bool = False) -> None:
-    label = task_label(task)
+async def _generate_one(task, cfg: Config, client: InnkubeClient, bench, force: bool = False) -> None:
+    label = task.label
     out = task_dir(cfg, "rq1", label, phase="generate")
 
     if force:
@@ -112,9 +112,13 @@ async def _generate_one(task, cfg: Config, client: InnkubeClient, force: bool = 
 
     if cfg.project.mock:
         # Offline dev mode: no network calls at all, by design -- unrelated
-        # to the live-generation retry/skip logic below.
+        # to the live-generation retry/skip logic below. generate_ast_fallback_mutants
+        # is already benchmark-agnostic (it mutates whatever BinOp/Return/If
+        # sites exist anywhere in the given source, with no entry-point
+        # concept); prompt="" + bench.mutation_source(task) reproduces
+        # task.prompt + task.canonical_solution byte-for-byte for Tier 1.
         mutants = generate_ast_fallback_mutants(
-            task.prompt, task.canonical_solution, seed=cfg.project.seed
+            "", bench.mutation_source(task), seed=cfg.project.seed
         )
         data = [
             {"mutant_id": m.mutant_id, "operator": m.operator,
@@ -131,7 +135,7 @@ async def _generate_one(task, cfg: Config, client: InnkubeClient, force: bool = 
         data = []
         failures: list[dict] = []
         for model_id in model_ids:
-            mutants, error = await _generate_with_retries(task, model_id, client)
+            mutants, error = await _generate_with_retries(task, model_id, client, bench)
             if mutants:
                 data.extend(
                     {"mutant_id": m.mutant_id, "operator": m.operator,
@@ -178,9 +182,10 @@ async def _generate_one(task, cfg: Config, client: InnkubeClient, force: bool = 
 
 
 async def run_generate(cfg: Config, tasks, force: bool = False) -> None:
+    bench = get_benchmark(cfg)
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
-    coros = [_generate_one(t, cfg, client, force=force) for t in tasks]
+    coros = [_generate_one(t, cfg, client, bench, force=force) for t in tasks]
     await asyncio.gather(*coros)
 
 
@@ -188,19 +193,18 @@ async def run_generate(cfg: Config, tasks, force: bool = False) -> None:
 # Evaluate phase
 # ---------------------------------------------------------------------------
 
-def _filter_llm_equivalents(task, llm_mutants, cfg: Config, out) -> set[str]:
+def _filter_llm_equivalents(task, llm_mutants, cfg: Config, bench, out) -> set[str]:
     """Run Stage 0's equivalence check over the LLM mutant population.
 
     Returns the set of mutant_ids that are behaviourally identical to the
     canonical solution, and records the full verdicts alongside the kill
     matrix for transparency.
     """
-    canon_outs = compute_canonical_outputs(
-        task=task,
+    pool_obj, canon_obs = compute_canonical_observations(
+        bench, task,
         n_fuzz_inputs=cfg.stage0.n_fuzz_inputs,
         timeout_s=cfg.execution.timeout_s,
         seed=cfg.project.seed,
-        cpu_workers=cfg.execution.cpu_workers,
     )
 
     verdicts: list[dict] = []
@@ -208,9 +212,9 @@ def _filter_llm_equivalents(task, llm_mutants, cfg: Config, out) -> set[str]:
     with ProcessPoolExecutor(max_workers=cfg.execution.cpu_workers) as pool:
         futures = {
             pool.submit(
-                check_equivalence, task, mutant,
+                check_equivalence_generic, cfg, task, mutant,
                 cfg.stage0.n_fuzz_inputs, cfg.execution.timeout_s,
-                cfg.project.seed, canon_outs,
+                cfg.project.seed, pool_obj, canon_obs,
             ): mutant
             for mutant in llm_mutants
         }
@@ -232,8 +236,8 @@ def _filter_llm_equivalents(task, llm_mutants, cfg: Config, out) -> set[str]:
     return equivalent
 
 
-def run_evaluate_one(task, cfg: Config, force: bool = False) -> None:
-    label = task_label(task)
+def run_evaluate_one(task, cfg: Config, bench, force: bool = False) -> None:
+    label = task.label
     out = task_dir(cfg, "rq1", label, phase="evaluate")
 
     if force:
@@ -268,17 +272,16 @@ def run_evaluate_one(task, cfg: Config, force: bool = False) -> None:
 
     # Validity filter over the STORED LLM corpus.
     #
-    # generate applies the same rule via llm_mutator._extract_code, but the
-    # mutants on disk were written before it existed, and this phase reads their
-    # `code` verbatim -- so without repeating the check here the fix would only
-    # take effect after paying to regenerate the whole corpus. Repair first
-    # (re-attaching prompt imports and helpers rescues a mutant that merely
-    # dropped `from typing import List`), drop only what still cannot define the
-    # entry point.
+    # generate applies the same rule via llm_mutator._extract_code_generic, but
+    # the mutants on disk were written before it existed, and this phase reads
+    # their `code` verbatim -- so without repeating the check here the fix
+    # would only take effect after paying to regenerate the whole corpus.
+    # Repair first (re-attaching imports/helpers rescues a mutant that merely
+    # dropped one), drop only what still cannot define the required name.
     repaired_llm: list[dict] = []
     invalid: list[str] = []
     for m in llm_raw:
-        code = repair_mutant_code(m["code"], task.prompt, task.entry_point)
+        code = bench.repair_mutant(task, m["code"])
         if code is None:
             invalid.append(m["mutant_id"])
         else:
@@ -289,7 +292,7 @@ def run_evaluate_one(task, cfg: Config, force: bool = False) -> None:
             "%s: dropped %d/%d LLM mutant(s) that cannot define %s — they are "
             "killed by any suite regardless of its quality, so counting them "
             "inflates the kill rate. See llm_invalid_mutants.json.",
-            label, len(invalid), len(llm_raw), task.entry_point,
+            label, len(invalid), len(llm_raw), task.target,
         )
         write_json(out, "llm_invalid_mutants.json", {
             "task_id": task.task_id,
@@ -302,7 +305,7 @@ def run_evaluate_one(task, cfg: Config, force: bool = False) -> None:
     all_mutants = [
         Mutant(
             mutant_id=m["mutant_id"], operator=m["operator"],
-            description=m["description"], code=m["code"],
+            description=m["description"], code=m["code"], method=m.get("method"),
         )
         for m in (trad_raw + llm_raw)
     ]
@@ -320,12 +323,13 @@ def run_evaluate_one(task, cfg: Config, force: bool = False) -> None:
     llm_mutants = [m for m in all_mutants if m.mutant_id not in equiv_ids
                    and m.operator == "LLM"]
     if llm_mutants:
-        equiv_ids |= _filter_llm_equivalents(task, llm_mutants, cfg, out)
+        equiv_ids |= _filter_llm_equivalents(task, llm_mutants, cfg, bench, out)
 
     logger.info("Evaluating %s: %d mutants (%d equivalent, skipped)",
                 label, len(all_mutants), len(equiv_ids))
 
-    kill_results = compute_kill_matrix(
+    kill_results = compute_kill_matrix_generic(
+        cfg,
         task=task,
         mutants=all_mutants,
         equiv_ids=equiv_ids,
@@ -359,14 +363,15 @@ def main(argv=None) -> None:
     cfg = Config.from_yaml(args.config)
     setup_logging("rq1", args.phase, log_dir=Path("logs"))
 
-    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
+    bench = get_benchmark(cfg)
+    tasks = bench.load_tasks(resolve_task_filter(args, cfg))
     logger.info("RQ1 phase=%s, %d task(s)%s", args.phase, len(tasks), " (forced)" if args.force else "")
 
     if args.phase == "generate":
         asyncio.run(run_generate(cfg, tasks, force=args.force))
     else:
         for task in tasks:
-            run_evaluate_one(task, cfg, force=args.force)
+            run_evaluate_one(task, cfg, bench, force=args.force)
 
     logger.info("RQ1 phase=%s complete.", args.phase)
 

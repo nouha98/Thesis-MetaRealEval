@@ -13,6 +13,7 @@ import logging
 
 import numpy as np
 
+from ..benchmarks import get_benchmark
 from ..core.config import Config
 from ..core.data_loader import HumanEvalTask
 from ..rq2.evaluator import _run_completion, pass_at_k
@@ -101,6 +102,78 @@ def compute_tau_at_degradation_level(
         # is the same mistake RQ2's coverage gate made — a relation could look
         # like a gap in the data when it was actually a tied, fully-observed
         # ranking (see rq2/corpus.py::MIN_FAMILIES_COVERED).
+        "degenerate_relations": [r for r in complete_relations if tau_per_relation[r] is None],
+        "incomplete_relations": [r for r in relations if r not in complete_relations],
+        "pass_at_1": pass_at1,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Benchmark-agnostic version (see the Tier 2 plan, RQ4). Added alongside
+# compute_tau_at_degradation_level above, which rq4/runner.py no longer calls
+# but which stays exactly as it is -- it is HumanEvalTask-typed and reproduced
+# exactly here for HumanEvalBenchmark; see
+# tests/test_rq4/test_interaction_adapter.py.
+#
+# The one thing this buys, for either benchmark: ``suite`` already encodes
+# "degraded" (subset removed) or "degraded + consistency assertions appended"
+# (via Benchmark.augmented_suite) -- compute_tau_at_degradation_level_generic
+# does not need to know which, it just asks bench.run_suite(..., suite=suite)
+# for one pass/fail per completion.
+# ---------------------------------------------------------------------------
+
+def compute_tau_at_degradation_level_generic(
+    cfg: Config,
+    task,
+    completions_data: dict,
+    suite,
+) -> dict:
+    """Generic compute_tau_at_degradation_level. Same return shape; see that
+    function's docstring."""
+    bench = get_benchmark(cfg)
+    model_ids = cfg.model_ids()
+    relations = [r for r in cfg.rq2.relations if r != "original"]
+
+    pass_at1: dict[str, dict[str, float]] = {}
+    for relation, model_completions in completions_data.items():
+        pass_at1[relation] = {}
+        for model_id, completions in model_completions.items():
+            n = len(completions)
+            if n == 0:
+                continue
+            correct = 0
+            for comp in completions:
+                try:
+                    code = bench.build_solution(task, comp)
+                    if bench.run_suite(task, code, cfg.execution.timeout_s, suite=suite).passed_all:
+                        correct += 1
+                except Exception:
+                    pass
+            pass_at1[relation][model_id] = pass_at_k(n, correct, 1)
+
+    def _complete(relation: str) -> bool:
+        scores = pass_at1.get(relation, {})
+        return all(mid in scores for mid in model_ids)
+
+    baseline_ok = _complete("original")
+    baseline_vec = _rank_vector(pass_at1.get("original", {}), model_ids)
+    complete_relations: list[str] = []
+    tau_per_relation: dict[str, float | None] = {}
+    for relation in relations:
+        if not baseline_ok or not _complete(relation):
+            tau_per_relation[relation] = None
+            continue
+        complete_relations.append(relation)
+        variant_vec = _rank_vector(pass_at1.get(relation, {}), model_ids)
+        tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
+
+    defined = [t for t in tau_per_relation.values() if t is not None]
+    by_arm = collapse_tau_by_arm(tau_per_relation)
+    return {
+        "mean_tau_b": by_arm["primary"],
+        "tau_b_by_arm": by_arm,
+        "mean_tau_b_all_relations": float(np.mean(defined)) if defined else None,
+        "tau_b_per_relation": tau_per_relation,
         "degenerate_relations": [r for r in complete_relations if tau_per_relation[r] is None],
         "incomplete_relations": [r for r in relations if r not in complete_relations],
         "pass_at_1": pass_at1,

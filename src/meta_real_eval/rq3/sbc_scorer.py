@@ -24,7 +24,7 @@ import re
 
 import numpy as np
 
-from ..core.data_loader import HumanEvalTask
+from ..benchmarks.base import Task
 from ..core.llm_client import InnkubeClient
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ def _completeness_score(original_docstring: str, inferred_spec: str) -> float:
 
 
 async def compute_sbc_score(
-    task: HumanEvalTask,
+    task: Task,
     solution_code: str,
     model_id: str,
     client: InnkubeClient,
@@ -88,8 +88,12 @@ async def compute_sbc_score(
         logger.warning("SBC reverse generation failed: %s", exc)
         inferred_spec = ""
 
-    # Extract original docstring as reference
-    docstring_match = re.search(r'"""(.*?)"""', task.prompt, re.DOTALL)
+    # Extract original docstring as reference. Tier 1 prompts use """; Tier 2
+    # class skeletons use '''; try both rather than silently matching neither
+    # and falling back to scoring against the whole prompt (signatures, pass
+    # bodies and all) for every Tier 2 task.
+    docstring_match = re.search(r'"""(.*?)"""', task.prompt, re.DOTALL) or \
+        re.search(r"'''(.*?)'''", task.prompt, re.DOTALL)
     original_spec = docstring_match.group(1).strip() if docstring_match else task.prompt
 
     bleu = _bleu_1gram(original_spec, inferred_spec)

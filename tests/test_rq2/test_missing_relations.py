@@ -22,9 +22,9 @@ import json
 
 import pytest
 
+from meta_real_eval.benchmarks.base import Task
 from meta_real_eval.core.checkpoint import task_dir
 from meta_real_eval.core.config import Config
-from meta_real_eval.core.data_loader import HumanEvalTask
 from meta_real_eval.rq2.ranking import compute_ranking_stability
 
 MODELS = ["m_a", "m_b", "m_c"]
@@ -41,9 +41,10 @@ def cfg(tmp_path):
 
 @pytest.fixture
 def task():
-    return HumanEvalTask(
-        task_id="HumanEval/0", task_index=0, prompt="def f():\n    pass\n",
-        entry_point="f", test="", canonical_solution="",
+    return Task(
+        task_id="HumanEval/0", task_index=0, label="HumanEval_0",
+        prompt="def f():\n    pass\n", reference_code="def f():\n    pass\n",
+        test_code="", target="f",
     )
 
 

@@ -19,10 +19,14 @@ Mutants are deduplicated by generated source, and mutants identical to the
 original are dropped, so the corpus contains no redundant entries by
 construction rather than by luck.
 
-Scope: SDL deletes top-level statements of the entry-point function only, and
-never the docstring — removing a docstring cannot change behaviour, so such a
-"mutant" is equivalent by construction and would only waste a differential
-fuzzing run in the equivalence stage.
+Scope: by default SDL deletes top-level statements of the entry-point function
+only (Tier 1), and never the docstring — removing a docstring cannot change
+behaviour, so such a "mutant" is equivalent by construction and would only
+waste a differential fuzzing run in the equivalence stage. A benchmark adapter
+may widen the SDL scope by passing ``sdl_scope`` (Tier 2: every method of the
+class under test); statement deletions are then interleaved round-robin across
+the scoped functions so one long method cannot absorb the whole budget.
+AOR/ROR always range over the whole module.
 """
 
 from __future__ import annotations
@@ -31,6 +35,7 @@ import ast
 import copy
 import random
 from dataclasses import dataclass
+from typing import Callable, Optional
 
 
 @dataclass
@@ -39,6 +44,9 @@ class Mutant:
     operator: str        # "AOR" | "ROR" | "SDL"
     description: str
     code: str            # prompt + mutated body — ready for sandbox
+    # SDL under a widened scope only: the "Class.method" whose statement was
+    # deleted. Not written by the Tier 1 stage0 runner, so its JSON is unchanged.
+    method: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -183,6 +191,70 @@ def _plan_mutations(
 # Mutant generation
 # ---------------------------------------------------------------------------
 
+def _function_defs(tree: ast.AST) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Every function definition, in walk order.
+
+    Positional identity, like the slot helpers above: methods of one class
+    can share a name (a ``@property`` and its ``.setter``), so a deletion
+    planned on the original tree is applied by position, never by name.
+    """
+    return [n for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+
+
+def _apply_sdl_at(tree: ast.AST, func_pos: int, stmt_idx_in_body: int) -> ast.AST | None:
+    mutated = copy.deepcopy(tree)
+    func = _function_defs(mutated)[func_pos]
+    if len(func.body) > 1 and stmt_idx_in_body < len(func.body):
+        del func.body[stmt_idx_in_body]
+        return mutated
+    return None
+
+
+def _qualified_name(tree: ast.AST, func: ast.AST) -> str:
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef) and func in node.body:
+            return f"{node.name}.{func.name}"
+    return func.name
+
+
+def _scoped_sdl_mutants(
+    tree: ast.AST,
+    sdl_scope: Callable[[ast.Module], list],
+    max_per_operator: int,
+    rng: random.Random,
+) -> list[tuple[str, str, str]]:
+    """(description, code, method) for SDL over a widened scope, round-robin."""
+    all_funcs = _function_defs(tree)
+    scoped = sdl_scope(tree)
+    queues: list[tuple[int, ast.AST, list[int]]] = []
+    for func in scoped:
+        indices = _deletable_stmt_indices(func)
+        if indices:
+            rng.shuffle(indices)
+            queues.append((all_funcs.index(func), func, indices))
+    rng.shuffle(queues)
+
+    out: list[tuple[str, str, str]] = []
+    depth = 0
+    while len(out) < max_per_operator and any(depth < len(q[2]) for q in queues):
+        for func_pos, func, indices in queues:
+            if depth >= len(indices) or len(out) >= max_per_operator:
+                continue
+            stmt_idx = indices[depth]
+            mutated = _apply_sdl_at(tree, func_pos, stmt_idx)
+            if mutated is None:
+                continue
+            try:
+                code = ast.unparse(mutated)
+            except Exception:
+                continue
+            method = _qualified_name(tree, func)
+            kind = type(func.body[stmt_idx]).__name__
+            out.append((f"Delete {kind} statement {stmt_idx} in {method}", code, method))
+        depth += 1
+    return out
+
+
 def generate_mutants(
     prompt: str,
     canonical_solution: str,
@@ -190,8 +262,12 @@ def generate_mutants(
     operators: list[str],
     max_per_operator: int = 5,
     seed: int = 42,
+    sdl_scope: Optional[Callable[[ast.Module], list]] = None,
 ) -> list[Mutant]:
     """Generate up to max_per_operator first-order mutants per operator.
+
+    ``sdl_scope`` (optional) returns the functions SDL may delete statements
+    from; None keeps the Tier 1 behaviour (the ``entry_point`` function only).
 
     Returns a list of Mutant objects.  Empty list means no mutable sites found.
     """
@@ -209,7 +285,7 @@ def generate_mutants(
     original_code = ast.unparse(tree)
     seen_code: set[str] = {original_code}
 
-    def _emit(operator: str, description: str, code: str) -> bool:
+    def _emit(operator: str, description: str, code: str, method: Optional[str] = None) -> bool:
         nonlocal counter
         if code in seen_code:
             return False
@@ -219,6 +295,7 @@ def generate_mutants(
             operator=operator,
             description=description,
             code=code,
+            method=method,
         ))
         counter += 1
         return True
@@ -253,7 +330,10 @@ def generate_mutants(
             _emit("ROR", f"Replace {orig_op} with {new_op_type.__name__} "
                          f"at comparison site {slot_idx}", code)
 
-    if "SDL" in operators:
+    if "SDL" in operators and sdl_scope is not None:
+        for description, code, method in _scoped_sdl_mutants(tree, sdl_scope, max_per_operator, rng):
+            _emit("SDL", description, code, method)
+    elif "SDL" in operators:
         func = next((n for n in ast.walk(tree)
                      if isinstance(n, ast.FunctionDef) and n.name == entry_point), None)
         if func is not None:

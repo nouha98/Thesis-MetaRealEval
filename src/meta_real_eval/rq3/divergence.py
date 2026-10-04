@@ -9,12 +9,14 @@ even when benchmark tests pass (false positives).
 from __future__ import annotations
 
 import ast
+import json
 import logging
 import random
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from itertools import combinations
 
+from ..benchmarks import get_benchmark
 from ..core.checkpoint import task_dir, read_json
 from ..core.data_loader import HumanEvalTask, task_label
 from ..core.sandbox import execute
@@ -345,3 +347,281 @@ def _build_consensus(
         ],
     }
     return consensus, per_solution
+
+
+# ---------------------------------------------------------------------------
+# Benchmark-agnostic version (see the Tier 2 plan, RQ3). Added alongside the
+# Tier 1-only functions above, which rq3/runner.py no longer calls but which
+# stay exactly as they are.
+#
+# Two things the Tier 1 code gets "for free" from its shape, carried over
+# deliberately rather than lost in the generalisation:
+#
+#   excluded != disagree   ERROR_OUTPUT is one sentinel standing in for BOTH
+#                          a timeout and a crash. The generic observations
+#                          (Benchmark.observe) distinguish them
+#                          (is_timeout / is_error), so _unusable below checks
+#                          both -- comparing only against one sentinel would
+#                          silently let a real timeout slip through as a
+#                          "comparable" value.
+#   semantic comparison    for a plain string (Tier 1) `==` and
+#                          observations_agree agree trivially. For a Tier 2
+#                          trace dict, only observations_agree compares
+#                          correctly (sorted keys, nondeterminism masking);
+#                          `==` on two dicts would not.
+#
+# Consensus-building (RQ4's input) IS ported below (_build_consensus_generic),
+# now that RQ4's consistency_suite exists to consume it. Tier 2's analogue of
+# Tier 1's "embed a Python literal" is "majority-vote token per scenario step,
+# replayed at runtime via forkserver._run_scenario and compared" (see
+# RealClassEvalBenchmark.consistency_suite) -- a different shape, so the
+# consensus entries below carry a benchmark-opaque ``expected_obs`` (the
+# representative observation itself) plus Tier 1's own ``args_repr``/
+# ``expected_repr`` fields where the observation is a plain string, rather
+# than forcing one shape on both. RQ3's own headline metric -- the pairwise
+# disagreement rate ROC-labelled by passes_benchmark, which τ_div is
+# calibrated against -- was already fully generic above; this section is
+# purely RQ4's input.
+# ---------------------------------------------------------------------------
+
+def _pick_best_completion_generic(
+    bench,
+    completions: list[str],
+    task,
+    timeout_s: float,
+    pass_flags: list[bool] | None = None,
+) -> tuple[str, bool]:
+    """Generic _pick_best_completion. See its docstring; same contract."""
+    if not completions:
+        return "", False
+    if pass_flags is not None and len(pass_flags) == len(completions):
+        for comp, passed in zip(completions, pass_flags):
+            if passed:
+                return comp, True
+        return completions[0], False
+    for comp in completions:
+        code = bench.build_solution(task, comp)
+        if bench.run_suite(task, code, timeout_s).passed_all:
+            return comp, True
+    return completions[0], False
+
+
+def _observe_one_generic(cfg, task, code: str, pool, index: int, timeout_s: float):
+    """Module-level, picklable worker: reconstructs the benchmark per call
+    (cheap -- no I/O; see rq2.evaluator._score_completion's docstring for why)
+    rather than pickling a benchmark instance into every submitted item."""
+    bench = get_benchmark(cfg)
+    return bench.observe_one(task, code, pool, index, timeout_s)
+
+
+def _unusable(bench, obs) -> bool:
+    """True if ``obs`` carries no information about this solution's output --
+    a timeout or a crash -- and so must be excluded from comparison rather
+    than compared as if it were a value."""
+    return bench.is_timeout(obs) or bench.is_error(obs)
+
+
+def _vote_key(obs) -> str:
+    """A hashable canonical form for majority-vote grouping.
+
+    Tier 1 observations are already strings (hashable as-is). Tier 2
+    observations are trace dicts; ``json.dumps(sort_keys=True)`` gives the
+    same canonical-and-hashable property without this module (or
+    _build_consensus_generic) needing to know which benchmark produced the
+    observation -- it dispatches on the *shape* of ``obs``, not a benchmark
+    name.
+    """
+    return obs if isinstance(obs, str) else json.dumps(obs, sort_keys=True, default=str)
+
+
+def _build_consensus_generic(
+    bench,
+    pool,
+    solutions: list[dict],
+    all_outputs: list[list],
+    max_entries: int = MAX_CONSENSUS_ENTRIES,
+) -> tuple[dict, list[dict]]:
+    """Generic _build_consensus: same unanimous-vote rule (MIN_VOTERS,
+    MIN_VOTER_SHARE, unanimity -- see _build_consensus's docstring for why),
+    grouping by :func:`_vote_key` instead of raw string equality so it works
+    for Tier 2's structured traces too.
+
+    Each entry carries ``scenario_index`` (Tier 2's consistency_suite
+    recomputes the same input pool from (task, n_shared_inputs, seed) -- see
+    compute_divergence_generic -- and looks the scenario back up by this
+    index rather than the entry serialising the scenario's steps itself) and
+    ``expected_obs`` (the representative observation, opaque to this
+    function's caller). Tier 1's own ``args_repr``/``expected_repr`` fields
+    are filled in only when the observation is a plain string, so
+    rq4.consistency.build_consistency_assertions (which reads exactly those
+    two keys) keeps working unchanged against this function's output.
+    """
+    n_solutions = len(solutions)
+    kept: list[tuple[int, str, object, int, int]] = []  # (idx, key, representative, votes, n_voters)
+
+    for idx in range(len(pool.items)):
+        column = [all_outputs[s][idx] for s in range(n_solutions)]
+        voter_idx = [i for i, o in enumerate(column) if not _unusable(bench, o)]
+        if len(voter_idx) < MIN_VOTERS:
+            continue
+        if len(voter_idx) < MIN_VOTER_SHARE * n_solutions:
+            continue
+        keys = [_vote_key(column[i]) for i in voter_idx]
+        distinct = Counter(keys)
+        if len(distinct) > 1:
+            continue
+        key, votes = distinct.most_common(1)[0]
+        representative = column[voter_idx[keys.index(key)]]
+        kept.append((idx, key, representative, votes, len(voter_idx)))
+
+    per_solution: list[dict] = []
+    for s_i, sol in enumerate(solutions):
+        n_disagree = sum(
+            1 for idx, key, _, _, _ in kept if _vote_key(all_outputs[s_i][idx]) != key
+        )
+        per_solution.append({
+            "relation": sol["relation"],
+            "model": sol["model"],
+            "passes_benchmark": sol["passes_benchmark"],
+            "n_consensus_inputs": len(kept),
+            "n_consensus_disagreements": n_disagree,
+            "consensus_disagreement_rate": n_disagree / len(kept) if kept else 0.0,
+        })
+
+    entries = []
+    for idx, key, representative, votes, n_voters in kept[:max_entries]:
+        entry = {
+            "scenario_index": idx,
+            "expected_obs": representative,
+            "votes": votes, "n_voters": n_voters, "n_solutions": n_solutions,
+        }
+        if isinstance(representative, str) and _is_literal(representative):
+            # Tier 1 shape: build_consistency_assertions reads these two keys
+            # and embeds expected_repr verbatim as a Python literal.
+            entry["args_repr"] = repr(pool.items[idx])
+            entry["expected_repr"] = representative
+        entries.append(entry)
+
+    consensus = {
+        "n_reference_solutions": n_solutions,
+        "n_inputs_with_consensus": len(kept),
+        "n_entries_persisted": min(len(kept), max_entries),
+        "entries": entries,
+    }
+    return consensus, per_solution
+
+
+def compute_divergence_generic(
+    cfg,
+    task,
+    completions_data: dict,
+    n_shared_inputs: int = 200,
+    timeout_s: float = 5.0,
+    seed: int = 42,
+    cpu_workers: int = 1,
+    pass_rates: dict | None = None,
+) -> dict:
+    """Generic compute_divergence: same algorithm, same output shape (minus
+    the Tier-1-only consensus entries -- see this section's docstring),
+    driven through the Benchmark protocol. For HumanEvalBenchmark this
+    reproduces compute_divergence's pairwise_disagreement_rate and per-solution
+    labels exactly -- see tests/test_rq3/test_divergence_adapter.py.
+    """
+    bench = get_benchmark(cfg)
+
+    solutions: list[dict] = []
+    for relation, model_completions in completions_data.items():
+        for model_id, completions in model_completions.items():
+            if not completions:
+                continue
+            flags = None
+            if pass_rates:
+                cell = pass_rates.get(relation, {}).get(model_id, {})
+                flags = cell.get("per_completion")
+            try:
+                best, passes = _pick_best_completion_generic(
+                    bench, completions, task, timeout_s, pass_flags=flags
+                )
+                code = bench.build_solution(task, best)
+            except Exception as exc:
+                logger.warning(
+                    "Skipping %s/%s for %s — completion extraction failed: %s",
+                    relation, model_id, task.label, exc,
+                )
+                continue
+            solutions.append({"relation": relation, "model": model_id,
+                              "code": code, "passes_benchmark": passes})
+
+    def _empty_result() -> dict:
+        return {"n_solutions": len(solutions), "n_inputs": 0,
+                "pairwise_disagreement_rate": None,
+                "n_comparable_pairs": 0,
+                "n_pairs_excluded_error": 0,
+                "consensus": {"n_inputs_with_consensus": 0, "entries": []},
+                "solutions": [{k: v for k, v in s.items() if k != "code"}
+                              for s in solutions],
+                "n_shared_inputs_requested": n_shared_inputs,
+                "seed": seed}
+
+    if len(solutions) < 2:
+        return _empty_result()
+
+    pool = bench.input_pool(task, n_shared_inputs, seed)
+    n_inputs = len(pool.items)
+
+    if n_inputs == 0:
+        return _empty_result()
+
+    # Flattened (solution, input) submissions in ONE pool, matching
+    # compute_divergence's own structure -- the parallelism unit is a single
+    # (solution, input) observation, not a whole solution's batch, which is
+    # what keeps a single hanging candidate from costing n_inputs timeouts
+    # serially (see the module docstring).
+    if cpu_workers <= 1:
+        flat = [_observe_one_generic(cfg, task, sol["code"], pool, idx, timeout_s)
+               for sol in solutions for idx in range(n_inputs)]
+    else:
+        jobs = [(sol["code"], idx) for sol in solutions for idx in range(n_inputs)]
+        with ProcessPoolExecutor(max_workers=cpu_workers) as ex:
+            flat = list(ex.map(
+                _observe_one_generic,
+                [cfg] * len(jobs), [task] * len(jobs), [c for c, _ in jobs],
+                [pool] * len(jobs), [i for _, i in jobs], [timeout_s] * len(jobs),
+            ))
+
+    all_outputs = [flat[i * n_inputs:(i + 1) * n_inputs] for i in range(len(solutions))]
+
+    comparable = 0
+    excluded_error = 0
+    disagreements = 0
+    for i, j in combinations(range(len(solutions)), 2):
+        for o_i, o_j in zip(all_outputs[i], all_outputs[j]):
+            if _unusable(bench, o_i) or _unusable(bench, o_j):
+                excluded_error += 1
+                continue
+            comparable += 1
+            if not bench.observations_agree(o_i, o_j):
+                disagreements += 1
+
+    rate = disagreements / comparable if comparable else None
+
+    consensus, per_solution = _build_consensus_generic(bench, pool, solutions, all_outputs)
+
+    return {
+        "n_solutions": len(solutions),
+        "n_inputs": n_inputs,
+        "pairwise_disagreement_rate": rate,
+        "disagreements": disagreements,
+        "n_comparable_pairs": comparable,
+        "n_pairs_excluded_error": excluded_error,
+        "total_comparisons": comparable + excluded_error,
+        "consensus": consensus,
+        "solutions": per_solution,
+        # consistency_suite recomputes this exact pool from (task, n_shared_inputs,
+        # seed) to look a consensus entry's scenario_index back up -- see
+        # _build_consensus_generic's docstring. Recorded here, not re-derived
+        # from cfg at that call site, so a later config change can't silently
+        # desync the two.
+        "n_shared_inputs_requested": n_shared_inputs,
+        "seed": seed,
+    }

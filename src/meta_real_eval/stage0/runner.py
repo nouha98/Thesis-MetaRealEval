@@ -19,19 +19,19 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from ..benchmarks import get_benchmark
 from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
-from ..core.data_loader import load_humaneval, task_label
 from ..core.logging_setup import setup as setup_logging
 from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from .corpus_builder import generate_mutants, Mutant
-from .equivalence import check_equivalence, compute_canonical_outputs, EquivResult
+from .equivalence import EquivResult, check_equivalence_generic, compute_canonical_observations
 
 logger = logging.getLogger(__name__)
 
 
-def process_task(task, cfg: Config, force: bool = False) -> None:
-    label = task_label(task)
+def process_task(task, cfg: Config, bench, force: bool = False) -> None:
+    label = task.label
     out = task_dir(cfg, "stage0", label)
 
     if force:
@@ -44,33 +44,42 @@ def process_task(task, cfg: Config, force: bool = False) -> None:
     logger.info("Processing %s", label)
 
     # --- 1. Generate mutants ---
+    # prompt="": the benchmark's mutation_source() already returns the FULL
+    # code to mutate (Tier 1: prompt + canonical_solution; Tier 2: the whole
+    # reference class), so nothing needs splitting into a separate prompt
+    # half here -- see tests/test_benchmarks/test_humaneval_adapter.py's
+    # delegation test for why this reproduces the old call byte-for-byte.
     mutants: list[Mutant] = generate_mutants(
-        prompt=task.prompt,
-        canonical_solution=task.canonical_solution,
-        entry_point=task.entry_point,
+        prompt="",
+        canonical_solution=bench.mutation_source(task),
+        entry_point=task.target,
         operators=cfg.rq1.operators,
+        max_per_operator=cfg.stage0.max_mutants_per_operator,
         seed=cfg.project.seed,
+        sdl_scope=bench.sdl_scope(task),
     )
     logger.info("  Generated %d mutants", len(mutants))
 
     mutants_data = [
         {"mutant_id": m.mutant_id, "operator": m.operator,
-         "description": m.description, "code": m.code}
+         "description": m.description, "code": m.code, "method": m.method}
         for m in mutants
     ]
     write_json(out, "mutants.json", mutants_data)
 
     # --- 2. Equivalence filtering ---
-    # Canonical outputs are identical for every mutant of this task, so compute
-    # them once and reuse rather than re-running the canonical solution per mutant.
+    # Canonical observations are identical for every mutant of this task, so
+    # compute them once and reuse rather than re-running the reference per
+    # mutant. bench.observe() parallelises across cpu_workers for a benchmark
+    # that needs it (HumanEvalBenchmark); Tier 2's scenario runner already
+    # batches internally (see compute_canonical_observations's docstring).
     cpu_workers = cfg.execution.cpu_workers
-    canon_outs = compute_canonical_outputs(
-        task=task,
+    input_pool, canon_obs = compute_canonical_observations(
+        bench, task,
         n_fuzz_inputs=cfg.stage0.n_fuzz_inputs,
         timeout_s=cfg.execution.timeout_s,
         seed=cfg.project.seed,
-        cpu_workers=cpu_workers,
-    ) if mutants else []
+    ) if mutants else (None, [])
 
     # Each mutant's own equivalence check (up to n_fuzz_inputs subprocess spawns,
     # early-exiting on first divergence) is independent of every other mutant's,
@@ -80,13 +89,15 @@ def process_task(task, cfg: Config, force: bool = False) -> None:
         with ProcessPoolExecutor(max_workers=cpu_workers) as pool:
             future_to_mutant = {
                 pool.submit(
-                    check_equivalence,
+                    check_equivalence_generic,
+                    cfg,
                     task,
                     mutant,
                     cfg.stage0.n_fuzz_inputs,
                     cfg.execution.timeout_s,
                     cfg.project.seed,
-                    canon_outs,
+                    input_pool,
+                    canon_obs,
                 ): mutant
                 for mutant in mutants
             }
@@ -124,11 +135,12 @@ def main(argv: list[str] | None = None) -> None:
     cfg = Config.from_yaml(args.config)
     setup_logging("stage0", log_dir=Path("logs"))
 
-    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
+    bench = get_benchmark(cfg)
+    tasks = bench.load_tasks(resolve_task_filter(args, cfg))
 
     logger.info("Stage 0: %d task(s) to process%s", len(tasks), " (forced)" if args.force else "")
     for task in tasks:
-        process_task(task, cfg, force=args.force)
+        process_task(task, cfg, bench, force=args.force)
 
     logger.info("Stage 0 complete.")
 

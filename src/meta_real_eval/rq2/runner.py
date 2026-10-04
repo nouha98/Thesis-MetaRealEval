@@ -26,9 +26,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from ..benchmarks import get_benchmark
 from ..core.checkpoint import add_force_arg
 from ..core.config import Config
-from ..core.data_loader import load_humaneval
 from ..core.logging_setup import setup as setup_logging
 from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from .evaluator import evaluate_task
@@ -69,7 +69,7 @@ def main(argv=None) -> None:
     cfg = Config.from_yaml(args.config)
     setup_logging("rq2", args.phase, log_dir=Path("logs"))
 
-    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
+    tasks = get_benchmark(cfg).load_tasks(resolve_task_filter(args, cfg))
     logger.info("RQ2 phase=%s, %d task(s)%s", args.phase, len(tasks), " (forced)" if args.force else "")
 
     if args.phase == "generate":

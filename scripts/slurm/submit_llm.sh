@@ -19,18 +19,27 @@
 
 set -euo pipefail
 
-STAGE=${1:?Usage: submit_llm.sh <stage> <phase> [extra runner args...]}
-PHASE=${2:?Usage: submit_llm.sh <stage> <phase> [extra runner args...]}
+STAGE=${1:?Usage: submit_llm.sh <stage> <phase> [--config path] [extra runner args...]}
+PHASE=${2:?Usage: submit_llm.sh <stage> <phase> [--config path] [extra runner args...]}
 shift 2
-EXTRA_ARGS=("$@")
+
+CONFIG="config/default.yaml"
+EXTRA_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --config) CONFIG="${2:?--config needs a path}"; shift 2 ;;
+        *) EXTRA_ARGS+=("$1"); shift ;;
+    esac
+done
 
 export MRE_RUNNER_MODULE="meta_real_eval.${STAGE}.runner"
+export MRE_CONFIG="${CONFIG}"
 source "${SLURM_SUBMIT_DIR:-$(dirname "$0")/../..}/scripts/slurm/_common.sh"
 
 echo "Job ${SLURM_JOB_ID}: ${STAGE} --phase ${PHASE} (LLM-bound, all tasks)" \
      "${EXTRA_ARGS[@]+${EXTRA_ARGS[*]}}"
 
 srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" -m meta_real_eval.${STAGE}.runner \
-    --config config/default.yaml \
+    --config "${CONFIG}" \
     --phase "${PHASE}" \
     ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}

@@ -19,14 +19,24 @@
 
 set -euo pipefail
 
+CONFIG="config/default.yaml"
+ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --config) CONFIG="${2:?--config needs a path}"; shift 2 ;;
+        *) ARGS+=("$1"); shift ;;
+    esac
+done
+
 # Not a <stage>.runner module, but generate_paraphrases.py imports rq2.corpus directly,
 # so checking that import still gets the same "fail fast with a readable message"
 # preflight the other scripts get, rather than a bare ExitCode 1 an hour in.
 export MRE_RUNNER_MODULE="meta_real_eval.rq2.corpus"
+export MRE_CONFIG="${CONFIG}"
 source "${SLURM_SUBMIT_DIR:-$(dirname "$0")/../..}/scripts/slurm/_common.sh"
 
 echo "Job ${SLURM_JOB_ID}: build RQ2 paraphrase corpus"
 
 srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" scripts/generate_paraphrases.py \
-    --config config/default.yaml \
-    "$@"
+    --config "${CONFIG}" \
+    ${ARGS[@]+"${ARGS[@]}"}

@@ -21,10 +21,11 @@ import json
 import logging
 from pathlib import Path
 
+from ..benchmarks import get_benchmark
+from ..benchmarks.base import Task
 from ..core.cache import ResponseCache
 from ..core.checkpoint import clear_done, is_done, mark_done, read_json, task_dir, write_json
 from ..core.config import BASELINE_RELATION, CONTROL_RELATION, Config
-from ..core.data_loader import HumanEvalTask, task_label
 from ..core.llm_client import InnkubeClient
 from .corpus import load_corpus, variants_for_task, verify_corpus
 from .paraphraser import apply_relation
@@ -37,6 +38,10 @@ logger = logging.getLogger(__name__)
 MAX_GENERATE_ATTEMPTS = 3
 GENERATE_RETRY_DELAY_S = 1.0
 
+# Tier 1's messages. Kept here (rather than moved into benchmarks/humaneval.py)
+# because benchmarks.HumanEvalBenchmark.generation_messages delegates straight
+# back to this function -- the single source of truth for Tier 1's prompt
+# wrapping, unchanged by the benchmark abstraction.
 _SYSTEM_PROMPT = (
     "You are a Python programming assistant. "
     "Complete the Python function exactly as specified. "
@@ -52,7 +57,7 @@ def _build_messages(prompt_variant: str) -> list[dict]:
     ]
 
 
-def build_task_variants(task: HumanEvalTask, cfg: Config) -> dict[str, tuple[str, str | None]]:
+def build_task_variants(task: Task, cfg: Config) -> dict[str, tuple[str, str | None]]:
     """Return ``{relation: (prompt_text, cache_salt)}`` for one task.
 
     Three arms share one flat relation namespace, because every downstream
@@ -153,7 +158,7 @@ async def _complete_with_retries(
                           "(finish_reason=length)")
         last_error = last_error or "model returned zero completions"
         logger.warning("Empty cell %s / %s / %s (attempt %d/%d): %s",
-                       task_label(task), relation, model_id,
+                       task.label, relation, model_id,
                        attempt, MAX_GENERATE_ATTEMPTS, last_error)
         if attempt < MAX_GENERATE_ATTEMPTS:
             await asyncio.sleep(GENERATE_RETRY_DELAY_S)
@@ -170,11 +175,12 @@ def _existing_completions(out) -> dict[str, dict[str, list[str]]]:
 
 
 async def generate_task(
-    task: HumanEvalTask,
+    task: Task,
     cfg: Config,
     client: InnkubeClient,
     force: bool = False,
     only_model: str | None = None,
+    bench=None,
 ) -> None:
     """Generate completions for one task across all (relation, model) combos.
 
@@ -185,8 +191,14 @@ async def generate_task(
     matters whenever a model has to be re-run for a reason of its own (a token
     budget that truncated its answers, say) and the rest of the corpus is sound
     and expensive to reproduce.
+
+    ``bench`` is the benchmark the message format comes from (``original`` and
+    ``control_resample`` only -- the template/corpus arms are plain prompt text
+    the same way for either benchmark). Constructed from ``cfg`` if omitted;
+    callers processing many tasks should build it once and pass it in.
     """
-    label = task_label(task)
+    bench = bench or get_benchmark(cfg)
+    label = task.label
     out = task_dir(cfg, "rq2", label, phase="generate")
 
     if force and only_model is None:
@@ -227,7 +239,7 @@ async def generate_task(
         # Under --only-model this preserves the other models' cells for this
         # relation; a plain run starts each relation empty as before.
         results.setdefault(relation, {})
-        messages = _build_messages(prompt_variant)
+        messages = bench.generation_messages(task, prompt_variant)
 
         for model_cfg in models:
             model_id = model_cfg.id
@@ -267,9 +279,10 @@ async def generate_task(
     logger.info("Generated completions for %s", label)
 
 
-async def run_generate(cfg: Config, tasks: list[HumanEvalTask], force: bool = False,
+async def run_generate(cfg: Config, tasks: list[Task], force: bool = False,
                        only_model: str | None = None) -> None:
     """Dispatch all tasks concurrently (semaphore + rate limiter handle throttling)."""
+    bench = get_benchmark(cfg)
     if cfg.rq2.paraphrase_corpus is not None:
         # Verified once, up front, before any budget is spent: a corpus that
         # drifted since the pinned hash would give different models different
@@ -283,6 +296,6 @@ async def run_generate(cfg: Config, tasks: list[HumanEvalTask], force: bool = Fa
 
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
-    coros = [generate_task(t, cfg, client, force=force, only_model=only_model)
+    coros = [generate_task(t, cfg, client, force=force, only_model=only_model, bench=bench)
              for t in tasks]
     await asyncio.gather(*coros)

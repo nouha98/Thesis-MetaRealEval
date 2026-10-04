@@ -22,14 +22,27 @@
 
 set -euo pipefail
 
+# audit_rq1.py takes its own --config; pull it out here (defaulting as usual)
+# so _common.sh's preflight checks the SAME benchmark/dataset the audit will
+# actually run against, instead of always assuming Tier 1.
+CONFIG="config/default.yaml"
+ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --config) CONFIG="${2:?--config needs a path}"; shift 2 ;;
+        *) ARGS+=("$1"); shift ;;
+    esac
+done
+
 # Not a <stage>.runner module, but audit_rq1.py imports rq1.runner's siblings
 # directly, so checking that import still gets the same "fail fast with a
 # readable message" preflight the other scripts get.
 export MRE_RUNNER_MODULE="meta_real_eval.rq1.runner"
+export MRE_CONFIG="${CONFIG}"
 source "${SLURM_SUBMIT_DIR:-$(dirname "$0")/../..}/scripts/slurm/_common.sh"
 
 echo "Job ${SLURM_JOB_ID}: audit Stage 0 / RQ1 results"
 
 srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" scripts/audit_rq1.py \
-    --config config/default.yaml \
-    "$@"
+    --config "${CONFIG}" \
+    ${ARGS[@]+"${ARGS[@]}"}

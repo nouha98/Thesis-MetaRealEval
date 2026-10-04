@@ -65,7 +65,7 @@ async def test_a_fully_truncated_attempt_is_retried(tmp_path):
         (["def f(): return 1"], ["stop"]),
     ])
     cfg = Config()
-    task = SimpleNamespace(task_id="HumanEval/0")
+    task = SimpleNamespace(task_id="HumanEval/0", label="HumanEval_0")
 
     completions, error = await _complete_with_retries(
         task, "original", "m", [{"role": "user", "content": "hi"}], cfg, client,
@@ -115,7 +115,7 @@ async def test_retry_after_a_blank_attempt_makes_a_real_second_call(tmp_path):
         tmp_path, [["", "", ""], ["def f(): return 1"]],
     )
     cfg = Config()
-    task = SimpleNamespace(task_id="HumanEval/0")
+    task = SimpleNamespace(task_id="HumanEval/0", label="HumanEval_0")
     messages = [{"role": "user", "content": "hi"}]
 
     completions, error = await _complete_with_retries(
@@ -133,7 +133,7 @@ async def test_all_attempts_blank_makes_max_attempts_real_calls(tmp_path):
         tmp_path, [["", "", ""]] * MAX_GENERATE_ATTEMPTS,
     )
     cfg = Config()
-    task = SimpleNamespace(task_id="HumanEval/0")
+    task = SimpleNamespace(task_id="HumanEval/0", label="HumanEval_0")
     messages = [{"role": "user", "content": "hi"}]
 
     completions, error = await _complete_with_retries(
@@ -176,7 +176,7 @@ async def test_only_model_preserves_the_other_models_completions(tmp_path):
     from meta_real_eval.core.checkpoint import task_dir
 
     cfg = _two_model_cfg(tmp_path)
-    task = SimpleNamespace(task_id="HumanEval/0", prompt="def f():\n", entry_point="f")
+    task = SimpleNamespace(task_id="HumanEval/0", label="HumanEval_0", prompt="def f():\n", entry_point="f")
     out = task_dir(cfg, "rq2", "HumanEval_0", phase="generate")
     out.mkdir(parents=True, exist_ok=True)
     (out / "completions.json").write_text(_json.dumps({
@@ -194,7 +194,7 @@ async def test_only_model_rejects_a_model_outside_the_config(tmp_path):
     import pytest
 
     cfg = _two_model_cfg(tmp_path)
-    task = SimpleNamespace(task_id="HumanEval/0", prompt="def f():\n", entry_point="f")
+    task = SimpleNamespace(task_id="HumanEval/0", label="HumanEval_0", prompt="def f():\n", entry_point="f")
 
     with pytest.raises(SystemExit):
         await _run_generate_task(tmp_path, cfg, task, [], only_model="not-a-model")
@@ -207,7 +207,7 @@ async def test_a_plain_run_still_writes_every_configured_model(tmp_path):
     from meta_real_eval.core.checkpoint import task_dir
 
     cfg = _two_model_cfg(tmp_path)
-    task = SimpleNamespace(task_id="HumanEval/0", prompt="def f():\n", entry_point="f")
+    task = SimpleNamespace(task_id="HumanEval/0", label="HumanEval_0", prompt="def f():\n", entry_point="f")
 
     await _run_generate_task(tmp_path, cfg, task, [["A"], ["B"]], only_model=None)
 
@@ -223,7 +223,7 @@ async def test_a_successful_first_attempt_keeps_the_caller_supplied_salt(tmp_pat
         tmp_path, [["def f(): return 1"]],
     )
     cfg = Config()
-    task = SimpleNamespace(task_id="HumanEval/0")
+    task = SimpleNamespace(task_id="HumanEval/0", label="HumanEval_0")
     messages = [{"role": "user", "content": "hi"}]
 
     completions, _ = await _complete_with_retries(

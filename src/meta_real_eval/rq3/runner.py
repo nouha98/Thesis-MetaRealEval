@@ -26,15 +26,14 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from ..benchmarks import get_benchmark
 from ..core.cache import ResponseCache
 from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import BASELINE_RELATION, CONTROL_RELATION, Config
-from ..core.data_loader import load_humaneval, task_label
 from ..core.llm_client import InnkubeClient
 from ..core.logging_setup import setup as setup_logging
 from ..core.task_selection import add_task_selection_args, resolve_task_filter
-from ..rq2.evaluator import build_solution_code
-from .divergence import _pick_best_completion, compute_divergence
+from .divergence import _pick_best_completion_generic, compute_divergence_generic
 from .sbc_scorer import compute_sbc_score
 
 logger = logging.getLogger(__name__)
@@ -87,7 +86,7 @@ def select_divergence_relations(cfg: Config, label: str, available: list[str]) -
 
 
 def run_execute_one(task, cfg: Config, force: bool = False) -> None:
-    label = task_label(task)
+    label = task.label
     out = task_dir(cfg, "rq3", label, phase="execute")
 
     if force:
@@ -119,7 +118,8 @@ def run_execute_one(task, cfg: Config, force: bool = False) -> None:
     selected = select_divergence_relations(cfg, label, list(completions_data))
     sampled_data = {r: completions_data[r] for r in selected if r in completions_data}
 
-    result = compute_divergence(
+    result = compute_divergence_generic(
+        cfg,
         task=task,
         completions_data=sampled_data,
         n_shared_inputs=cfg.rq3.n_shared_inputs,
@@ -149,8 +149,8 @@ def run_execute_one(task, cfg: Config, force: bool = False) -> None:
 # Score phase
 # ---------------------------------------------------------------------------
 
-async def _score_one(task, cfg: Config, client: InnkubeClient, force: bool = False) -> None:
-    label = task_label(task)
+async def _score_one(task, cfg: Config, client: InnkubeClient, bench, force: bool = False) -> None:
+    label = task.label
     out = task_dir(cfg, "rq3", label, phase="score")
 
     if force:
@@ -204,10 +204,10 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, force: bool = Fal
             flags = None
             if pass_rates:
                 flags = pass_rates.get(relation, {}).get(mid, {}).get("per_completion")
-            best, _passes = _pick_best_completion(
-                completions, task, cfg.execution.timeout_s, pass_flags=flags,
+            best, _passes = _pick_best_completion_generic(
+                bench, completions, task, cfg.execution.timeout_s, pass_flags=flags,
             )
-            code = build_solution_code(best, task.prompt, task.entry_point)
+            code = bench.build_solution(task, best)
             key = f"{relation}/{mid}"
             try:
                 sbc_results[key] = await compute_sbc_score(task, code, model_id, client)
@@ -220,9 +220,10 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, force: bool = Fal
 
 
 async def run_score(cfg: Config, tasks, force: bool = False) -> None:
+    bench = get_benchmark(cfg)
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
-    coros = [_score_one(t, cfg, client, force=force) for t in tasks]
+    coros = [_score_one(t, cfg, client, bench, force=force) for t in tasks]
     await asyncio.gather(*coros)
 
 
@@ -242,7 +243,7 @@ def main(argv=None) -> None:
     cfg = Config.from_yaml(args.config)
     setup_logging("rq3", args.phase, log_dir=Path("logs"))
 
-    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
+    tasks = get_benchmark(cfg).load_tasks(resolve_task_filter(args, cfg))
     logger.info("RQ3 phase=%s, %d task(s)%s", args.phase, len(tasks), " (forced)" if args.force else "")
 
     if args.phase == "execute":
@@ -250,8 +251,7 @@ def main(argv=None) -> None:
             try:
                 run_execute_one(task, cfg, force=args.force)
             except Exception:
-                logger.exception("Execute failed for %s — leaving unmarked, retry later",
-                                  task_label(task))
+                logger.exception("Execute failed for %s — leaving unmarked, retry later", task.label)
     else:
         asyncio.run(run_score(cfg, tasks, force=args.force))
 

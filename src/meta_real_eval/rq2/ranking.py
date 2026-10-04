@@ -37,9 +37,9 @@ from typing import Optional
 import numpy as np
 from scipy.stats import kendalltau, rankdata
 
+from ..benchmarks.base import Task
 from ..core.checkpoint import task_dir, write_json, read_json
 from ..core.config import Config
-from ..core.data_loader import HumanEvalTask, task_label
 
 logger = logging.getLogger(__name__)
 
@@ -182,13 +182,13 @@ def _rank_positions(scores: dict[str, float], model_ids: list[str]) -> dict[str,
     return dict(zip(model_ids, ranks))
 
 
-def compute_ranking_stability(task: HumanEvalTask, cfg: Config) -> None:
+def compute_ranking_stability(task: Task, cfg: Config) -> None:
     """Read pass_rates.json and write rankings.json for one task.
 
     Always recomputed — this is pure post-processing of pass_rates.json (no LLM
     calls, no sandbox execution), so there is nothing to checkpoint around.
     """
-    label = task_label(task)
+    label = task.label
     out = task_dir(cfg, "rq2", label, phase="evaluate")
 
     try:

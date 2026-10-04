@@ -30,8 +30,14 @@ class LLMConfig(BaseModel):
 
 
 class BenchmarkConfig(BaseModel):
+    # Dispatched on by benchmarks.get_benchmark(): "humaneval" | "realclasseval".
     name: str = "humaneval"
     tasks: Optional[list[int]] = None   # None → all tasks
+    # Tier 2 only; None → the adapter's defaults under data/realclasseval/.
+    data_path: Optional[Path] = None
+    manifest_path: Optional[Path] = None
+    splits: Optional[list[str]] = None  # None → both: [csn, post_cut-off]
+    docstring_variant: str = "full_docstr"
 
 
 class ExecutionConfig(BaseModel):
@@ -41,6 +47,10 @@ class ExecutionConfig(BaseModel):
 
 class Stage0Config(BaseModel):
     n_fuzz_inputs: int = 500
+    # generate_mutants' own default (5) matches this; Tier 2 classes have more
+    # methods to spread mutants across than a single HumanEval function, so
+    # the Tier 2 config raises it (see the Tier 2 plan, Stage 0).
+    max_mutants_per_operator: int = 5
 
 
 class RQ1Config(BaseModel):

@@ -16,10 +16,19 @@ cd "${REPO_DIR}"
 
 mkdir -p logs results cache
 
+# Which config (and therefore which benchmark -- Tier 1 or Tier 2) this job
+# runs against. Submit scripts set this before sourcing this file; it is NOT
+# read from a flag here, because by the time this is sourced the caller has
+# already parsed its own --config and must pass the result in, same as
+# MRE_RUNNER_MODULE below.
+export MRE_CONFIG="${MRE_CONFIG:-config/default.yaml}"
+CONFIG="${MRE_CONFIG}"
+
 echo "=== preflight ==========================================="
 echo "host:        $(hostname)"
 echo "job:         ${SLURM_JOB_ID:-<none>} array-task ${SLURM_ARRAY_TASK_ID:-<none>}"
 echo "repo:        ${REPO_DIR}"
+echo "config:      ${CONFIG}"
 
 # --- 2. HOME / cache redirection -----------------------------------------
 # /home is not mounted on the compute nodes of this cluster, so anything that
@@ -89,14 +98,25 @@ if module:
         sys.exit(f"ERROR: cannot import {module} ({type(e).__name__}: {e}).\n{hint}")
     print(f"runner:      {module} imports cleanly")
 
-try:
-    from meta_real_eval.core.data_loader import load_humaneval
-    tasks = load_humaneval()
-except Exception as e:
-    sys.exit(f"ERROR: {e}" if type(e).__name__ == "CorpusNotFound"
-             else f"ERROR: cannot load HumanEval ({type(e).__name__}: {e})")
+if os.environ.get("MRE_SKIP_DATASET_CHECK"):
+    # The M0 gate job is what CREATES the RealClassEval manifest this check
+    # would otherwise require -- requiring it here would deadlock the one
+    # job whose purpose is to produce it.
+    print("dataset:     skipped (this job builds/validates the manifest itself)")
+else:
+    try:
+        from meta_real_eval.core.config import Config
+        from meta_real_eval.benchmarks import get_benchmark
+        cfg = Config.from_yaml(os.environ["MRE_CONFIG"])
+        bench = get_benchmark(cfg)
+        tasks = bench.load_tasks(cfg.benchmark.tasks)
+    except Exception as e:
+        sys.exit(f"ERROR: cannot load benchmark tasks via {os.environ['MRE_CONFIG']} "
+                 f"({type(e).__name__}: {e}).\n"
+                 "       For RealClassEval this usually means the M0 gate hasn't "
+                 "been run yet (scripts/slurm/submit_m0_gate.sh).")
 
-print(f"dataset:     {len(tasks)} HumanEval tasks available offline")
+    print(f"dataset:     {len(tasks)} {cfg.benchmark.name} tasks available offline")
 PYCHECK
 then
     echo "ERROR: preflight failed — aborting before submitting work." >&2

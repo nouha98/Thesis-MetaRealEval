@@ -7,6 +7,7 @@ API calls, off-by-one edge cases — while keeping the code syntactically valid.
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import logging
 import re
@@ -200,6 +201,87 @@ async def generate_llm_mutants(
             # Tag the id with the sourcing model, not a generic "LLM_N" --
             # once mutants from every model land in the same task's corpus,
             # a bare index can't tell them apart.
+            mutant_id=f"LLM-{model_id}-{idx}",
+            operator="LLM",
+            description=f"LLM-generated semantic mutant (model={model_id})",
+            code=code,
+        ))
+        if len(mutants) >= n_mutants:
+            break
+
+    logger.info("Generated %d LLM mutants for %s", len(mutants), task.task_id)
+    return mutants
+
+
+# ---------------------------------------------------------------------------
+# Benchmark-agnostic version (see the Tier 2 plan, RQ1). Added alongside the
+# Tier 1-only generate_llm_mutants above, which rq1/runner.py no longer calls
+# but which stays exactly as it was -- its exact prompt text is a
+# ResponseCache key, so it must never change regardless of what else in this
+# file does. For HumanEvalBenchmark, this reproduces generate_llm_mutants
+# exactly: tests/test_rq1/test_llm_mutator_adapter.py checks the messages and
+# the extraction/repair step agree byte-for-byte.
+# ---------------------------------------------------------------------------
+
+def _extract_code_generic(raw: str, bench, task) -> str | None:
+    """Strip markdown fences, then validate+repair via the benchmark."""
+    code = raw.strip()
+    fenced = re.match(r"```(?:python)?\s*(.*?)```", code, re.DOTALL)
+    if fenced:
+        code = fenced.group(1).strip()
+    if not code:
+        return None
+    try:
+        ast.parse(code)
+    except SyntaxError:
+        return None
+    return bench.repair_mutant(task, code)
+
+
+async def generate_llm_mutants_generic(
+    bench,
+    task,
+    model_id: str,
+    client: InnkubeClient,
+    n_mutants: int = 3,
+    cache_salt: str | None = None,
+    fault_hint: str = "",
+) -> list[Mutant]:
+    """Benchmark-agnostic generate_llm_mutants: same algorithm (request a
+    surplus, extract+repair+dedup, stop at n_mutants), driven by
+    bench.llm_mutation_messages / bench.repair_mutant / bench.mutation_source
+    instead of the hard-coded HumanEval prompt and entry-point check.
+    """
+    messages = bench.llm_mutation_messages(task, fault_hint)
+
+    try:
+        raw_completions = await client.complete(
+            model=model_id,
+            messages=messages,
+            temperature=0.9,
+            max_tokens=MUTANT_MAX_TOKENS,
+            n=n_mutants + 2,
+            cache_salt=cache_salt,
+        )
+    except Exception as exc:
+        logger.warning("LLM mutant generation failed for %s: %s", task.task_id, exc)
+        return []
+
+    canonical_norm = _normalise(bench.mutation_source(task))
+    seen: set[str] = set()
+
+    mutants: list[Mutant] = []
+    for idx, raw in enumerate(raw_completions):
+        code = _extract_code_generic(raw, bench, task)
+        if code is None:
+            logger.debug("Skipping unusable LLM mutant %d for %s (does not parse, or "
+                         "does not define the required name)", idx, task.task_id)
+            continue
+        norm = _normalise(code)
+        if norm == canonical_norm or norm in seen:
+            continue
+        seen.add(norm)
+        mutants.append(Mutant(
             mutant_id=f"LLM-{model_id}-{idx}",
             operator="LLM",
             description=f"LLM-generated semantic mutant (model={model_id})",

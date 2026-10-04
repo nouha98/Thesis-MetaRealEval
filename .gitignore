@@ -10,6 +10,7 @@ venv/
 
 # Experiment outputs (large, not version-controlled)
 results/
+results_*/
 cache/
 .cache/
 .slurm_home/
@@ -31,3 +32,4 @@ logs/*
 
 archive/
 .cache_model_check/
+doc/

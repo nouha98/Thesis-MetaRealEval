@@ -33,17 +33,15 @@ from collections import Counter
 
 from scipy.stats import norm
 
+from ..benchmarks import get_benchmark
 from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
 from ..core.config import Config
-from ..core.data_loader import load_humaneval, task_label
 from ..core.logging_setup import setup as setup_logging
 from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from ..analysis.statistics import spearman_rho, wilcoxon_test
-from ..rq2.evaluator import _run_completion, pass_at_k
 from ..rq2.ranking import _rank_vector
-from .consistency import DEFAULT_DIVERGENCE_THRESHOLD, build_consistency_assertions
-from .degradation import degrade_all_levels
-from .interaction import compute_tau_at_degradation_level
+from .consistency import DEFAULT_DIVERGENCE_THRESHOLD
+from .interaction import compute_tau_at_degradation_level_generic
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +50,8 @@ logger = logging.getLogger(__name__)
 # Degrade phase
 # ---------------------------------------------------------------------------
 
-def run_degrade_one(task, cfg: Config, force: bool = False) -> None:
-    label = task_label(task)
+def run_degrade_one(task, cfg: Config, bench, force: bool = False) -> None:
+    label = task.label
     out = task_dir(cfg, "rq4", label, phase="degrade")
 
     if force:
@@ -70,15 +68,10 @@ def run_degrade_one(task, cfg: Config, force: bool = False) -> None:
         logger.error("Missing RQ2 completions for %s", label)
         return
 
-    degraded_tests = degrade_all_levels(
-        task.test, cfg.rq4.degradation_levels, seed=cfg.project.seed
-    )
-
     results: dict[str, dict] = {}
-    for level, degraded_test in degraded_tests.items():
-        summary = compute_tau_at_degradation_level(
-            task, completions_data, degraded_test, cfg
-        )
+    for level in cfg.rq4.degradation_levels:
+        suite = bench.degrade(task, level, seed=cfg.project.seed)
+        summary = compute_tau_at_degradation_level_generic(cfg, task, completions_data, suite)
         results[str(level)] = {**summary, "degradation_level": level}
 
     # No per-task trend test here: Page's L is a randomized-block statistic and
@@ -95,8 +88,8 @@ def run_degrade_one(task, cfg: Config, force: bool = False) -> None:
 # Augment phase
 # ---------------------------------------------------------------------------
 
-def run_augment_one(task, cfg: Config, force: bool = False) -> None:
-    label = task_label(task)
+def run_augment_one(task, cfg: Config, bench, force: bool = False) -> None:
+    label = task.label
     out = task_dir(cfg, "rq4", label, phase="augment")
 
     if force:
@@ -123,10 +116,8 @@ def run_augment_one(task, cfg: Config, force: bool = False) -> None:
         return
 
     # Build consistency assertion code from RQ3's unanimous consensus.
-    ca_code, n_assertions = build_consistency_assertions(
-        task=task,
-        divergence_data=divergence_data,
-        threshold=cfg.rq3.divergence_threshold,
+    ca_code, n_assertions = bench.consistency_suite(
+        task, divergence_data, cfg.rq3.divergence_threshold,
     )
 
     if cfg.rq3.divergence_threshold is None:
@@ -154,16 +145,16 @@ def run_augment_one(task, cfg: Config, force: bool = False) -> None:
     # One augmented suite per degradation level, keyed the same way as
     # degradation_analysis.json, so rank recovery can be read at every level
     # instead of only at the single 50% point the old code hardcoded.
-    degraded = degrade_all_levels(task.test, cfg.rq4.degradation_levels, seed=cfg.project.seed)
-    for level, degraded_test in degraded.items():
-        augmented_test = degraded_test + "\n" + ca_code if ca_code else degraded_test
-        summary = compute_tau_at_degradation_level(task, completions_data, augmented_test, cfg)
+    for level in cfg.rq4.degradation_levels:
+        degraded = bench.degrade(task, level, seed=cfg.project.seed)
+        augmented = bench.augmented_suite(task, degraded, ca_code, n_assertions)
+        summary = compute_tau_at_degradation_level_generic(cfg, task, completions_data, augmented)
         results[str(level)] = {**summary, "degradation_level": level}
 
     write_json(out, "augment_analysis.json", results)
     mark_done(out)
     logger.info("Augment %s: %d consistency assertion(s) over %d level(s)",
-                label, n_assertions, len(degraded))
+                label, n_assertions, len(cfg.rq4.degradation_levels))
 
 
 # ---------------------------------------------------------------------------
@@ -297,7 +288,7 @@ def run_analyze(cfg: Config, tasks) -> None:
     strata: Counter = Counter()
 
     for task in tasks:
-        label = task_label(task)
+        label = task.label
 
         degrade_out = task_dir(cfg, "rq4", label, phase="degrade")
         aug_out = task_dir(cfg, "rq4", label, phase="augment")
@@ -467,15 +458,16 @@ def main(argv=None) -> None:
     cfg = Config.from_yaml(args.config)
     setup_logging("rq4", args.phase, log_dir=Path("logs"))
 
-    tasks = load_humaneval(tasks=resolve_task_filter(args, cfg))
+    bench = get_benchmark(cfg)
+    tasks = bench.load_tasks(resolve_task_filter(args, cfg))
     logger.info("RQ4 phase=%s, %d task(s)%s", args.phase, len(tasks), " (forced)" if args.force else "")
 
     if args.phase == "degrade":
         for task in tasks:
-            run_degrade_one(task, cfg, force=args.force)
+            run_degrade_one(task, cfg, bench, force=args.force)
     elif args.phase == "augment":
         for task in tasks:
-            run_augment_one(task, cfg, force=args.force)
+            run_augment_one(task, cfg, bench, force=args.force)
     else:
         run_analyze(cfg, tasks)
 

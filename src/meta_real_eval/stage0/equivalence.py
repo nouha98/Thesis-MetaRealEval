@@ -20,6 +20,7 @@ Limitations
 from __future__ import annotations
 
 import ast
+import hashlib
 import inspect
 import random
 import re
@@ -340,7 +341,12 @@ def _capture_test_inputs(task: HumanEvalTask, seed: int = 42,
     replays an input by interpolating repr(args) into generated source, so an
     argument that cannot be read back from its repr is not replayable.
     """
-    cache_key = f"{task.task_id}:{seed}"
+    # Keyed by content, not task_id: two different tasks sharing an id (as test
+    # fixtures do) must never be served each other's inputs. For the real
+    # corpus an id maps to exactly one content, so results are unchanged.
+    cache_key = hashlib.sha256("\x00".join(
+        (task.prompt, task.canonical_solution, task.test, task.entry_point, str(seed))
+    ).encode("utf-8")).hexdigest()
     cached = _CAPTURE_CACHE.get(cache_key)
     if cached is not None:
         return cached
@@ -539,3 +545,107 @@ def _suite_kills(task: HumanEvalTask, mutant: Mutant, timeout_s: float) -> bool:
     """True if the task's own test suite fails on this mutant."""
     result = execute(mutant.code, f"{task.test}\ncheck({task.entry_point})\n", timeout_s)
     return not result.passed and not result.timed_out
+
+
+# ---------------------------------------------------------------------------
+# Benchmark-agnostic equivalence check (D4/D6 scenarios instead of argument
+# tuples; see the Tier 2 plan). These parallel compute_canonical_outputs /
+# check_equivalence / _suite_kills above exactly, step for step, so the only
+# change for HumanEval is which function computes an "output": nothing above
+# this point is touched, and rq1/runner.py keeps calling the Tier 1-only
+# versions unchanged. stage0/runner.py calls these.
+#
+# Two things the Tier 1 functions get "for free" from their shape and that
+# the generic versions have to earn back explicitly, or Stage 0 would get
+# slower under the abstraction without anyone deciding that on purpose:
+#
+#   early exit   check_equivalence calls _run_one one input at a time and
+#                returns at the first divergence. bench.observe() computes a
+#                whole pool at once (Tier 2's scenario runner is far cheaper
+#                run as one batch than one subprocess per scenario), so the
+#                per-mutant loop below uses bench.observe_one() instead --
+#                see Benchmark.observe_one's docstring.
+#   parallelism  compute_canonical_outputs spreads its (always-exhaustive,
+#                nothing to early-exit on) run across cpu_workers. The
+#                generic path keeps this by asking bench.observe() for the
+#                whole pool in one call; HumanEvalBenchmark.observe()
+#                reproduces the same ProcessPoolExecutor internally.
+# ---------------------------------------------------------------------------
+
+def compute_canonical_observations(
+    bench,
+    task,
+    n_fuzz_inputs: int = 500,
+    timeout_s: float = 5.0,
+    seed: int = 42,
+):
+    """Generic compute_canonical_outputs: returns (pool, observations).
+
+    The pool is returned alongside the observations (not just the inputs, as
+    compute_canonical_outputs returns) because check_equivalence_generic
+    needs it again -- a Tier 2 InputPool carries the scenario header, which a
+    bare list of items does not.
+    """
+    pool = bench.input_pool(task, n_fuzz_inputs, seed)
+    observations = bench.observe(task, task.reference_code, pool, timeout_s) if pool.items else []
+    return pool, observations
+
+
+def check_equivalence_generic(
+    cfg,
+    task,
+    mutant: Mutant,
+    n_fuzz_inputs: int = 500,
+    timeout_s: float = 5.0,
+    seed: int = 42,
+    pool=None,
+    canon_obs=None,
+) -> EquivResult:
+    """Generic check_equivalence. Reproduces it exactly via HumanEvalBenchmark
+    -- see tests/test_stage0/test_equivalence_adapter.py.
+
+    Takes ``cfg``, not a constructed benchmark: this is submitted to a
+    ProcessPoolExecutor per mutant (mirroring check_equivalence's own calling
+    convention), and get_benchmark(cfg) is cheap to reconstruct in the worker
+    -- building it touches no I/O, since everything a benchmark's run_suite /
+    build_solution / mutation_source need already travels on ``task``.
+    """
+    from ..benchmarks import get_benchmark  # local: avoids a module import cycle at load time
+    bench = get_benchmark(cfg)
+
+    # 1. Fast AST check.
+    try:
+        canon_tree = ast.unparse(ast.parse(bench.mutation_source(task)))
+        mut_tree = ast.unparse(ast.parse(mutant.code))
+        if canon_tree == mut_tree:
+            return EquivResult(mutant.mutant_id, True, "ast_identical", 0)
+    except SyntaxError:
+        pass
+
+    # 2. Differential execution, one input at a time, stopping at first divergence.
+    if pool is None or canon_obs is None:
+        pool, canon_obs = compute_canonical_observations(bench, task, n_fuzz_inputs, timeout_s, seed)
+
+    n_tested = 0
+    for i in range(len(pool.items)):
+        if bench.is_timeout(canon_obs[i]):
+            continue
+        n_tested += 1
+        m_obs = bench.observe_one(task, mutant.code, pool, i, timeout_s)
+        if bench.is_timeout(m_obs) or not bench.observations_agree(canon_obs[i], m_obs):
+            return EquivResult(mutant.mutant_id, False, "diverged", i + 1, repr(pool.items[i]))
+
+    # 3. Suite veto.
+    if _suite_kills_generic(bench, task, mutant, timeout_s):
+        return EquivResult(mutant.mutant_id, False, "suite_kills", n_tested)
+
+    if n_tested == 0:
+        return EquivResult(mutant.mutant_id, True, "no_testable_inputs", 0)
+    return EquivResult(mutant.mutant_id, True, "no_divergence", n_tested)
+
+
+def _suite_kills_generic(bench, task, mutant: Mutant, timeout_s: float) -> bool:
+    """True if the task's own test suite fails on this mutant. Mirrors
+    _suite_kills: a timeout is "we don't know", never a kill."""
+    result = bench.run_suite(task, mutant.code, timeout_s)
+    return not result.passed_all and not bench.suite_timed_out(result)

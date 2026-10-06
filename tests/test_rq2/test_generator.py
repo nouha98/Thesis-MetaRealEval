@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from meta_real_eval.core.cache import ResponseCache
 from meta_real_eval.core.config import Config, LLMConfig, LLMModelConfig
 from meta_real_eval.core.llm_client import InnkubeClient
-from meta_real_eval.rq2.generator import _complete_with_retries, _has_real_completion
+from meta_real_eval.rq2.generator import _complete_with_retries, _has_real_completion, _mark_as_control
 
 
 # ---------------------------------------------------------------------------
@@ -240,3 +240,27 @@ async def test_a_successful_first_attempt_keeps_the_caller_supplied_salt(tmp_pat
         cache_salt="control_resample",
     )
     assert completions2 == ["def f(): return 1"]
+
+
+# ---------------------------------------------------------------------------
+# Regression: control_resample's cache_salt only changes OUR cache key -- it
+# is never sent to the API -- so without _mark_as_control, `original` and
+# `control_resample` are byte-identical requests. Measured directly on real
+# results: some backends then return byte-identical completions for both,
+# collapsing the sampling-noise floor to zero (Tier 2 M1 pilot: 300/300).
+# ---------------------------------------------------------------------------
+
+def test_mark_as_control_changes_system_message_only():
+    messages = [{"role": "system", "content": "sys"}, {"role": "user", "content": "task"}]
+    marked = _mark_as_control(messages)
+    assert marked[0]["content"] != "sys"             # the request now differs...
+    assert marked[0]["content"].startswith("sys")    # ...by an appended marker, not a replacement
+    assert marked[1]["content"] == "task"            # the task content itself is untouched
+    # the input must not be mutated in place -- generate_one reuses `messages`
+    # for other models in the same relation loop.
+    assert messages[0]["content"] == "sys"
+
+
+def test_mark_as_control_is_a_noop_without_a_leading_system_message():
+    messages = [{"role": "user", "content": "task"}]
+    assert _mark_as_control(messages) == messages

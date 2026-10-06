@@ -57,6 +57,27 @@ def _build_messages(prompt_variant: str) -> list[dict]:
     ]
 
 
+# control_resample's cache_salt (see build_task_variants) only changes OUR
+# client-side cache key -- core/llm_client.py never sends it to the API -- so
+# without this marker, `original` and `control_resample` are byte-identical
+# requests. Measured directly: some backends then return byte-identical
+# completions for both, collapsing the sampling-noise floor to zero (Tier 2
+# M1 pilot: 300/300 identical; Tier 1's existing results show 18-46% of
+# (task, model) cells fully duplicated, varying by backend). The marker is
+# appended to the system message only -- never the task prompt itself, which
+# `build_solution`'s D7 import extraction reads from `task.prompt`, not from
+# this message -- so it cannot affect what is scored.
+_CONTROL_MARKER = "\n(internal note, not part of the task: control resample)"
+
+
+def _mark_as_control(messages: list[dict]) -> list[dict]:
+    if not messages or messages[0]["role"] != "system":
+        return messages
+    marked = dict(messages[0])
+    marked["content"] = marked["content"] + _CONTROL_MARKER
+    return [marked, *messages[1:]]
+
+
 def build_task_variants(task: Task, cfg: Config) -> dict[str, tuple[str, str | None]]:
     """Return ``{relation: (prompt_text, cache_salt)}`` for one task.
 
@@ -65,9 +86,18 @@ def build_task_variants(task: Task, cfg: Config) -> dict[str, tuple[str, str | N
     an opaque relation string:
 
     ``original``          the unmodified prompt.
-    ``control_resample``  the unmodified prompt again, under a cache salt so it
-                          is genuinely re-sampled rather than served from the
-                          cache — its tau_b is the sampling-noise floor.
+    ``control_resample``  an independently issued request for the same
+                          underlying task, distinguished from ``original``
+                          only by a cache salt (so it is never served from
+                          OUR cache) and a semantically neutral marker
+                          appended to the system message by ``generate_one``
+                          (so the request differs at the byte level -- the
+                          cache salt alone is never sent to the API). The
+                          task content itself (``task.prompt``) is identical
+                          to ``original``'s. Its tau_b is the sampling-noise
+                          floor: generation/request noise under a minimally
+                          perturbed prompt, not a claim that two byte-identical
+                          requests would have produced independent samples.
     template relations    the deterministic transforms (control arm).
     ``llm_<family>_NN``   the validated LLM rewrites from the corpus.
 
@@ -240,6 +270,8 @@ async def generate_task(
         # relation; a plain run starts each relation empty as before.
         results.setdefault(relation, {})
         messages = bench.generation_messages(task, prompt_variant)
+        if relation == CONTROL_RELATION:
+            messages = _mark_as_control(messages)
 
         for model_cfg in models:
             model_id = model_cfg.id

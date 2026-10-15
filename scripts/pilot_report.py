@@ -162,6 +162,11 @@ def main(argv=None) -> None:
     is_tier2 = cfg.benchmark.name == "realclasseval"
     relations = cfg.rq2.relations
 
+    # A smoke-stage job never runs the pipeline, so missing completions are expected,
+    # not a "problem": GENERATION / EVALUATION stay NOT_RUN.
+    if (_read(pdir / "RUN_INFO.json") or {}).get("stage") == "smoke":
+        tasks = []
+
     rows, gen_problems, eval_problems = [], [], []
     for task in tasks:
         gdir = pdir / "rq2" / "generate" / task.label

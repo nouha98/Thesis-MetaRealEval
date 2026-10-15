@@ -89,7 +89,8 @@ def artifact_facts(model_dir: Path, repo_id: str | None, do_hash: bool) -> dict:
         "model_type": cfg.get("model_type"),
         "moe": any(text_cfg.get(k) for k in MOE_KEYS),
         "moe_experts": next((text_cfg[k] for k in MOE_KEYS if text_cfg.get(k)), None),
-        "dtype": cfg.get("torch_dtype") or text_cfg.get("torch_dtype"),
+        "dtype": (cfg.get("torch_dtype") or cfg.get("dtype")
+                  or text_cfg.get("torch_dtype") or text_cfg.get("dtype")),
         "quantization_config": cfg.get("quantization_config"),
         "weight_format": fmt,
         "n_shards": len(shard_info),
@@ -186,22 +187,55 @@ def support_checks(art: dict, tp: int, mode: str, parser: str | None) -> dict:
         out["quantization"] = "none" if not q else {q: q in QUANTIZATION_METHODS}
     except Exception as e:
         out["quantization"] = f"{q} (support UNKNOWN: {type(e).__name__})" if q else "none"
-    available = None
     try:
         from vllm.reasoning import ReasoningParserManager
-        regs = getattr(ReasoningParserManager, "reasoning_parsers", None)
-        if regs is None and hasattr(ReasoningParserManager, "list_registered"):
-            regs = ReasoningParserManager.list_registered()
-        available = sorted(regs) if regs is not None else None
-        out["reasoning_parsers_available"] = available if available is not None else "UNKNOWN: no known listing API"
     except Exception as e:
         out["reasoning_parsers_available"] = f"UNKNOWN: {type(e).__name__}: {e}"
+        out["requested_reasoning_parser"] = f"{parser} (availability UNKNOWN)" if parser else "none"
+        return out
+    listed = _listed_reasoning_parsers(ReasoningParserManager)
+    out["reasoning_parsers_available"] = (
+        listed if listed else "UNKNOWN: listing returned no entries (vLLM may register parsers lazily)")
     if parser:
+        found = reasoning_parser_available(ReasoningParserManager, parser)
         out["requested_reasoning_parser"] = (
-            {parser: parser in available} if available is not None else f"{parser} (availability UNKNOWN)")
+            {parser: found} if found is not None else f"{parser} (availability UNKNOWN)")
     else:
         out["requested_reasoning_parser"] = "none"
     return out
+
+
+def _listed_reasoning_parsers(manager) -> list[str]:
+    """Every parser name the manager exposes, eager or lazy. May well be empty."""
+    names: set[str] = set()
+    for attr in ("reasoning_parsers", "lazy_parsers"):
+        names |= set(getattr(manager, attr, None) or {})
+    return sorted(names)
+
+
+def reasoning_parser_available(manager, name: str) -> bool | None:
+    """True / False / None (unknown) for 'can this vLLM resolve parser ``name``'.
+
+    An empty listing proves nothing: vLLM 0.17 returned [] here although its own
+    reference job serves with ``--reasoning-parser qwen3``. So a listed name is
+    True, and otherwise the manager's own lookup decides. Only a clean KeyError
+    from that lookup is a definite "no"; any other failure is "unknown" and is
+    left to the server smoke test rather than blocking.
+    """
+    listed = _listed_reasoning_parsers(manager)
+    if name in listed:
+        return True
+    getter = getattr(manager, "get_reasoning_parser", None)
+    if getter is None:
+        # No lookup to ask: a non-empty listing is the only evidence there is.
+        return False if listed else None
+    try:
+        getter(name)
+        return True
+    except KeyError:
+        return False
+    except Exception:
+        return None
 
 
 def verdict(art: dict, env: dict, est: dict, sup: dict, mode: str, requested_gpus: int) -> tuple[str, list[str]]:

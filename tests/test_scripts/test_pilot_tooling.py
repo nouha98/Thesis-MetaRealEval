@@ -441,3 +441,97 @@ def test_every_fail_gate_name_in_the_job_script_is_a_known_job_gate_or_server_st
     names = set(re.findall(r"fail_gate (\w+) ", job))
     assert names, "expected fail_gate calls"
     assert names - {"server_start"} <= report.JOB_GATE_CHECKS, names - report.JOB_GATE_CHECKS
+
+
+# ---------------------------------------------------------------------------
+# Reasoning-parser availability: an empty listing is "unknown", never "absent"
+# (vLLM 0.17 listed [] although `--reasoning-parser qwen3` is accepted by it)
+# ---------------------------------------------------------------------------
+
+class _Manager:
+    def __init__(self, eager=None, lazy=None, getter=None):
+        self.reasoning_parsers = eager if eager is not None else {}
+        self.lazy_parsers = lazy if lazy is not None else {}
+        if getter is not None:
+            self.get_reasoning_parser = getter
+
+
+def _raises(exc):
+    def getter(name):
+        raise exc
+    return getter
+
+
+def test_listed_parser_is_available_even_if_lazy():
+    assert feas.reasoning_parser_available(_Manager(eager={"a": 1}), "a") is True
+    assert feas.reasoning_parser_available(_Manager(lazy={"qwen3": ("mod", "Cls")}), "qwen3") is True
+
+
+def test_empty_listing_falls_back_to_the_managers_own_lookup():
+    assert feas.reasoning_parser_available(_Manager(getter=lambda n: object()), "qwen3") is True
+
+
+def test_only_a_clean_keyerror_means_the_parser_is_absent():
+    assert feas.reasoning_parser_available(_Manager(getter=_raises(KeyError("nope"))), "x") is False
+    assert feas.reasoning_parser_available(_Manager(getter=_raises(RuntimeError("import failed"))), "x") is None
+
+
+def test_no_listing_and_no_lookup_api_is_unknown_not_absent():
+    assert feas.reasoning_parser_available(_Manager(), "qwen3") is None
+
+
+def test_empty_listing_does_not_block_a_requested_parser(monkeypatch):
+    """Regression for the false 'parser not available' blocker seen on vLLM 0.17."""
+    _fake_vllm(monkeypatch, archs=["Qwen3_5MoeForConditionalGeneration"], parsers=[], quant_methods=["fp8"])
+    sys.modules["vllm.reasoning"].ReasoningParserManager = _Manager(getter=lambda n: object())
+    art = {"architectures": ["Qwen3_5MoeForConditionalGeneration"], "quantization_config": {"quant_method": "fp8"},
+           "_text_cfg": {"num_attention_heads": 32, "num_key_value_heads": 2}}
+    sup = feas.support_checks(art, 1, "container", "qwen3")
+    assert sup["requested_reasoning_parser"] == {"qwen3": True}
+    assert sup["reasoning_parsers_available"].startswith("UNKNOWN: listing returned no entries")
+    _, env, est, _ = _facts(detected=1)
+    est.update(tensor_parallel_size=1, gpus=1)
+    status, blockers = feas.verdict({"n_shards": 1}, env, est, sup, "container", 1)
+    assert status == "PREFLIGHT_PASSED", blockers
+
+
+def test_a_definitely_unknown_parser_still_blocks(monkeypatch):
+    _fake_vllm(monkeypatch, archs=["X"], parsers=[], quant_methods=[])
+    sys.modules["vllm.reasoning"].ReasoningParserManager = _Manager(getter=_raises(KeyError("nope")))
+    sup = feas.support_checks({"architectures": ["X"], "_text_cfg": {}}, 1, "container", "not_a_parser")
+    assert sup["requested_reasoning_parser"] == {"not_a_parser": False}
+
+
+def test_dtype_is_read_from_the_newer_dtype_key_and_from_nested_text_config(tmp_path):
+    d = _model_dir(tmp_path)
+    cfg = json.loads((d / "config.json").read_text())
+    cfg.pop("torch_dtype")
+    cfg["text_config"] = {"dtype": "bfloat16", "num_attention_heads": 32, "num_key_value_heads": 2,
+                          "num_hidden_layers": 4, "hidden_size": 4096}
+    (d / "config.json").write_text(json.dumps(cfg))
+    assert feas.artifact_facts(d, None, False)["dtype"] == "bfloat16"
+
+
+# ---------------------------------------------------------------------------
+# Report: a smoke-stage job is not a generation failure
+# ---------------------------------------------------------------------------
+
+@pytest.mark.skipif(not (REPO_ROOT / "data" / "HumanEval.jsonl.gz").exists(), reason="HumanEval data not staged")
+def test_smoke_stage_report_lists_no_generation_problems(tmp_path, monkeypatch):
+    import yaml
+    pdir = tmp_path / "pilot"
+    pdir.mkdir()
+    (pdir / "config.yaml").write_text(yaml.safe_dump({
+        "project": {"output_dir": str(pdir)}, "benchmark": {"name": "humaneval", "tasks": [0]},
+        "llm": {"models": [{"id": "m"}], "cache_dir": str(tmp_path / "cache")},
+        "rq2": {"template_relations": [], "include_control_resample": True}}))
+    (pdir / "RUN_INFO.json").write_text(json.dumps({"stage": "smoke"}))
+    (pdir / "probe.json").write_text(json.dumps({"checks": {"served_model_name": "PASS", "response_format_captured": "PASS"}}))
+    report.main([str(pdir)])
+    rep = json.loads((pdir / "pilot_report.json").read_text())
+    assert rep["generation_problems"] == [] and rep["verdicts"]["GENERATION"] == "NOT_RUN"
+    assert rep["verdicts"]["SERVER_SMOKE"] == "PASS"
+
+
+def test_non_empty_listing_without_a_lookup_api_is_the_only_evidence():
+    assert feas.reasoning_parser_available(_Manager(eager={"a": 1}), "b") is False

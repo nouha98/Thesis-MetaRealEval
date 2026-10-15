@@ -169,3 +169,147 @@ async def test_complete_still_returns_plain_strings(tmp_path):
     client._call_with_retry = fake_call
     out = await client.complete("m", [{"role": "user", "content": "hi"}])
     assert out == ["answer"]
+
+
+# ---------------------------------------------------------------------------
+# Choice classification: provenance + the conservative reasoning-field rule.
+#
+# `finish_reason == "stop"` does not make reasoning-field text an answer (a
+# finished reasoning trace may contain none), so that text is accepted only when
+# a closing </think> is followed by non-empty text. Everything else is blanked
+# and recorded as unusable. Raw-response facts (raw_source, finish_reason,
+# delimiter_found) are kept apart from the decision (disposition).
+# ---------------------------------------------------------------------------
+
+from meta_real_eval.core.llm_client import _classify_choice  # noqa: E402
+
+
+def _msg(content=None, reasoning_content=None, reasoning=None):
+    return SimpleNamespace(content=content, reasoning_content=reasoning_content, reasoning=reasoning)
+
+
+def _assert_record(record, source, finish, delimiter, disposition):
+    assert record == {
+        "raw_source": source,
+        "finish_reason": finish,
+        "delimiter_found": delimiter,
+        "disposition": disposition,
+    }
+
+
+def test_classify_plain_content_is_an_answer():
+    text, rec = _classify_choice(_msg(content="return a + b"), "stop")
+    assert text == "return a + b"
+    _assert_record(rec, "content", "stop", False, "answer")
+
+
+def test_classify_content_with_closed_think_strips_up_to_last_tag():
+    text, rec = _classify_choice(_msg(content="a</think>b</think>final"), "stop")
+    assert text == "final"
+    _assert_record(rec, "content", "stop", True, "answer")
+
+
+def test_classify_content_cut_at_the_token_cap_keeps_text_but_is_flagged():
+    """Existing scoring is unchanged (text kept); the record says truncated."""
+    text, rec = _classify_choice(_msg(content="def f():\n    ret"), "length")
+    assert text == "def f():\n    ret"
+    _assert_record(rec, "content", "length", False, "truncated")
+
+
+def test_classify_content_with_unclosed_think_is_left_alone():
+    text, rec = _classify_choice(_msg(content="<think>still going"), "stop")
+    assert text == "<think>still going"
+    _assert_record(rec, "content", "stop", False, "answer")
+
+
+def test_classify_reasoning_only_with_stop_and_no_boundary_is_unusable():
+    """A reasoning trace that ended normally is NOT thereby an answer."""
+    text, rec = _classify_choice(_msg(content="", reasoning_content="Let me think. So the answer is..."), "stop")
+    assert text == ""
+    _assert_record(rec, "reasoning_field", "stop", False, "unusable_ambiguous")
+
+
+def test_classify_reasoning_only_with_length_is_unusable_truncated():
+    text, rec = _classify_choice(_msg(content="", reasoning_content="Let me think about"), "length")
+    assert text == ""
+    _assert_record(rec, "reasoning_field", "length", False, "unusable_truncated")
+
+
+def test_classify_reasoning_field_with_closing_tag_and_answer_is_accepted():
+    text, rec = _classify_choice(
+        _msg(content="", reasoning_content="thinking...</think>\ndef f(): return 1"), "stop")
+    assert text == "\ndef f(): return 1"
+    _assert_record(rec, "reasoning_field", "stop", True, "answer")
+
+
+def test_classify_reasoning_field_with_closing_tag_but_no_text_after_is_unusable():
+    text, rec = _classify_choice(_msg(content="", reasoning_content="thinking...</think>  \n"), "stop")
+    assert text == ""
+    _assert_record(rec, "reasoning_field", "stop", True, "unusable_ambiguous")
+
+
+def test_classify_reasoning_field_answer_cut_by_length_is_flagged_truncated():
+    text, rec = _classify_choice(_msg(content="", reasoning_content="x</think>def f():\n  re"), "length")
+    assert text == "def f():\n  re"
+    _assert_record(rec, "reasoning_field", "length", True, "truncated")
+
+
+def test_classify_reads_the_newer_reasoning_field_name_too():
+    text, rec = _classify_choice(_msg(content="", reasoning="why</think>ans"), "stop")
+    assert text == "ans"
+    assert rec["raw_source"] == "reasoning_field"
+
+
+def test_classify_nothing_returned_is_empty():
+    text, rec = _classify_choice(_msg(content=None), "stop")
+    assert text == ""
+    _assert_record(rec, "none", "stop", False, "empty")
+
+
+def test_classify_missing_finish_reason_reads_unknown_not_stop():
+    _text, rec = _classify_choice(_msg(content="x"), None)
+    assert rec["finish_reason"] == "unknown"
+
+
+async def test_records_survive_the_cache_round_trip(tmp_path):
+    client = InnkubeClient(LLMConfig(), ResponseCache(tmp_path), mock=False)
+    rec = {"raw_source": "content", "finish_reason": "stop",
+           "delimiter_found": False, "disposition": "answer"}
+
+    async def fake_call(model, messages, temperature, max_tokens, n):
+        return ["ok"], ["stop"], [rec]
+
+    client._call_with_retry = fake_call
+    messages = [{"role": "user", "content": "hi"}]
+    first = await client.complete_with_records("m", messages)
+    assert first == (["ok"], [rec])
+
+    client._call_with_retry = None          # any real call would now raise
+    assert await client.complete_with_records("m", messages) == (["ok"], [rec])
+    # The two-value API is unchanged.
+    assert await client.complete_with_meta("m", messages) == (["ok"], ["stop"])
+
+
+async def test_a_pre_records_cache_entry_reports_unknown_not_reconstructed(tmp_path):
+    cache = ResponseCache(tmp_path)
+    client = InnkubeClient(LLMConfig(), cache, mock=False)
+    messages = [{"role": "user", "content": "hi"}]
+    key = cache.key("m", messages, temperature=0.8, max_tokens=1024, n=1)
+    cache.put(key, {"choices": ["x"], "finish_reasons": ["stop"]})   # pre-records shape
+
+    completions, records = await client.complete_with_records(
+        "m", messages, temperature=0.8, max_tokens=1024, n=1)
+    assert completions == ["x"]
+    _assert_record(records[0], "unknown", "stop", None, "unknown")
+
+
+async def test_a_two_tuple_call_double_still_works_and_has_unknown_records(tmp_path):
+    """Existing test doubles return (choices, finish_reasons) only."""
+    client = InnkubeClient(LLMConfig(), ResponseCache(tmp_path), mock=False)
+
+    async def fake_call(model, messages, temperature, max_tokens, n):
+        return ["a"], ["stop"]
+
+    client._call_with_retry = fake_call
+    _c, records = await client.complete_with_records("m", [{"role": "user", "content": "q"}])
+    assert records[0]["disposition"] == "unknown"

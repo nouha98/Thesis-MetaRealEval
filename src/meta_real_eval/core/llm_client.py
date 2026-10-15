@@ -32,20 +32,98 @@ def _strip_reasoning(text: str) -> str:
     return _THINK_BLOCK_RE.sub("", text, count=1)
 
 
-def _message_text(message) -> str:
-    """The model's answer text, wherever this endpoint actually put it.
+_THINK_CLOSE = "</think>"
 
-    Most models answer in ``message.content``. qwen36-35b puts its entire
-    answer in the separate ``reasoning_content`` field instead (per the module
-    comment above) and leaves ``content`` empty — reading only ``content`` for
-    it silently returns "" for every completion. The openai SDK's response
-    models allow extra fields, so ``reasoning_content`` is already available
-    as an attribute when the API sends it; nothing to parse out of raw JSON.
+# Values of ChoiceRecord["raw_source"].
+SOURCE_CONTENT = "content"
+SOURCE_REASONING = "reasoning_field"
+SOURCE_NONE = "none"
+SOURCE_UNKNOWN = "unknown"          # cache entry written before records existed
+
+# Values of ChoiceRecord["disposition"] -- the client's decision, kept apart
+# from the raw-response facts (raw_source, delimiter_found, finish_reason).
+DISP_ANSWER = "answer"
+DISP_TRUNCATED = "truncated"                    # text kept as before, but cut at the token cap
+DISP_UNUSABLE_TRUNCATED = "unusable_truncated"  # reasoning-field text, no answer boundary, length
+DISP_UNUSABLE_AMBIGUOUS = "unusable_ambiguous"  # reasoning-field text, no answer boundary, stop
+DISP_EMPTY = "empty"
+DISP_UNKNOWN = "unknown"
+
+
+def _raw_message(message) -> tuple[str, str]:
+    """``(text, raw_source)`` -- wherever this endpoint actually put the text.
+
+    Most models answer in ``message.content``. qwen36-35b put its text in the
+    separate ``reasoning_content`` field instead (per the module comment above)
+    and left ``content`` empty -- reading only ``content`` for it silently
+    returns "" for every completion. The openai SDK's response models allow
+    extra fields, so the field is already available as an attribute when the
+    API sends it; nothing to parse out of raw JSON. Newer vLLM releases name
+    that field ``reasoning``; both spellings are read.
+
+    Whether reasoning-field text is a final *answer* is NOT decided here; see
+    ``_classify_choice``.
     """
     content = message.content or ""
     if content.strip():
-        return content
-    return getattr(message, "reasoning_content", None) or ""
+        return content, SOURCE_CONTENT
+    reasoning = (
+        getattr(message, "reasoning_content", None)
+        or getattr(message, "reasoning", None)
+        or ""
+    )
+    if reasoning:
+        return reasoning, SOURCE_REASONING
+    return "", SOURCE_NONE
+
+
+def _message_text(message) -> str:
+    """The raw text of a message, from ``content`` or else the reasoning field."""
+    return _raw_message(message)[0]
+
+
+def _classify_choice(message, finish_reason: Optional[str]) -> tuple[str, dict]:
+    """Decide what, if anything, of one choice is a usable final answer.
+
+    Returns ``(text, record)``. ``record`` keeps the raw-response facts
+    (``raw_source``, ``finish_reason``, ``delimiter_found``) apart from the
+    decision taken (``disposition``).
+
+    * Text from ``content``: handled exactly as before (everything up to the
+      last ``</think>`` is dropped). If the model was cut off at the token cap
+      the text is still returned, so existing scoring is unchanged, but the
+      record says ``truncated`` so it is never mistaken for a clean answer.
+    * Text from the reasoning field: ``finish_reason == "stop"`` does not make
+      it an answer -- a finished reasoning trace can contain no answer at all.
+      It is accepted only when there is a reliable answer boundary: a closing
+      ``</think>`` followed by non-empty text. Anything else becomes "" and is
+      recorded as unusable; nothing is guessed. A model-specific exception, if a
+      real response ever proves one is needed, belongs here, documented and
+      tested on its own.
+    """
+    finish = finish_reason or "unknown"
+    raw, source = _raw_message(message)
+    delimiter = _THINK_CLOSE in raw
+
+    def record(disposition: str) -> dict:
+        return {
+            "raw_source": source,
+            "finish_reason": finish,
+            "delimiter_found": delimiter,
+            "disposition": disposition,
+        }
+
+    if source == SOURCE_NONE:
+        return "", record(DISP_EMPTY)
+
+    text = _strip_reasoning(raw)
+    if source == SOURCE_CONTENT:
+        return text, record(DISP_TRUNCATED if finish == "length" else DISP_ANSWER)
+
+    # Reasoning field: only text after a closing tag counts as an answer.
+    if delimiter and text.strip():
+        return text, record(DISP_TRUNCATED if finish == "length" else DISP_ANSWER)
+    return "", record(DISP_UNUSABLE_TRUNCATED if finish == "length" else DISP_UNUSABLE_AMBIGUOUS)
 
 
 class _TokenBucket:
@@ -155,9 +233,50 @@ class InnkubeClient:
         ``finish_reasons`` key; they report ``"unknown"`` so an old cache stays
         usable and is never mistaken for a run of clean stops.
         """
+        choices, finish_reasons, _records = await self._complete(
+            model, messages, temperature=temperature, max_tokens=max_tokens,
+            n=n, cache_salt=cache_salt,
+        )
+        return choices, finish_reasons
+
+    async def complete_with_records(
+        self,
+        model: str,
+        messages: list[dict],
+        *,
+        temperature: float = 0.8,
+        max_tokens: int = 1024,
+        n: int = 1,
+        cache_salt: Optional[str] = None,
+    ) -> tuple[list[str], list[dict]]:
+        """Return ``(completions, records)``; one provenance record per completion.
+
+        Each record holds ``raw_source``, ``finish_reason``, ``delimiter_found``
+        (facts about the raw response) and ``disposition`` (what this client
+        decided). Cache entries written before records existed report
+        ``unknown`` rather than being reconstructed.
+        """
+        choices, _finish_reasons, records = await self._complete(
+            model, messages, temperature=temperature, max_tokens=max_tokens,
+            n=n, cache_salt=cache_salt,
+        )
+        return choices, records
+
+    async def _complete(
+        self,
+        model: str,
+        messages: list[dict],
+        *,
+        temperature: float,
+        max_tokens: int,
+        n: int,
+        cache_salt: Optional[str],
+    ) -> tuple[list[str], list[str], list[dict]]:
         if self._mock:
             stub = f"# mock [{model}]\ndef solution():\n    pass\n"
-            return [stub] * n, ["stop"] * n
+            record = {"raw_source": "mock", "finish_reason": "stop",
+                      "delimiter_found": False, "disposition": DISP_ANSWER}
+            return [stub] * n, ["stop"] * n, [dict(record) for _ in range(n)]
 
         cache_key = self._cache.key(
             model, messages,
@@ -167,13 +286,22 @@ class InnkubeClient:
         if cached := self._cache.get(cache_key):
             logger.debug("Cache hit %s", cache_key[:12])
             choices = cached["choices"]
-            return choices, cached.get("finish_reasons") or ["unknown"] * len(choices)
+            finish_reasons = cached.get("finish_reasons") or ["unknown"] * len(choices)
+            records = cached.get("records") or [
+                {"raw_source": SOURCE_UNKNOWN, "finish_reason": fr,
+                 "delimiter_found": None, "disposition": DISP_UNKNOWN}
+                for fr in finish_reasons
+            ]
+            return choices, finish_reasons, records
 
         async with self._semaphore:
             await self._rate_limiter.acquire()
-            choices, finish_reasons = await self._call_with_retry(
-                model, messages, temperature, max_tokens, n
-            )
+            result = await self._call_with_retry(model, messages, temperature, max_tokens, n)
+
+        # _call_with_retry returns (choices, finish_reasons, records); a 2-tuple
+        # (older callers / test doubles) simply has no records to store.
+        choices, finish_reasons, *rest = result
+        records = rest[0] if rest else None
 
         truncated = sum(1 for r in finish_reasons if r == "length")
         if truncated:
@@ -182,9 +310,24 @@ class InnkubeClient:
                 "— raise max_tokens or the answer is being cut off mid-generation.",
                 model, truncated, len(finish_reasons), max_tokens,
             )
+        if records:
+            unusable = sum(1 for r in records if r["disposition"].startswith("unusable"))
+            if unusable:
+                logger.warning(
+                    "%s: %d/%d completion(s) had text only in the reasoning field "
+                    "with no answer boundary — recorded as unusable, not scored as answers.",
+                    model, unusable, len(records),
+                )
 
-        self._cache.put(cache_key, {"choices": choices, "finish_reasons": finish_reasons})
-        return choices, finish_reasons
+        entry = {"choices": choices, "finish_reasons": finish_reasons}
+        if records:
+            entry["records"] = records
+        self._cache.put(cache_key, entry)
+        return choices, finish_reasons, records or [
+            {"raw_source": SOURCE_UNKNOWN, "finish_reason": fr,
+             "delimiter_found": None, "disposition": DISP_UNKNOWN}
+            for fr in finish_reasons
+        ]
 
     async def _call_with_retry(
         self,
@@ -193,7 +336,7 @@ class InnkubeClient:
         temperature: float,
         max_tokens: int,
         n: int,
-    ) -> tuple[list[str], list[str]]:
+    ) -> tuple[list[str], list[str], list[dict]]:
         cfg = self._config
         for attempt in range(cfg.retry_max_attempts):
             try:
@@ -204,9 +347,13 @@ class InnkubeClient:
                     max_tokens=max_tokens,
                     n=n,
                 )
+                classified = [
+                    _classify_choice(c.message, c.finish_reason) for c in response.choices
+                ]
                 return (
-                    [_strip_reasoning(_message_text(c.message)) for c in response.choices],
+                    [text for text, _record in classified],
                     [(c.finish_reason or "unknown") for c in response.choices],
+                    [record for _text, record in classified],
                 )
 
             except RateLimitError:

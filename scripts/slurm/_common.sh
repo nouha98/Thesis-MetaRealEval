@@ -56,6 +56,14 @@ export XDG_CACHE_HOME="${REPO_DIR}/.cache/xdg"
 export MPLCONFIGDIR="${REPO_DIR}/.cache/matplotlib"
 mkdir -p "${HF_HOME}" "${XDG_CACHE_HOME}" "${MPLCONFIGDIR}"
 
+# Triton's default cache root is ~/.triton/cache, resolved to /home/<user>,
+# which is not usable on the GPU nodes (PermissionError on '/home/karouin';
+# Slurm job 4482778). Pointing it into the project directory on /shared was
+# verified writable on starforge (job 4482810). Needed by any job that starts
+# vLLM; harmless for CPU-only jobs.
+export TRITON_CACHE_DIR="${REPO_DIR}/.cache/triton"
+mkdir -p "${TRITON_CACHE_DIR}"
+
 # The HumanEval corpus is pre-staged by scripts/fetch_data.py, so no Hub access
 # is needed. Force offline mode so a missing route to huggingface.co fails fast
 # and loud rather than hanging until the walltime limit.

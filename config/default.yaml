@@ -12,8 +12,9 @@ llm:
   # Only model IDs and generation parameters belong here.
   models:
     - id: gemma4-31b-it
-    - id: qwen3-next-80b-a3b-instruct
-    - id: qwen36-35b 
+    - id: qwen38-27b
+    # - id: qwen3-next-80b-a3b-instruct
+    # - id: qwen36-35b 
   max_concurrent_requests: 5    # asyncio semaphore: in-flight HTTP requests per process
   requests_per_minute: 20       # token-bucket rate: sustained throughput cap (tune upward if no 429s)
   retry_max_attempts: 5

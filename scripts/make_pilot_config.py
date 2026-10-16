@@ -102,7 +102,12 @@ def build_pilot(base_raw: dict, tier: str, model: str, tasks: list[int]) -> tupl
     out_dir = (PILOT_RESULTS_ROOT / tier / model).resolve()
     cache_dir = (PILOT_CACHE_ROOT / tier / model).resolve()
     raw.setdefault("project", {})["output_dir"] = str(out_dir)
-    raw.setdefault("llm", {})["models"] = [{"id": model}]
+    # Carry the base entry's other fields (request_params, condition) through:
+    # rebuilding it as {"id": model} would silently drop the thinking switch and
+    # run the pilot at the server default.
+    base_entry = next((copy.deepcopy(m) for m in (base_raw.get("llm", {}).get("models") or [])
+                       if isinstance(m, dict) and m.get("id") == model), {"id": model})
+    raw.setdefault("llm", {})["models"] = [base_entry]
     raw["llm"]["cache_dir"] = str(cache_dir)
     raw.setdefault("benchmark", {})["tasks"] = tasks
     absolutise(raw)
@@ -115,6 +120,9 @@ def assert_pilot(path: Path, base_path: Path, model: str, tasks: list[int],
     base = Config.from_yaml(base_path)
 
     assert pilot.model_ids() == [model], pilot.model_ids()
+    # The pilot must run in the same inference condition as the base entry.
+    assert pilot.llm.request_params_for(model) == base.llm.request_params_for(model), (
+        pilot.llm.request_params_for(model), base.llm.request_params_for(model))
     assert pilot.benchmark.tasks == tasks, pilot.benchmark.tasks
     assert pilot.project.output_dir.resolve() == out_dir
     assert pilot.llm.cache_dir.resolve() == cache_dir

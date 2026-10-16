@@ -278,10 +278,15 @@ class InnkubeClient:
                       "delimiter_found": False, "disposition": DISP_ANSWER}
             return [stub] * n, ["stop"] * n, [dict(record) for _ in range(n)]
 
+        # Only a non-empty request_params joins the key (like cache_salt), so
+        # every legacy key is byte-identical; cache.key serialises with
+        # sort_keys=True, so dict ordering never changes a key.
+        request_params = self._config.request_params_for(model)
         cache_key = self._cache.key(
             model, messages,
             temperature=temperature, max_tokens=max_tokens, n=n,
             **({} if cache_salt is None else {"cache_salt": cache_salt}),
+            **({"request_params": request_params} if request_params else {}),
         )
         if cached := self._cache.get(cache_key):
             logger.debug("Cache hit %s", cache_key[:12])
@@ -338,6 +343,9 @@ class InnkubeClient:
         n: int,
     ) -> tuple[list[str], list[str], list[dict]]:
         cfg = self._config
+        # Sent as top-level body fields; omitted entirely when empty so an
+        # unconfigured model's request is unchanged.
+        extra = {"extra_body": dict(p)} if (p := cfg.request_params_for(model)) else {}
         for attempt in range(cfg.retry_max_attempts):
             try:
                 response = await self._get_client().chat.completions.create(
@@ -346,6 +354,7 @@ class InnkubeClient:
                     temperature=temperature,
                     max_tokens=max_tokens,
                     n=n,
+                    **extra,
                 )
                 classified = [
                     _classify_choice(c.message, c.finish_reason) for c in response.choices

@@ -29,6 +29,7 @@ from dotenv import load_dotenv
 from ..benchmarks import get_benchmark
 from ..core.cache import ResponseCache
 from ..core.checkpoint import add_force_arg, clear_done, is_done, mark_done, task_dir, write_json, read_json
+from ..core.conditions import record_llm_conditions
 from ..core.config import BASELINE_RELATION, CONTROL_RELATION, Config
 from ..core.llm_client import InnkubeClient
 from ..core.logging_setup import setup as setup_logging
@@ -223,6 +224,7 @@ async def run_score(cfg: Config, tasks, force: bool = False) -> None:
     bench = get_benchmark(cfg)
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
+    record_llm_conditions(cfg)
     coros = [_score_one(t, cfg, client, bench, force=force) for t in tasks]
     await asyncio.gather(*coros)
 

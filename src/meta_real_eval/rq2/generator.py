@@ -25,6 +25,7 @@ from ..benchmarks import get_benchmark
 from ..benchmarks.base import Task
 from ..core.cache import ResponseCache
 from ..core.checkpoint import clear_done, is_done, mark_done, read_json, task_dir, write_json
+from ..core.conditions import record_llm_conditions
 from ..core.config import BASELINE_RELATION, CONTROL_RELATION, Config
 from ..core.llm_client import InnkubeClient
 from .corpus import load_corpus, variants_for_task, verify_corpus
@@ -328,6 +329,7 @@ async def run_generate(cfg: Config, tasks: list[Task], force: bool = False,
 
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
+    record_llm_conditions(cfg)
     coros = [generate_task(t, cfg, client, force=force, only_model=only_model, bench=bench)
              for t in tasks]
     await asyncio.gather(*coros)

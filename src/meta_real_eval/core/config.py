@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import yaml
 from pydantic import BaseModel, Field
@@ -19,6 +19,20 @@ class ProjectConfig(BaseModel):
 class LLMModelConfig(BaseModel):
     id: str
 
+    # Extra top-level fields sent with every request for this model (OpenAI
+    # ``extra_body``), e.g. ``{"reasoning_effort": "none"}`` to switch thinking
+    # off on the Innkube gateway. Empty -> the request is exactly what it was
+    # before this field existed, and so is its cache key, so every cached
+    # completion made without parameters stays valid (and keeps meaning "the
+    # server's default for that model" -- which is thinking ON for qwen38-27b
+    # and OFF for gemma4-31b-it; see scripts/probe_thinking.py).
+    request_params: dict[str, Any] = Field(default_factory=dict)
+
+    # Human label for the inference condition these params create, recorded in
+    # <output_dir>/llm_conditions.json. Descriptive only: the condition is
+    # defined by request_params, never by this string.
+    condition: Optional[str] = None
+
 
 class LLMConfig(BaseModel):
     models: list[LLMModelConfig] = Field(default_factory=list)
@@ -27,6 +41,18 @@ class LLMConfig(BaseModel):
     retry_max_attempts: int = 5
     retry_base_delay_s: float = 2.0
     cache_dir: Path = Path("./cache/llm_responses")
+
+    def request_params_for(self, model_id: str) -> dict[str, Any]:
+        """The configured extra request fields for ``model_id``; {} if none.
+
+        A model outside ``models`` (the RQ2 paraphrase generator / judge) has
+        none: they are held out of the ranked set on purpose and keep their
+        own, unmodified requests.
+        """
+        for m in self.models:
+            if m.id == model_id:
+                return m.request_params
+        return {}
 
 
 class BenchmarkConfig(BaseModel):

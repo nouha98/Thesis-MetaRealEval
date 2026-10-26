@@ -49,6 +49,15 @@ from meta_real_eval.analysis.statistics import (  # noqa: E402
 RESULTS = REPO_ROOT / "results"
 TRADITIONAL_OPS = {"AOR", "ROR", "SDL"}
 
+# Task labels left out of every analysis (--exclude-tasks): the sensitivity run
+# without the development-exposed pilot tasks. Empty for the headline run.
+EXCLUDE: set[str] = set()
+
+
+def _task_dirs(root: Path) -> list[Path]:
+    """The task directories under ``root``, minus any --exclude-tasks label."""
+    return sorted(d for d in root.iterdir() if d.name not in EXCLUDE)
+
 # Statement deletions whose kill outcome is predetermined: removing a return or
 # a definition makes the function yield None or raise NameError, so *any* test
 # suite kills it. They inflate the traditional kill rate without saying anything
@@ -69,7 +78,7 @@ def load(path: Path):
 # ---------------------------------------------------------------------------
 
 def analyze_stage0() -> dict:
-    task_dirs = sorted((RESULTS / "stage0").iterdir())
+    task_dirs = _task_dirs(RESULTS / "stage0")
     per_op_total = Counter()
     per_op_equiv = Counter()
     total_mutants = 0
@@ -161,7 +170,7 @@ def _llm_corpus_quality() -> dict:
 
     n_mutants = n_unique = 0
     total = killed = uniq_total = uniq_killed = 0
-    for td in sorted((RESULTS / "rq1" / "evaluate").iterdir()):
+    for td in _task_dirs(RESULTS / "rq1" / "evaluate"):
         if not td.is_dir() or not (td / "kill_matrix.json").exists():
             continue
         gen = RESULTS / "rq1" / "generate" / td.name / "llm_mutants.json"
@@ -197,7 +206,7 @@ def _llm_corpus_quality() -> dict:
 
 
 def analyze_rq1() -> dict:
-    task_dirs = sorted((RESULTS / "rq1" / "evaluate").iterdir())
+    task_dirs = _task_dirs(RESULTS / "rq1" / "evaluate")
     trad_total = trad_killed = 0
     llm_total = llm_killed = 0
     # Restricted population: traditional mutants minus predetermined-outcome
@@ -402,7 +411,7 @@ def task_strata() -> dict[str, str]:
     root = RESULTS / "rq2" / "evaluate"
     if not root.exists():
         return strata
-    for td in sorted(root.iterdir()):
+    for td in _task_dirs(root):
         path = td / "pass_rates.json"
         if not path.exists():
             continue
@@ -528,7 +537,7 @@ def analyze_rq2() -> dict:
       flattened together, which would repeat the exact bug this whole file
       exists to avoid.
     """
-    task_dirs = sorted((RESULTS / "rq2" / "evaluate").iterdir())
+    task_dirs = _task_dirs(RESULTS / "rq2" / "evaluate")
     per_task = []                       # one task-level mean tau_b each (coverage-passing only)
     per_relation_tau = defaultdict(list)
     # arm -> [one task-level value each]; families are collapsed inside the arm
@@ -993,7 +1002,7 @@ def analyze_rq3() -> dict:
     per_task_divergence: dict[str, float] = {}
     n_tasks = n_no_consensus = n_sbc_missing = n_rate_undefined = 0
 
-    for td in sorted(root.iterdir()):
+    for td in _task_dirs(root):
         if not td.is_dir() or not (td / "divergence.json").exists():
             continue
         dv = load(td / "divergence.json")
@@ -1097,7 +1106,7 @@ def analyze_rq4() -> dict:
     collapse_rows: list[list[bool]] = []          # per discriminating task, per non-intact level
     collapse_stats: dict[str, dict] = {}
 
-    for td in sorted(degrade_root.iterdir()):
+    for td in _task_dirs(degrade_root):
         if not td.is_dir() or not (td / "degradation_analysis.json").exists():
             continue
         d = load(td / "degradation_analysis.json")
@@ -1312,6 +1321,50 @@ def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
 MIN_USEFUL_AUC = 0.5
 
 
+def analyze_rq2_missingness() -> dict:
+    """Missing and incomplete RQ2 cells per (model, relation).
+
+    Under the inference protocol a cell holds exactly n completions, none (a
+    documented transport failure / context overflow), or -- never expected --
+    something in between, which the evaluator marks ``incomplete`` and does not
+    score. Rankings use only relations where every model is complete for that
+    task (complete-case); that is a QUALIFIED analysis whenever this report
+    shows any missing cell, and must be reported as such.
+    """
+    root = RESULTS / "rq2" / "evaluate"
+    cells: dict[str, dict[str, Counter]] = defaultdict(lambda: defaultdict(Counter))
+    tasks_with_missing: set[str] = set()
+    n_tasks = 0
+    if not root.is_dir():
+        return {"available": False}
+    for td in _task_dirs(root):
+        pr = td / "pass_rates.json"
+        if not pr.is_file():
+            continue
+        n_tasks += 1
+        for relation, by_model in load(pr).items():
+            for model, rates in by_model.items():
+                c = cells[model][relation]
+                c["cells"] += 1
+                if rates.get("incomplete"):
+                    c["incomplete"] += 1
+                    tasks_with_missing.add(td.name)
+                elif rates.get("n", 0) == 0:
+                    c["missing"] += 1
+                    tasks_with_missing.add(td.name)
+    out = {"available": True, "n_tasks": n_tasks,
+           "n_tasks_with_missing_or_incomplete": len(tasks_with_missing),
+           "tasks_with_missing_or_incomplete": sorted(tasks_with_missing),
+           "complete_case_is_qualified": bool(tasks_with_missing),
+           "by_model": {m: {r: dict(c) for r, c in rels.items()} for m, rels in cells.items()}}
+    conditions = RESULTS / "llm_conditions.json"
+    if conditions.is_file():
+        manifest = load(conditions)
+        out["condition"] = (manifest.get("condition") or {}).get("id")
+        out["condition_hash"] = (manifest.get("condition") or {}).get("hash")
+    return out
+
+
 def apply_calibration(rq3: dict, config_path: Path) -> dict:
     """Write the pilot's recommended tau_div into the config, or explain why not.
 
@@ -1368,8 +1421,22 @@ def main(argv=None) -> None:
         "--config", default="config/default.yaml",
         help="Config file --calibrate writes to (default: config/default.yaml).",
     )
+    parser.add_argument(
+        "--exclude-tasks", default=None,
+        help="Sensitivity analysis: comma-separated task labels (or @file, one per "
+             "line) left out of every RQ, e.g. the development-exposed M1 pilot "
+             "tasks. Writes analysis_summary.sensitivity.json instead of the "
+             "headline summary; refuses --calibrate.",
+    )
     args = parser.parse_args(argv)
     RESULTS = Path(args.results)
+    if args.exclude_tasks:
+        spec = args.exclude_tasks
+        labels = (Path(spec[1:]).read_text(encoding="utf-8").split() if spec.startswith("@")
+                  else spec.split(","))
+        EXCLUDE.update(label.strip() for label in labels if label.strip())
+        if args.calibrate:
+            parser.error("--calibrate on a sensitivity subset is not allowed")
 
     stage0 = analyze_stage0()
     rq1 = analyze_rq1()
@@ -1380,10 +1447,18 @@ def main(argv=None) -> None:
     calibration = apply_calibration(rq3, Path(args.config)) if args.calibrate else None
 
     out = {"stage0": stage0, "rq1": rq1, "rq2": rq2, "rq3": rq3, "rq4": rq4,
-           "cross_rq": cross_rq}
+           "cross_rq": cross_rq, "rq2_missingness": analyze_rq2_missingness()}
     if calibration is not None:
         out["calibration"] = calibration
     out_path = RESULTS / "analysis_summary.json"
+    if EXCLUDE:
+        # rq4/summary/high_level.json is precomputed over every task and is NOT
+        # filtered; everything recomputed here from per-task files is.
+        out["sensitivity"] = {"excluded_tasks": sorted(EXCLUDE),
+                              "note": "sensitivity analysis, not the headline; "
+                                      "rq4 precomputed summary is unfiltered"}
+        out_path = RESULTS / "analysis_summary.sensitivity.json"
+        print(f"SENSITIVITY RUN: {len(EXCLUDE)} task(s) excluded; not the headline numbers")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=2)
 

@@ -15,11 +15,33 @@ benchmark:
   docstring_variant: full_docstr
 
 llm:
+  # Every model runs at its model card's RECOMMENDED configuration (sampling and
+  # default reasoning mode); nothing is tuned. A parameter the card does not
+  # list is not sent, so the serving default applies. Cards read 2026-10-16:
+  #   https://huggingface.co/google/gemma-4-31B-it
+  #   https://huggingface.co/Qwen/Qwen3.8-27B
+  #   https://huggingface.co/Qwen/Qwen3-Next-80B-A3B-Instruct-FP8
+  #   https://huggingface.co/Qwen/Qwen3.6-35B-A3B-FP8
+  # Serving: gemma4-31b-it on the Innkube gateway; the three Qwen models
+  # self-hosted with vLLM on freia. qwen3-next and qwen36 are no longer on
+  # Innkube; qwen38 is, but the gateway ends every request after ~9-10 min
+  # (HTTP 408, streaming too), which its default thinking exceeds on harder
+  # class tasks (results_tier2_m1_local/qwen38_recommended_check). Each serving
+  # group generates into its own directory (scripts/make_run_configs.py) and the
+  # results are merged before evaluation (scripts/merge_generation_runs.py).
   models:
-    - id: gemma4-31b-it
-    - id: qwen38-27b
-    # - id: qwen3-next-80b-a3b-instruct
-    # - id: qwen36-35b
+    - id: gemma4-31b-it             # thinking off by default
+      sampling: {temperature: 1.0, top_p: 0.95, top_k: 64}
+    - id: qwen38-27b                # thinking on by default (thinking-mode preset)
+      sampling: {temperature: 1.0, top_p: 0.95, top_k: 20, min_p: 0.0,
+                 presence_penalty: 0.0, repetition_penalty: 1.0}
+    - id: qwen3-next-80b-a3b-instruct   # instruct only, no thinking mode
+      sampling: {temperature: 0.7, top_p: 0.8, top_k: 20, min_p: 0.0}
+    - id: qwen36-35b                # thinking on by default; the card's preset for coding
+      sampling: {temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0.0,
+                 presence_penalty: 0.0, repetition_penalty: 1.0}
+  # Client-side timeout: long thinking at n=10 exceeds the SDK default of 600 s.
+  request_timeout_s: 3600
   max_concurrent_requests: 5
   requests_per_minute: 20
   retry_max_attempts: 5
@@ -36,13 +58,19 @@ stage0:
 
 rq1:
   operators: [AOR, ROR, SDL]
+  max_tokens: 32768             # the same ceiling as rq2: one budget for every model call
 
 rq2:
   n_completions: 10
+  # Fallback only: every model above has its own recommended temperature.
   temperature: 0.8
-  # Confirm in the M1 pilot that class completions are not truncated at this
-  # budget (review #13); raise it BEFORE M2 if they are.
-  max_tokens: 8192
+  # One common output ceiling for every model (reasoning + answer). At 8192 the
+  # thinking models truncated most completions on class tasks (M1 audit);
+  # check truncation in the pilot (scripts/audit_rq2_generation.py).
+  max_tokens: 32768
+  # Truncated/blank/malformed outputs are model outcomes and stay in the
+  # denominator; only transport failures are retried (same request).
+  retry_policy: transport_only
   # rq2/paraphraser.py's _split_docstring assumes a single function signature
   # + docstring (Tier 1's shape); it has not been adapted for a class skeleton
   # and would mis-split or corrupt one. M1(b) of the Tier 2 plan explicitly
@@ -59,6 +87,9 @@ rq2:
 rq3:
   n_shared_inputs: 200          # D4 pool size for divergence
   variant_sample_per_family: 1
+  # The SBC reverse generator is an instrument: fixed legacy request, never a
+  # model's own sampling, pinned so the model order cannot change it.
+  sbc_model: gemma4-31b-it
   # Calibrated on Tier 2's own calibration half in M5 and frozen before the
   # headline AUC (review #14). The Tier 1 threshold is never reused.
   divergence_threshold: null

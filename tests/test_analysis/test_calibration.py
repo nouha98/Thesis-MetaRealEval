@@ -202,3 +202,31 @@ def test_record_includes_provenance_and_sorted_ids():
     assert rec["threshold"] == r.threshold
     assert rec["corpus_sha256"] == "abc123" and rec["seed"] == 7
     assert rec["calibration_task_ids"] == sorted(ids[:half])
+
+
+# ---------------------------------------------------------------------------
+# force_calibration: development-exposed (pilot) tasks are never held out
+# ---------------------------------------------------------------------------
+
+def test_no_forced_ids_is_exactly_the_unforced_split():
+    ids = [f"t{i}" for i in range(20)] + [f"p{i}" for i in range(14)]
+    strata = (["csn"] * 20) + (["post"] * 14)
+    assert (stratified_calibration_split(ids, strata, seed=4, force_calibration=[])
+            == stratified_calibration_split(ids, strata, seed=4))
+
+
+def test_forced_ids_are_in_calibration_and_strata_keep_their_share():
+    ids = [f"t{i}" for i in range(20)] + [f"p{i}" for i in range(30)]
+    strata = (["csn"] * 20) + (["post"] * 30)
+    forced = ["t1", "t2", "p7"]
+    cal, hold = stratified_calibration_split(ids, strata, seed=9, force_calibration=forced)
+    assert set(forced) <= set(cal) and not set(forced) & set(hold)
+    assert sum(t.startswith("t") for t in cal) == 10
+    assert sum(t.startswith("p") for t in cal) == 15
+    assert set(cal) | set(hold) == set(ids) and not set(cal) & set(hold)
+
+
+def test_unknown_forced_ids_raise():
+    with pytest.raises(ValueError, match="unknown"):
+        stratified_calibration_split(["t0", "t1"], ["csn", "csn"], seed=1,
+                                     force_calibration=["nope"])

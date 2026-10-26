@@ -92,6 +92,10 @@ def main() -> int:
     parser.add_argument("--min-tasks-per-half", type=int, default=MIN_TASKS_PER_HALF)
     parser.add_argument("--dry-run", action="store_true",
                         help="compute and print the calibration without writing the config or a record")
+    parser.add_argument(
+        "--force-calibration", default=None,
+        help="comma-separated task ids that must never be held out (the M1 pilot tasks: "
+             "development exposure); recorded in the calibration record")
     args = parser.parse_args()
 
     cfg = Config.from_yaml(args.config)
@@ -109,9 +113,18 @@ def main() -> int:
         return 1
 
     task_ids = sorted(scores)
+    forced = [t.strip() for t in (args.force_calibration or "").split(",") if t.strip()]
+    missing = sorted(set(forced) - set(task_ids))
+    if missing:
+        print(f"ERROR: --force-calibration names task(s) without scores: {missing}",
+              file=sys.stderr)
+        return 1
     calibration_ids, holdout_ids = stratified_calibration_split(
         task_ids, [split_of[t] for t in task_ids], seed=cfg.project.seed,
+        force_calibration=forced,
     )
+    if forced:
+        print(f"{len(forced)} development-exposed task(s) forced into the calibration half")
     if len(calibration_ids) < args.min_tasks_per_half or len(holdout_ids) < args.min_tasks_per_half:
         print(f"ERROR: the split gave {len(calibration_ids)}/{len(holdout_ids)} "
              f"(calibration/holdout); need >= {args.min_tasks_per_half} each.", file=sys.stderr)
@@ -145,6 +158,7 @@ def main() -> int:
         result,
         corpus_sha256=corpus_sha256,
         seed=cfg.project.seed,
+        forced_calibration_task_ids=forced,
         config_path=str(args.config),
         generated_utc=datetime.now(timezone.utc).isoformat(timespec="seconds"),
     )

@@ -535,3 +535,10 @@ def test_smoke_stage_report_lists_no_generation_problems(tmp_path, monkeypatch):
 
 def test_non_empty_listing_without_a_lookup_api_is_the_only_evidence():
     assert feas.reasoning_parser_available(_Manager(eager={"a": 1}), "b") is False
+
+
+@requires_bash
+@pytest.mark.parametrize("left,secs", [("1-02:03:04", 93784), ("02:03:04", 7384), ("03:04", 184),
+                                       ("59", 59), ("08:09:00", 29340), ("UNLIMITED", -1), ("", -1)])
+def test_seconds_left_parses_squeue_time_left(left, secs):
+    assert _bash_lines(f'mre_seconds_left "{left}"') == [str(secs)]

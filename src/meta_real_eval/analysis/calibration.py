@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Iterable
 
 from .statistics import roc_auc, youden_threshold
 
@@ -151,6 +151,7 @@ def stratified_calibration_split(
     strata: list[str],
     seed: int,
     calibration_fraction: float = 0.5,
+    force_calibration: Iterable[str] = (),
 ) -> tuple[list[str], list[str]]:
     """A seeded calibration/held-out split, proportional within each stratum
     (e.g. csn / post-cutoff) rather than one global shuffle that could by bad
@@ -160,9 +161,20 @@ def stratified_calibration_split(
     so the split is reproducible without needing to be stored verbatim --
     though the calibration record (see the Tier 2 calibration script) stores
     the resulting id lists anyway, so a later audit never has to re-derive it.
+
+    ``force_calibration``: tasks that must never be held out -- the pilot
+    tasks, which were seen during development (infrastructure checks only, but
+    still exposure). They take calibration slots of their own stratum first;
+    the rest of that stratum's calibration share is drawn as before, so each
+    stratum keeps its proportion. Without forced ids the split is exactly the
+    unforced one.
     """
     if len(task_ids) != len(strata):
         raise ValueError("task_ids and strata must have the same length")
+    forced = set(force_calibration)
+    unknown = forced - set(task_ids)
+    if unknown:
+        raise ValueError(f"force_calibration names unknown task ids: {sorted(unknown)}")
     by_stratum: dict[str, list[str]] = {}
     for tid, s in zip(task_ids, strata):
         by_stratum.setdefault(s, []).append(tid)
@@ -170,11 +182,14 @@ def stratified_calibration_split(
     calibration: list[str] = []
     holdout: list[str] = []
     for s in sorted(by_stratum):
-        ids = sorted(by_stratum[s])
+        everyone = by_stratum[s]
+        cut = round(len(everyone) * calibration_fraction)
+        pinned = sorted(t for t in everyone if t in forced)
+        ids = sorted(t for t in everyone if t not in forced)
         random.Random(f"{seed}:{s}").shuffle(ids)
-        cut = round(len(ids) * calibration_fraction)
-        calibration += ids[:cut]
-        holdout += ids[cut:]
+        free = max(0, cut - len(pinned))
+        calibration += pinned + ids[:free]
+        holdout += ids[free:]
     return calibration, holdout
 
 

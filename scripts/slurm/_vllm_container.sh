@@ -71,3 +71,22 @@ mre_server_args() {
 mre_count_gpus() {
     "${@:-nvidia-smi}" -L 2>/dev/null | grep -c '^GPU' || true
 }
+
+# mre_seconds_left TIMELEFT -> seconds, from squeue's %L format
+# ([D-]HH:MM:SS | MM:SS | SS); -1 for UNLIMITED / NOT_SET / empty.
+# Used to stop a generation run cleanly before the job's time limit: the
+# runners resume from the response cache and the done markers.
+mre_seconds_left() {
+    local s="${1:-}" d=0 h=0 m=0 sec=0
+    case "${s}" in ""|UNLIMITED|NOT_SET|INVALID) echo -1; return 0 ;; esac
+    if [[ "${s}" == *-* ]]; then d="${s%%-*}"; s="${s#*-}"; fi
+    local IFS=:
+    # shellcheck disable=SC2206
+    local parts=(${s})
+    case ${#parts[@]} in
+        3) h=${parts[0]}; m=${parts[1]}; sec=${parts[2]} ;;
+        2) m=${parts[0]}; sec=${parts[1]} ;;
+        1) sec=${parts[0]} ;;
+    esac
+    echo $(( 10#${d} * 86400 + 10#${h} * 3600 + 10#${m} * 60 + 10#${sec} ))
+}

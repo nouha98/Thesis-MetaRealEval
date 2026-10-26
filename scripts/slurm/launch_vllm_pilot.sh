@@ -19,7 +19,7 @@
 # Usage:
 #   scripts/slurm/launch_vllm_pilot.sh --tier tier1 --model qwen36-35b \
 #       --model-dir /shared/karouin/models/Qwen3.6-35B --gpus 2 \
-#       [--stage smoke|pilot] [--tasks 0-2] [--max-model-len 16384] \
+#       [--stage smoke|pilot] [--tasks 0-2] [--max-model-len 40960] \
 #       [--reasoning-parser NAME] [--vllm-extra "--dtype bfloat16"] \
 #       [--repo-id ORG/NAME] [--base config/x.yaml] [--time HH:MM:SS] [--no-hash] \
 #       [--image /path/to.sif] [--constraint gpumem.80gib] [--mem 32G]
@@ -38,7 +38,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${REPO_DIR}"
 
 TIER="" MODEL="" MODEL_DIR="" GPUS=1 TP="" STAGE="smoke" TASKS="0-2"
-MAX_LEN=16384 PARSER="" EXTRA="" REPO_ID="" BASE="" TIME="04:00:00" NO_HASH=""
+MAX_LEN=40960 PARSER="" EXTRA="" REPO_ID="" BASE="" TIME="04:00:00" NO_HASH=""
 IMAGE="/shared/karouin/containers/vllm-v0.17.0.sif" CONSTRAINT="gpumem.80gib" MEM="32G"
 while [[ $# -gt 0 ]]; do
     case "$1" in

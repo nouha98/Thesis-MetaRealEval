@@ -32,7 +32,7 @@
 
 set -uo pipefail     # no -e: gates are checked explicitly so cleanup and reporting always run
 
-TIER="" MODEL="" MODEL_DIR="" GPUS=1 TP="" STAGE="smoke" MAX_LEN=16384 BASE="" PARSER="" EXTRA="" IMAGE=""
+TIER="" MODEL="" MODEL_DIR="" GPUS=1 TP="" STAGE="smoke" MAX_LEN=40960 BASE="" PARSER="" EXTRA="" IMAGE=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --tier) TIER="$2"; shift 2 ;;

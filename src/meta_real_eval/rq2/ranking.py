@@ -122,7 +122,9 @@ def _model_pass_at1(pass_rates: dict, relation: str) -> dict[str, float]:
     return {
         model_id: rates["pass@1"]
         for model_id, rates in pass_rates.get(relation, {}).items()
-        if rates.get("n", 0) > 0
+        # An `incomplete` cell (fewer than n completions under the inference
+        # protocol) is missing data too, never a score.
+        if rates.get("n", 0) > 0 and not rates.get("incomplete")
     }
 
 

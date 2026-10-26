@@ -12,6 +12,17 @@ that answered every prompt wrongly, and RQ2 exists to rank models against each
 other.  An empty cell is therefore retried, then recorded in
 generation_failed.json and left without a _done.marker so the task is picked up
 again, rather than silently entering the leaderboard as a zero.
+
+``rq2.retry_policy`` decides what counts as "empty". ``legacy`` (every result
+produced so far) re-draws a cell that came back blank or fully truncated.
+``transport_only`` (the inference protocol) never re-draws a model output --
+blank, truncated or malformed completions stay in the denominator, because
+re-drawing them resamples conditional on the outcome -- and only a transport
+failure (retried inside the client with the same request) leaves a cell empty.
+
+Every cell's provenance goes to generation_meta.json: the logical prompt hash
+before and after the control marker, the request telemetry, and the
+status (ok | transport_failure | context_overflow | generation_failed).
 """
 
 from __future__ import annotations
@@ -27,7 +38,7 @@ from ..core.cache import ResponseCache
 from ..core.checkpoint import clear_done, is_done, mark_done, read_json, task_dir, write_json
 from ..core.conditions import record_llm_conditions
 from ..core.config import BASELINE_RELATION, CONTROL_RELATION, Config
-from ..core.llm_client import InnkubeClient
+from ..core.llm_client import InnkubeClient, logical_prompt_sha256
 from .corpus import load_corpus, variants_for_task, verify_corpus
 from .paraphraser import apply_relation
 
@@ -148,9 +159,39 @@ def _has_real_completion(completions: list[str], finish_reasons: list[str] | Non
     return True
 
 
+def _failure_status(exc: BaseException) -> str:
+    """context_overflow for a prompt+budget over the context limit, else transport."""
+    text = str(exc).lower()
+    if getattr(exc, "status_code", None) == 400 and ("context" in text or "maximum" in text):
+        return "context_overflow"
+    return "transport_failure"
+
+
+async def _complete_once(
+    relation: str, model_id: str, messages: list[dict], cfg: Config, client: InnkubeClient,
+    cache_salt: str | None, meta_out: dict,
+) -> tuple[list[str], str | None]:
+    """``transport_only``: one logical request; the client retries transport."""
+    try:
+        result = await client.complete_detailed(
+            model=model_id, messages=messages, temperature=cfg.rq2.temperature,
+            max_tokens=cfg.rq2.max_tokens, n=cfg.rq2.n_completions,
+            cache_salt=cache_salt,
+        )
+    except Exception as exc:
+        error = f"{type(exc).__name__}: {exc}"
+        meta_out.update(status=_failure_status(exc), error=error,
+                        transport_attempts=getattr(exc, "attempts", None))
+        return [], error
+    meta_out.update(status="ok", request=result.meta, finish_reasons=result.finish_reasons,
+                    records=result.records)
+    return result.choices, None
+
+
 async def _complete_with_retries(
     task, relation: str, model_id: str, messages: list[dict],
     cfg: Config, client: InnkubeClient, cache_salt: str | None = None,
+    meta_out: dict | None = None,
 ) -> tuple[list[str], str | None]:
     """Fetch one (relation, model) cell, retrying while it comes back empty.
 
@@ -163,13 +204,24 @@ async def _complete_with_retries(
     no salt of its own (most of them -- see build_task_variants) still gets
     its ordinary, cacheable request on attempt 1; only a genuine retry adds
     the per-attempt suffix.
+
+    Under ``rq2.retry_policy == "transport_only"`` none of this applies: see
+    :func:`_complete_once`. ``meta_out`` (a dict) receives the cell's status
+    and telemetry either way.
     """
+    meta_out = meta_out if meta_out is not None else {}
+    if cfg.rq2.retry_policy == "transport_only":
+        return await _complete_once(relation, model_id, messages, cfg, client,
+                                    cache_salt, meta_out)
+
     last_error: str | None = None
+    attempts: list[dict] = []
+    meta_out["attempts"] = attempts
     for attempt in range(1, MAX_GENERATE_ATTEMPTS + 1):
         attempt_salt = cache_salt if attempt == 1 else f"{cache_salt or relation}-retry-{attempt}"
         finish_reasons: list[str] = []
         try:
-            completions, finish_reasons = await client.complete_with_meta(
+            result = await client.complete_detailed(
                 model=model_id,
                 messages=messages,
                 temperature=cfg.rq2.temperature,
@@ -177,11 +229,17 @@ async def _complete_with_retries(
                 n=cfg.rq2.n_completions,
                 cache_salt=attempt_salt,
             )
+            completions, finish_reasons = result.choices, result.finish_reasons
+            attempts.append({"attempt": attempt, "cache_salt": attempt_salt,
+                             "request": result.meta, "finish_reasons": finish_reasons,
+                             "records": result.records})
         except Exception as exc:
             completions = []
             last_error = f"{type(exc).__name__}: {exc}"
+            attempts.append({"attempt": attempt, "cache_salt": attempt_salt, "error": last_error})
 
         if _has_real_completion(completions, finish_reasons):
+            meta_out["status"] = "ok"
             return completions, None
 
         if completions and finish_reasons and all(r == "length" for r in finish_reasons):
@@ -194,13 +252,14 @@ async def _complete_with_retries(
         if attempt < MAX_GENERATE_ATTEMPTS:
             await asyncio.sleep(GENERATE_RETRY_DELAY_S)
 
+    meta_out.update(status="generation_failed", error=last_error)
     return [], last_error
 
 
-def _existing_completions(out) -> dict[str, dict[str, list[str]]]:
-    """Whatever completions.json already holds, or {} if there is none."""
+def _existing_completions(out, name: str = "completions.json") -> dict[str, dict]:
+    """Whatever ``name`` already holds, or {} if there is none."""
     try:
-        return read_json(out, "completions.json")   # type: ignore[return-value]
+        return read_json(out, name)   # type: ignore[return-value]
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
@@ -252,9 +311,11 @@ async def generate_task(
         )
 
     results: dict[str, dict[str, list[str]]] = {}
+    meta: dict[str, dict[str, dict]] = {}
     if only_model is not None:
         # Start from what is on disk so untouched models survive verbatim.
         results = _existing_completions(out)
+        meta = _existing_completions(out, "generation_meta.json")
         logger.info("%s: regenerating %s only, merging into %d existing relation(s)",
                     label, only_model, len(results))
     empty_cells: list[dict] = []
@@ -270,17 +331,28 @@ async def generate_task(
         # Under --only-model this preserves the other models' cells for this
         # relation; a plain run starts each relation empty as before.
         results.setdefault(relation, {})
-        messages = bench.generation_messages(task, prompt_variant)
-        if relation == CONTROL_RELATION:
-            messages = _mark_as_control(messages)
+        meta.setdefault(relation, {})
+        base_messages = bench.generation_messages(task, prompt_variant)
 
         for model_cfg in models:
             model_id = model_cfg.id
+            use_marker = relation == CONTROL_RELATION
+            messages = _mark_as_control(base_messages) if use_marker else base_messages
+            cell_meta: dict = {
+                "base_prompt_sha256": logical_prompt_sha256(base_messages),
+                "sent_prompt_sha256": logical_prompt_sha256(messages),
+                "control_marker": use_marker,
+                "retry_policy": cfg.rq2.retry_policy,
+                "max_tokens": cfg.rq2.max_tokens,
+            }
             completions, error = await _complete_with_retries(
-                task, relation, model_id, messages, cfg, client, cache_salt=cache_salt
+                task, relation, model_id, messages, cfg, client, cache_salt=cache_salt,
+                meta_out=cell_meta,
             )
+            meta[relation][model_id] = cell_meta
             if not completions:
                 empty_cells.append({"relation": relation, "model_id": model_id,
+                                    "status": cell_meta.get("status"),
                                     "attempts": MAX_GENERATE_ATTEMPTS,
                                     "last_error": error})
 
@@ -291,6 +363,7 @@ async def generate_task(
     # Partial output is still written — it is real data and the cache means a
     # re-run is cheap — but the task stays unmarked so it gets retried.
     write_json(out, "completions.json", results)
+    write_json(out, "generation_meta.json", meta)
 
     if empty_cells:
         write_json(out, "generation_failed.json", {
@@ -329,7 +402,7 @@ async def run_generate(cfg: Config, tasks: list[Task], force: bool = False,
 
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
-    record_llm_conditions(cfg)
+    record_llm_conditions(cfg, phase="rq2-generate")
     coros = [generate_task(t, cfg, client, force=force, only_model=only_model, bench=bench)
              for t in tasks]
     await asyncio.gather(*coros)

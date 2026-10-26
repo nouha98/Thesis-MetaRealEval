@@ -13,7 +13,7 @@ import logging
 import re
 
 from ..core.data_loader import HumanEvalTask
-from ..core.llm_client import InnkubeClient
+from ..core.llm_client import InnkubeClient, logical_prompt_sha256
 from ..stage0.corpus_builder import Mutant
 
 logger = logging.getLogger(__name__)
@@ -246,26 +246,40 @@ async def generate_llm_mutants_generic(
     n_mutants: int = 3,
     cache_salt: str | None = None,
     fault_hint: str = "",
+    max_tokens: int = MUTANT_MAX_TOKENS,
+    meta_out: list | None = None,
 ) -> list[Mutant]:
     """Benchmark-agnostic generate_llm_mutants: same algorithm (request a
     surplus, extract+repair+dedup, stop at n_mutants), driven by
     bench.llm_mutation_messages / bench.repair_mutant / bench.mutation_source
     instead of the hard-coded HumanEval prompt and entry-point check.
+
+    ``temperature=0.9`` is the fallback for a model without an inference
+    profile; a profiled model's own temperature wins (InnkubeClient).
+    ``max_tokens`` comes from ``rq1.max_tokens``. ``meta_out``, if given,
+    receives one record of this attempt: the prompt hash, the request's
+    telemetry, and the raw/accepted counts or the error.
     """
     messages = bench.llm_mutation_messages(task, fault_hint)
+    record: dict = {"prompt_sha256": logical_prompt_sha256(messages), "max_tokens": max_tokens}
+    if meta_out is not None:
+        meta_out.append(record)
 
+    kwargs = dict(model=model_id, messages=messages, temperature=0.9,
+                  max_tokens=max_tokens, n=n_mutants + 2, cache_salt=cache_salt)
     try:
-        raw_completions = await client.complete(
-            model=model_id,
-            messages=messages,
-            temperature=0.9,
-            max_tokens=MUTANT_MAX_TOKENS,
-            n=n_mutants + 2,
-            cache_salt=cache_salt,
-        )
+        if meta_out is not None and hasattr(client, "complete_detailed"):
+            result = await client.complete_detailed(**kwargs)
+            raw_completions = result.choices
+            record["request"] = result.meta
+        else:
+            raw_completions = await client.complete(**kwargs)
     except Exception as exc:
         logger.warning("LLM mutant generation failed for %s: %s", task.task_id, exc)
+        record["error"] = f"{type(exc).__name__}: {exc}"
+        record["transport_attempts"] = getattr(exc, "attempts", None)
         return []
+    record["n_raw"] = len(raw_completions)
 
     canonical_norm = _normalise(bench.mutation_source(task))
     seen: set[str] = set()
@@ -291,4 +305,6 @@ async def generate_llm_mutants_generic(
             break
 
     logger.info("Generated %d LLM mutants for %s", len(mutants), task.task_id)
+    if meta_out is not None:
+        record["n_mutants"] = len(mutants)
     return mutants

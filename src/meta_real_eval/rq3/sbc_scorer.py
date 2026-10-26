@@ -82,6 +82,9 @@ async def compute_sbc_score(
             temperature=0.3,
             max_tokens=256,
             n=1,
+            # An instrument, not a model under test: never the model's
+            # inference condition, always the fixed legacy request.
+            use_profile=False,
         )
         inferred_spec = responses[0] if responses else ""
     except Exception as exc:

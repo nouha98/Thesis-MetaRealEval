@@ -375,6 +375,23 @@ def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
             n = len(per_completion)
             correct = sum(per_completion)
 
+            # Under the inference protocol a cell holds exactly n completions or
+            # none (a documented transport failure; ranking already treats an
+            # empty cell as missing). Anything in between is never scored:
+            # pass@k over fewer than n samples is not comparable with the other
+            # models' and would silently enter the leaderboard.
+            expected_n = cfg.rq2.n_completions
+            if cfg.rq2.retry_policy == "transport_only" and 0 < n != expected_n:
+                logger.error("%s / %s / %s: %d completion(s), expected %d -- marked "
+                             "incomplete, not scored", label, relation, model_id, n, expected_n)
+                pass_rates[relation][model_id] = {
+                    "n": n, "expected_n": expected_n, "incomplete": True,
+                    "correct": correct, "per_completion": per_completion,
+                    "pass@1": None, "pass@5": None, "pass@10": None,
+                    "primary_scores": primary_scores, "mean_primary": None,
+                }
+                continue
+
             pass_rates[relation][model_id] = {
                 "n": n,
                 "correct": correct,

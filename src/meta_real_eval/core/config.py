@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ProjectConfig(BaseModel):
@@ -16,8 +16,52 @@ class ProjectConfig(BaseModel):
     mock: bool = False
 
 
+class SamplingConfig(BaseModel):
+    """A model's recommended decoding parameters (its model card). None = not sent.
+
+    Ranges are the ones vLLM accepts; a value outside them is rejected here
+    rather than by a backend that might silently clamp or ignore it.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    temperature: Optional[float] = Field(default=None, ge=0.0)
+    top_p: Optional[float] = Field(default=None, gt=0.0, le=1.0)
+    top_k: Optional[int] = None                        # -1 (off) or >= 1
+    min_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    presence_penalty: Optional[float] = Field(default=None, ge=-2.0, le=2.0)
+    repetition_penalty: Optional[float] = Field(default=None, gt=0.0, le=2.0)
+
+    @field_validator("top_k")
+    @classmethod
+    def _top_k_range(cls, v: Optional[int]) -> Optional[int]:
+        if v is not None and v != -1 and v < 1:
+            raise ValueError("top_k must be -1 (disabled) or >= 1")
+        return v
+
+    def resolved(self) -> dict[str, Any]:
+        """The fields that are set, i.e. the ones that will be sent."""
+        return {k: v for k, v in self.model_dump().items() if v is not None}
+
+
+# Sent as standard OpenAI arguments; the other sampling fields go in extra_body.
+STANDARD_SAMPLING_ARGS = ("temperature", "top_p", "presence_penalty")
+EXTRA_BODY_SAMPLING_ARGS = ("top_k", "min_p", "repetition_penalty")
+
+# Body fields the client sets itself; request_params may not smuggle them in.
+_RESERVED_BODY_FIELDS = frozenset({
+    "model", "messages", "n", "max_tokens", "max_completion_tokens", "stream",
+    *STANDARD_SAMPLING_ARGS, *EXTRA_BODY_SAMPLING_ARGS,
+})
+
+
 class LLMModelConfig(BaseModel):
     id: str
+
+    # The model's recommended decoding parameters. Empty -> the request (and
+    # its cache key) is exactly the legacy one: the caller's temperature and
+    # the server's defaults for everything else.
+    sampling: SamplingConfig = Field(default_factory=SamplingConfig)
 
     # Extra top-level fields sent with every request for this model (OpenAI
     # ``extra_body``), e.g. ``{"reasoning_effort": "none"}`` to switch thinking
@@ -30,8 +74,25 @@ class LLMModelConfig(BaseModel):
 
     # Human label for the inference condition these params create, recorded in
     # <output_dir>/llm_conditions.json. Descriptive only: the condition is
-    # defined by request_params, never by this string.
+    # defined by sampling + request_params, never by this string.
     condition: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _no_reserved_fields(self) -> "LLMModelConfig":
+        bad = set(self.request_params) & _RESERVED_BODY_FIELDS
+        if bad:
+            raise ValueError(f"{self.id}: request_params may not set {sorted(bad)}; "
+                             "put decoding parameters under sampling")
+        return self
+
+    @property
+    def is_profiled(self) -> bool:
+        """True if this model's requests differ from the legacy request."""
+        return bool(self.sampling.resolved() or self.request_params)
+
+    def effective_condition(self) -> dict[str, Any]:
+        """What this model's requests are sent with (beyond the prompt and budget)."""
+        return {"sampling": self.sampling.resolved(), "request_params": self.request_params}
 
 
 class LLMConfig(BaseModel):
@@ -41,6 +102,15 @@ class LLMConfig(BaseModel):
     retry_max_attempts: int = 5
     retry_base_delay_s: float = 2.0
     cache_dir: Path = Path("./cache/llm_responses")
+    # Client-side request timeout (None = the SDK default, 600 s); long thinking
+    # at n=10 needs more.
+    request_timeout_s: Optional[float] = None
+
+    def model(self, model_id: str) -> Optional[LLMModelConfig]:
+        for m in self.models:
+            if m.id == model_id:
+                return m
+        return None
 
     def request_params_for(self, model_id: str) -> dict[str, Any]:
         """The configured extra request fields for ``model_id``; {} if none.
@@ -49,10 +119,8 @@ class LLMConfig(BaseModel):
         none: they are held out of the ranked set on purpose and keep their
         own, unmodified requests.
         """
-        for m in self.models:
-            if m.id == model_id:
-                return m.request_params
-        return {}
+        m = self.model(model_id)
+        return m.request_params if m is not None else {}
 
 
 class BenchmarkConfig(BaseModel):
@@ -81,6 +149,10 @@ class Stage0Config(BaseModel):
 
 class RQ1Config(BaseModel):
     operators: list[str] = ["AOR", "ROR", "SDL"]
+    # LLM mutant generation budget per completion (was the MUTANT_MAX_TOKENS
+    # constant; same default). Tier 2 sets it to rq2.max_tokens: one ceiling
+    # for every call where a model is under test.
+    max_tokens: int = 8192
 
 
 BASELINE_RELATION = "original"
@@ -120,6 +192,15 @@ class RQ2Config(BaseModel):
     generator_model: Optional[str] = None
     judge_model: Optional[str] = None
 
+    # What a failed cell triggers.
+    #   legacy          retry a cell that came back empty or fully truncated
+    #                   (the behaviour every existing result was produced with)
+    #   transport_only  retry only transport failures, inside the client, with
+    #                   the same request; empty/truncated/malformed outputs are
+    #                   model outcomes and stay in the denominator. Re-drawing
+    #                   them would resample conditional on the outcome.
+    retry_policy: Literal["legacy", "transport_only"] = "legacy"
+
     @property
     def relations(self) -> list[str]:
         """Every relation key RQ2 generates, in a stable order.
@@ -149,6 +230,9 @@ class RQ3Config(BaseModel):
     # keeps the per-task solution count near the k=15 the tau_div calibration was
     # derived at.  Templates are excluded — they are RQ2's control arm.
     variant_sample_per_family: int = 1
+    # The SBC reverse-generation model, an instrument (always the legacy fixed
+    # request, never the model's sampling). None = the first configured model.
+    sbc_model: Optional[str] = None
 
 
 class RQ4Config(BaseModel):
@@ -165,6 +249,18 @@ class Config(BaseModel):
     rq2: RQ2Config = Field(default_factory=RQ2Config)
     rq3: RQ3Config = Field(default_factory=RQ3Config)
     rq4: RQ4Config = Field(default_factory=RQ4Config)
+
+    @model_validator(mode="after")
+    def _strict_policy_needs_profiles(self) -> "Config":
+        # The client applies strict transport handling (choice-count check,
+        # retries on timeouts) only to profiled requests; transport_only without
+        # it would silently fall back to the legacy client behaviour.
+        if self.rq2.retry_policy == "transport_only":
+            bare = [m.id for m in self.llm.models if not m.is_profiled]
+            if bare:
+                raise ValueError(f"rq2.retry_policy=transport_only needs a sampling profile "
+                                 f"for every model; missing: {bare}")
+        return self
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "Config":

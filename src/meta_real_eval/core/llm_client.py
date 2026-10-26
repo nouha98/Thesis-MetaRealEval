@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 import logging
 import os
 import re
-from typing import Optional
+import time
+from dataclasses import dataclass, field
+from typing import Any, Optional
 
-from openai import AsyncOpenAI, RateLimitError, APIStatusError
+from openai import (
+    APIConnectionError, APIStatusError, APITimeoutError, AsyncOpenAI, RateLimitError,
+)
 
 from .cache import ResponseCache
-from .config import LLMConfig
+from .config import EXTRA_BODY_SAMPLING_ARGS, STANDARD_SAMPLING_ARGS, LLMConfig
 
 logger = logging.getLogger(__name__)
 
@@ -126,6 +132,125 @@ def _classify_choice(message, finish_reason: Optional[str]) -> tuple[str, dict]:
     return "", record(DISP_UNUSABLE_TRUNCATED if finish == "length" else DISP_UNUSABLE_AMBIGUOUS)
 
 
+def _reasoning_field_chars(message) -> Optional[int]:
+    """Length of the reasoning field; None if the response has no such field.
+
+    Characters, never converted to tokens. An absent or empty field does not
+    prove thinking was off (a model can reason inline, or a server without a
+    reasoning parser can leave it in ``content``).
+    """
+    text = getattr(message, "reasoning_content", None)
+    if text is None:
+        text = getattr(message, "reasoning", None)
+    return None if text is None else len(text)
+
+
+def _usage_dict(usage) -> Optional[dict]:
+    """The response's usage block exactly as returned; None if there is none."""
+    if usage is None:
+        return None
+    dump = getattr(usage, "model_dump", None)
+    return dump() if callable(dump) else dict(usage)
+
+
+def _reasoning_tokens(usage: Optional[dict]) -> Optional[int]:
+    """Only if the API reports them; never estimated. Missing -> None, not 0."""
+    details = (usage or {}).get("completion_tokens_details") or {}
+    return details.get("reasoning_tokens")
+
+
+@dataclass(frozen=True)
+class ResolvedRequest:
+    """One request as it will be sent and cached.
+
+    Built by :func:`resolve_request` and used by BOTH the cache key and the API
+    call, so the two can never disagree about what was asked.
+    """
+
+    profiled: bool                 # a profile applies -> strict transport handling
+    std: dict[str, Any]            # standard OpenAI arguments (besides model/messages)
+    extra: dict[str, Any]          # extra_body fields
+    key_params: dict[str, Any]     # cache-key fields besides model/messages
+
+
+def logical_prompt_sha256(messages: list[dict]) -> str:
+    """Hash of the chat messages before any chat template: the logical prompt.
+
+    The same logical prompt renders to different tokens under each model's
+    template, so this is what is compared across models and endpoints.
+    """
+    blob = json.dumps(messages, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def resolve_request(
+    config: LLMConfig, model: str, *, temperature: float, max_tokens: int, n: int,
+    cache_salt: Optional[str] = None, use_profile: bool = True,
+) -> ResolvedRequest:
+    """Apply ``model``'s recommended sampling and request_params to a request.
+
+    Precedence: the model's own temperature overrides the caller's, which stays
+    the fallback for a model without one. top_p / presence_penalty are standard
+    arguments; top_k / min_p / repetition_penalty and request_params go in
+    extra_body. ``use_profile=False`` (an instrument call, e.g. SBC) sends the
+    legacy request whatever the model's profile.
+
+    Cache key: a model without a profile gets exactly the legacy key, so every
+    existing cache entry stays valid. With a profile the key also carries the
+    sampling / request_params, so a recommended-config run can never be served
+    an old T=0.8 response.
+    """
+    m = config.model(model)
+    profiled = use_profile and m is not None and m.is_profiled
+    std: dict[str, Any] = {"temperature": temperature, "max_tokens": max_tokens, "n": n}
+    extra: dict[str, Any] = {}
+    key: dict[str, Any] = {}
+    if profiled:
+        sampling = m.sampling.resolved()
+        for k in STANDARD_SAMPLING_ARGS:
+            if k in sampling:
+                std[k] = sampling[k]
+        for k in EXTRA_BODY_SAMPLING_ARGS:
+            if k in sampling:
+                extra[k] = sampling[k]
+        extra.update(m.request_params)
+        if sampling:
+            key["sampling"] = sampling
+        if m.request_params:
+            key["request_params"] = m.request_params
+
+    key = {"temperature": std["temperature"], "max_tokens": max_tokens, "n": n, **key}
+    if cache_salt is not None:
+        key["cache_salt"] = cache_salt
+    return ResolvedRequest(profiled=profiled, std=std, extra=extra, key_params=key)
+
+
+@dataclass
+class CompletionResult:
+    """Completions plus everything known about how they were obtained."""
+
+    choices: list[str]
+    finish_reasons: list[str]
+    records: list[dict]
+    meta: dict = field(default_factory=dict)
+
+
+class TransportFailure(RuntimeError):
+    """No model output after every transport retry (profiled requests only).
+
+    Carries the per-attempt record so a caller can log it as a transport
+    failure -- never as a model outcome.
+    """
+
+    def __init__(self, message: str, attempts: list[dict]) -> None:
+        super().__init__(message)
+        self.attempts = attempts
+
+
+class _ChoiceCountError(RuntimeError):
+    pass
+
+
 class _TokenBucket:
     """Enforces a minimum interval between dispatched requests.
 
@@ -157,7 +282,9 @@ class InnkubeClient:
     - ``_semaphore`` limits the number of in-flight HTTP requests (asyncio-level).
     - ``_rate_limiter`` enforces a sustained throughput cap (token/bucket).
     - Cache lookup happens *before* entering the semaphore, so cached hits are free.
-    - Retries use exponential backoff on 429 and 5xx errors only.
+    - Retries use exponential backoff on 429 and 5xx errors only -- for a
+      profiled request also on 408/409, timeouts, connection errors and a wrong
+      number of choices (see ``_call_with_retry``).
     """
 
     def __init__(
@@ -189,6 +316,7 @@ class InnkubeClient:
         max_tokens: int = 1024,
         n: int = 1,
         cache_salt: Optional[str] = None,
+        use_profile: bool = True,
     ) -> list[str]:
         """Return *n* completion strings.  Returns mock strings if mock=True.
 
@@ -201,14 +329,18 @@ class InnkubeClient:
         Callers that pass nothing keep their existing keys, so adding this
         parameter invalidates no cache entry.
 
+        ``use_profile=False`` marks an *instrument* call (SBC): the model's
+        sampling and request_params are not applied and the request is exactly
+        the legacy one.
+
         Callers that need to tell a *truncated* completion from a genuinely bad
         one should use :meth:`complete_with_meta` instead.
         """
-        completions, _finish_reasons = await self.complete_with_meta(
+        result = await self._complete(
             model, messages, temperature=temperature, max_tokens=max_tokens,
-            n=n, cache_salt=cache_salt,
+            n=n, cache_salt=cache_salt, use_profile=use_profile,
         )
-        return completions
+        return result.choices
 
     async def complete_with_meta(
         self,
@@ -219,6 +351,7 @@ class InnkubeClient:
         max_tokens: int = 1024,
         n: int = 1,
         cache_salt: Optional[str] = None,
+        use_profile: bool = True,
     ) -> tuple[list[str], list[str]]:
         """Return ``(completions, finish_reasons)``.
 
@@ -233,11 +366,11 @@ class InnkubeClient:
         ``finish_reasons`` key; they report ``"unknown"`` so an old cache stays
         usable and is never mistaken for a run of clean stops.
         """
-        choices, finish_reasons, _records = await self._complete(
+        result = await self._complete(
             model, messages, temperature=temperature, max_tokens=max_tokens,
-            n=n, cache_salt=cache_salt,
+            n=n, cache_salt=cache_salt, use_profile=use_profile,
         )
-        return choices, finish_reasons
+        return result.choices, result.finish_reasons
 
     async def complete_with_records(
         self,
@@ -248,6 +381,7 @@ class InnkubeClient:
         max_tokens: int = 1024,
         n: int = 1,
         cache_salt: Optional[str] = None,
+        use_profile: bool = True,
     ) -> tuple[list[str], list[dict]]:
         """Return ``(completions, records)``; one provenance record per completion.
 
@@ -256,11 +390,37 @@ class InnkubeClient:
         decided). Cache entries written before records existed report
         ``unknown`` rather than being reconstructed.
         """
-        choices, _finish_reasons, records = await self._complete(
+        result = await self._complete(
             model, messages, temperature=temperature, max_tokens=max_tokens,
-            n=n, cache_salt=cache_salt,
+            n=n, cache_salt=cache_salt, use_profile=use_profile,
         )
-        return choices, records
+        return result.choices, result.records
+
+    async def complete_detailed(
+        self,
+        model: str,
+        messages: list[dict],
+        *,
+        temperature: float = 0.8,
+        max_tokens: int = 1024,
+        n: int = 1,
+        cache_salt: Optional[str] = None,
+        use_profile: bool = True,
+    ) -> CompletionResult:
+        """Completions, finish reasons, records, and the request's telemetry.
+
+        ``meta`` holds the effective request (without the messages), the
+        logical prompt hash, the usage block exactly as returned (missing fields
+        stay None, per-choice token counts are never derived from it), the
+        reasoning-token count only if the API reports it, per-attempt latency
+        and status, and per-choice answer / reasoning-field character counts.
+        A cache hit returns the meta stored with the original call plus
+        ``cache_hit: True``; an entry written before meta existed has none.
+        """
+        return await self._complete(
+            model, messages, temperature=temperature, max_tokens=max_tokens,
+            n=n, cache_salt=cache_salt, use_profile=use_profile,
+        )
 
     async def _complete(
         self,
@@ -271,23 +431,19 @@ class InnkubeClient:
         max_tokens: int,
         n: int,
         cache_salt: Optional[str],
-    ) -> tuple[list[str], list[str], list[dict]]:
+        use_profile: bool = True,
+    ) -> CompletionResult:
         if self._mock:
             stub = f"# mock [{model}]\ndef solution():\n    pass\n"
             record = {"raw_source": "mock", "finish_reason": "stop",
                       "delimiter_found": False, "disposition": DISP_ANSWER}
-            return [stub] * n, ["stop"] * n, [dict(record) for _ in range(n)]
+            return CompletionResult([stub] * n, ["stop"] * n,
+                                    [dict(record) for _ in range(n)], {"mock": True})
 
-        # Only a non-empty request_params joins the key (like cache_salt), so
-        # every legacy key is byte-identical; cache.key serialises with
-        # sort_keys=True, so dict ordering never changes a key.
-        request_params = self._config.request_params_for(model)
-        cache_key = self._cache.key(
-            model, messages,
-            temperature=temperature, max_tokens=max_tokens, n=n,
-            **({} if cache_salt is None else {"cache_salt": cache_salt}),
-            **({"request_params": request_params} if request_params else {}),
-        )
+        req = resolve_request(self._config, model, temperature=temperature,
+                              max_tokens=max_tokens, n=n, cache_salt=cache_salt,
+                              use_profile=use_profile)
+        cache_key = self._cache.key(model, messages, **req.key_params)
         if cached := self._cache.get(cache_key):
             logger.debug("Cache hit %s", cache_key[:12])
             choices = cached["choices"]
@@ -297,16 +453,26 @@ class InnkubeClient:
                  "delimiter_found": None, "disposition": DISP_UNKNOWN}
                 for fr in finish_reasons
             ]
-            return choices, finish_reasons, records
+            meta = {**(cached.get("meta") or {}), "cache_hit": True}
+            return CompletionResult(choices, finish_reasons, records, meta)
 
+        # Only non-default arguments are passed on, so a test double with the
+        # legacy five-argument signature still works for a legacy call.
+        extra_kwargs: dict[str, Any] = {}
+        if not use_profile:
+            extra_kwargs["use_profile"] = False
         async with self._semaphore:
             await self._rate_limiter.acquire()
-            result = await self._call_with_retry(model, messages, temperature, max_tokens, n)
+            result = await self._call_with_retry(model, messages, temperature, max_tokens, n,
+                                                 **extra_kwargs)
 
-        # _call_with_retry returns (choices, finish_reasons, records); a 2-tuple
-        # (older callers / test doubles) simply has no records to store.
+        # _call_with_retry returns (choices, finish_reasons, records, meta); a
+        # shorter tuple (older callers / test doubles) simply lacks the rest.
         choices, finish_reasons, *rest = result
         records = rest[0] if rest else None
+        meta = dict(rest[1]) if len(rest) > 1 and rest[1] else {}
+        meta["logical_prompt_sha256"] = logical_prompt_sha256(messages)
+        meta["cache_hit"] = False
 
         truncated = sum(1 for r in finish_reasons if r == "length")
         if truncated:
@@ -327,12 +493,13 @@ class InnkubeClient:
         entry = {"choices": choices, "finish_reasons": finish_reasons}
         if records:
             entry["records"] = records
+        entry["meta"] = meta
         self._cache.put(cache_key, entry)
-        return choices, finish_reasons, records or [
+        return CompletionResult(choices, finish_reasons, records or [
             {"raw_source": SOURCE_UNKNOWN, "finish_reason": fr,
              "delimiter_found": None, "disposition": DISP_UNKNOWN}
             for fr in finish_reasons
-        ]
+        ], meta)
 
     async def _call_with_retry(
         self,
@@ -341,51 +508,130 @@ class InnkubeClient:
         temperature: float,
         max_tokens: int,
         n: int,
-    ) -> tuple[list[str], list[str], list[dict]]:
+        *,
+        use_profile: bool = True,
+    ) -> tuple[list[str], list[str], list[dict], dict]:
+        """One logical request, with transport retries.
+
+        Legacy (unprofiled) requests behave exactly as before: the SDK's own
+        retries, then backoff on 429 / 5xx, anything else raised at once.
+
+        Profiled requests get strict transport handling: the SDK retries are
+        switched off so every attempt is timed and recorded here; 429, 5xx,
+        408/409, timeouts, connection errors and a wrong number of choices are
+        all retried with the SAME request; and when every attempt
+        fails, :class:`TransportFailure` carries the attempt log.
+        """
         cfg = self._config
+        req = resolve_request(cfg, model, temperature=temperature, max_tokens=max_tokens,
+                              n=n, use_profile=use_profile)
+        client = self._get_client()
+        options: dict[str, Any] = {}
+        if req.profiled:
+            options["max_retries"] = 0
+        if cfg.request_timeout_s is not None:
+            options["timeout"] = cfg.request_timeout_s
+        with_options = getattr(client, "with_options", None)
+        if options and callable(with_options):
+            client = with_options(**options)
+        kwargs: dict[str, Any] = {"model": model, "messages": messages, **req.std}
         # Sent as top-level body fields; omitted entirely when empty so an
         # unconfigured model's request is unchanged.
-        extra = {"extra_body": dict(p)} if (p := cfg.request_params_for(model)) else {}
+        if req.extra:
+            kwargs["extra_body"] = dict(req.extra)
+
+        attempts: list[dict] = []
+        started = time.monotonic()
+
+        def failed(status: str, t0: float, exc: BaseException) -> None:
+            attempts.append({"attempt": len(attempts) + 1, "status": status,
+                             "latency_s": round(time.monotonic() - t0, 3),
+                             "error": f"{type(exc).__name__}: {str(exc)[:200]}"})
+
+        last_exc: Optional[BaseException] = None
         for attempt in range(cfg.retry_max_attempts):
+            final = attempt == cfg.retry_max_attempts - 1
+            delay = cfg.retry_base_delay_s * (2 ** attempt)
+            t0 = time.monotonic()
             try:
-                response = await self._get_client().chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    n=n,
-                    **extra,
-                )
+                response = await client.chat.completions.create(**kwargs)
+                if req.profiled and len(response.choices) != n:
+                    raise _ChoiceCountError(
+                        f"asked for n={n}, got {len(response.choices)} choice(s)")
+                latency = round(time.monotonic() - t0, 3)
+                attempts.append({"attempt": len(attempts) + 1, "status": "ok", "latency_s": latency})
                 classified = [
                     _classify_choice(c.message, c.finish_reason) for c in response.choices
                 ]
+                usage = _usage_dict(getattr(response, "usage", None))
+                meta = {
+                    "effective_request": {"model": model, **req.std,
+                                          "extra_body": dict(req.extra) or None},
+                    "strict_transport": req.profiled,
+                    "served_model": getattr(response, "model", None),
+                    "usage": usage,
+                    "reasoning_tokens": _reasoning_tokens(usage),
+                    "choices": [
+                        {"answer_chars": len(text),
+                         "reasoning_field_chars": _reasoning_field_chars(c.message)}
+                        for (text, _record), c in zip(classified, response.choices)
+                    ],
+                    "attempts": attempts,
+                    "success_latency_s": latency,
+                    "total_latency_s": round(time.monotonic() - started, 3),
+                }
                 return (
                     [text for text, _record in classified],
                     [(c.finish_reason or "unknown") for c in response.choices],
                     [record for _text, record in classified],
+                    meta,
                 )
 
-            except RateLimitError:
-                delay = cfg.retry_base_delay_s * (2 ** attempt)
+            except RateLimitError as exc:
+                failed("http_429", t0, exc)
+                last_exc = exc
                 logger.warning(
                     "429 rate-limited (attempt %d/%d). Sleeping %.1fs.",
                     attempt + 1, cfg.retry_max_attempts, delay,
                 )
-                if attempt == cfg.retry_max_attempts - 1:
-                    raise
+                if final:
+                    break
                 await asyncio.sleep(delay)
 
             except APIStatusError as exc:
-                if exc.status_code >= 500:
-                    delay = cfg.retry_base_delay_s * (2 ** attempt)
-                    logger.warning(
-                        "Server error %d (attempt %d/%d). Sleeping %.1fs.",
-                        exc.status_code, attempt + 1, cfg.retry_max_attempts, delay,
-                    )
-                    if attempt == cfg.retry_max_attempts - 1:
-                        raise
-                    await asyncio.sleep(delay)
-                else:
+                failed(f"http_{exc.status_code}", t0, exc)
+                last_exc = exc
+                retryable = exc.status_code >= 500 or (req.profiled and exc.status_code in (408, 409))
+                if not retryable:
                     raise
+                logger.warning(
+                    "Server error %d (attempt %d/%d). Sleeping %.1fs.",
+                    exc.status_code, attempt + 1, cfg.retry_max_attempts, delay,
+                )
+                if final:
+                    break
+                await asyncio.sleep(delay)
 
-        raise RuntimeError("retry loop exited without returning")  # unreachable
+            except (APIConnectionError, _ChoiceCountError) as exc:
+                # APITimeoutError is an APIConnectionError. Legacy requests keep
+                # their old behaviour: raised at once (after the SDK's retries).
+                if not req.profiled:
+                    raise
+                status = ("timeout" if isinstance(exc, APITimeoutError)
+                          else "choice_count" if isinstance(exc, _ChoiceCountError)
+                          else "connection_error")
+                failed(status, t0, exc)
+                last_exc = exc
+                logger.warning("%s on %s (attempt %d/%d). Sleeping %.1fs.",
+                               status, model, attempt + 1, cfg.retry_max_attempts, delay)
+                if final:
+                    break
+                await asyncio.sleep(delay)
+
+        if last_exc is None:
+            raise RuntimeError("retry loop exited without returning")  # unreachable
+        if req.profiled:
+            raise TransportFailure(
+                f"{model}: no response after {len(attempts)} attempt(s); last: "
+                f"{type(last_exc).__name__}: {str(last_exc)[:200]}", attempts) from last_exc
+        raise last_exc

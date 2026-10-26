@@ -182,7 +182,9 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, bench, force: boo
             "rather than the benchmark-passing one; run rq2 evaluate first", label,
         )
 
-    model_id = cfg.model_ids()[0]
+    # The SBC reverse generator is an instrument; generated configs pin it so
+    # the order of llm.models can never change it (None = legacy: first model).
+    model_id = cfg.rq3.sbc_model or cfg.model_ids()[0]
     sbc_results: dict[str, dict] = {}
 
     # Same containment as the execute phase, and for the same reason: SBC costs
@@ -224,7 +226,7 @@ async def run_score(cfg: Config, tasks, force: bool = False) -> None:
     bench = get_benchmark(cfg)
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
-    record_llm_conditions(cfg)
+    record_llm_conditions(cfg, phase="rq3-score")
     coros = [_score_one(t, cfg, client, bench, force=force) for t in tasks]
     await asyncio.gather(*coros)
 

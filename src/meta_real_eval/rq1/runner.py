@@ -47,7 +47,7 @@ from ..stage0.corpus_builder import Mutant
 from ..stage0.equivalence import check_equivalence_generic, compute_canonical_observations
 from .ast_fallback import generate_ast_fallback_mutants
 from .kill_rate import compute_kill_matrix_generic, summarise
-from .llm_mutator import FAULT_HINTS, generate_llm_mutants_generic
+from .llm_mutator import FAULT_HINTS, MUTANT_MAX_TOKENS, generate_llm_mutants_generic
 
 logger = logging.getLogger(__name__)
 
@@ -67,24 +67,37 @@ GENERATE_RETRY_DELAY_S = 1.0
 # Generate phase
 # ---------------------------------------------------------------------------
 
-async def _generate_with_retries(task, model_id: str, client: InnkubeClient, bench) -> tuple[list, str | None]:
+async def _generate_with_retries(task, model_id: str, client: InnkubeClient, bench,
+                                 cfg: Config | None = None,
+                                 attempts_out: list | None = None) -> tuple[list, str | None]:
     """Call generate_llm_mutants_generic for one model, retrying on empty output.
 
     Returns (mutants, None) on success, or ([], last_error) once every
     attempt has come back empty.
+
+    Each retry is a deliberate new draw (its fault hint changes the prompt);
+    transport retries of one attempt happen inside the client. ``attempts_out``
+    receives one record per attempt (generation_meta.json).
     """
     mutants: list = []
     last_error: str | None = None
+    max_tokens = cfg.rq1.max_tokens if cfg is not None else MUTANT_MAX_TOKENS
     for attempt in range(1, MAX_GENERATE_ATTEMPTS + 1):
+        fault_hint = FAULT_HINTS[(attempt - 1) % len(FAULT_HINTS)]
+        meta: list = []
         try:
             mutants = await generate_llm_mutants_generic(
                 bench=bench, task=task, model_id=model_id, client=client, n_mutants=3,
                 cache_salt=f"llm-mutant-attempt-{attempt}",
-                fault_hint=FAULT_HINTS[(attempt - 1) % len(FAULT_HINTS)],
+                fault_hint=fault_hint, max_tokens=max_tokens, meta_out=meta,
             )
         except Exception as exc:
             mutants = []
             last_error = f"{type(exc).__name__}: {exc}"
+        if attempts_out is not None:
+            attempts_out.append({"attempt": attempt, "fault_hint": fault_hint,
+                                 **(meta[0] if meta else {}),
+                                 **({"error": last_error} if not mutants and last_error else {})})
 
         if mutants:
             return mutants, None
@@ -135,8 +148,13 @@ async def _generate_one(task, cfg: Config, client: InnkubeClient, bench, force: 
         model_ids = cfg.model_ids()
         data = []
         failures: list[dict] = []
+        gen_meta: dict[str, dict] = {}
         for model_id in model_ids:
-            mutants, error = await _generate_with_retries(task, model_id, client, bench)
+            attempts: list[dict] = []
+            mutants, error = await _generate_with_retries(task, model_id, client, bench,
+                                                          cfg=cfg, attempts_out=attempts)
+            gen_meta[model_id] = {"status": "ok" if mutants else "failed",
+                                  "n_mutants": len(mutants), "attempts": attempts}
             if mutants:
                 data.extend(
                     {"mutant_id": m.mutant_id, "operator": m.operator,
@@ -146,6 +164,10 @@ async def _generate_one(task, cfg: Config, client: InnkubeClient, bench, force: 
                 )
             else:
                 failures.append({"model_id": model_id, "attempts": MAX_GENERATE_ATTEMPTS, "last_error": error})
+
+        # Per model and attempt: prompt hash, request telemetry, outcome.
+        # Written whatever happened, so a merge can see partial failures.
+        write_json(out, "generation_meta.json", gen_meta)
 
         if failures:
             failed_ids = {f["model_id"] for f in failures}
@@ -186,7 +208,7 @@ async def run_generate(cfg: Config, tasks, force: bool = False) -> None:
     bench = get_benchmark(cfg)
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
-    record_llm_conditions(cfg)
+    record_llm_conditions(cfg, phase="rq1-generate")
     coros = [_generate_one(t, cfg, client, bench, force=force) for t in tasks]
     await asyncio.gather(*coros)
 

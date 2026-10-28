@@ -272,6 +272,7 @@ async def generate_llm_mutants_generic(
             result = await client.complete_detailed(**kwargs)
             raw_completions = result.choices
             record["request"] = result.meta
+            record["finish_reasons"] = result.finish_reasons
         else:
             raw_completions = await client.complete(**kwargs)
     except Exception as exc:

@@ -38,6 +38,52 @@ def test_telemetry_counts_unavailable_values_separately():
     assert row["requests_without_meta"] == 1
 
 
+def test_by_task_counts_truncation_and_unusable_per_cell(capsys):
+    import collections
+    counter = collections.Counter()
+    audit.count_cell(_cell(100, None, ["stop", "length", "length"], 2.0), counter)
+    audit.count_cell({"status": "transport_failure"}, counter)
+    audit.count_cell({"records": [{"finish_reason": "length", "disposition": "unusable_reasoning_only"}]},
+                     counter)
+    assert (counter["choices"], counter["length"], counter["unusable"]) == (4, 3, 1)
+    counter["failed"] = 1
+    audit.print_by_task({("t1", "m"): counter})
+    assert "3/1/1 of 4" in capsys.readouterr().out
+
+
+def test_rq1_truncation_counts_length_and_unrecorded_attempts():
+    meta = [{"m": {"attempts": [{"finish_reasons": ["stop", "length"]}, {"request": {}}]}},
+            {"m": {"attempts": [{"finish_reasons": ["length"]}]}}]
+    c = audit.rq1_truncation(meta)["m"]
+    assert (c["choices"], c["length"], c["attempts_unrecorded"]) == (3, 2, 1)
+
+
+def test_truncated_choices_report_disposition_and_a_loop_indicator():
+    loop, prose = "abc " * 500, "".join(chr(65 + (i * 7919) % 58) for i in range(2000))
+    cell = {"records": [{"finish_reason": "length", "disposition": "unusable_truncated"},
+                        {"finish_reason": "stop", "disposition": "answer"},
+                        {"finish_reason": "length", "disposition": "truncated"}],
+            "request": {"choices": [{"answer_chars": 0, "reasoning_field_chars": 9, "reasoning_tail": loop},
+                                    {"answer_chars": 5, "reasoning_field_chars": 3},
+                                    {"answer_chars": 7, "reasoning_field_chars": 9, "reasoning_tail": prose}]}}
+    rows = audit.truncated_choices("t", "original", "m", cell)
+    assert [r["index"] for r in rows] == [0, 2]
+    assert rows[0]["disposition"] == "unusable_truncated"
+    assert rows[0]["tail_compression"] < rows[1]["tail_compression"], "a loop compresses better"
+    old = {"records": [{"finish_reason": "length", "disposition": "truncated"}],
+           "request": {"choices": [{"answer_chars": 1, "reasoning_field_chars": None}]}}
+    assert audit.truncated_choices("t", "original", "m", old)[0]["tail_compression"] is None
+
+
+def test_independence_counts_distinct_and_cross_arm_overlap():
+    import collections
+    out = collections.defaultdict(collections.Counter)
+    audit.independence({"original": {"m": ["a", "a", "b"]},
+                        "control_resample": {"m": ["b", "c", "d"]}}, out)
+    assert (out["m"]["choices"], out["m"]["distinct"]) == (6, 5)
+    assert (out["m"]["pairs"], out["m"]["shared_texts"]) == (1, 1)
+
+
 def test_legacy_cells_read_the_last_successful_attempt():
     legacy = {"status": "ok", "attempts": [
         {"attempt": 1, "error": "x"},

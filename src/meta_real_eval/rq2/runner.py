@@ -78,6 +78,9 @@ def main(argv=None) -> None:
         for task in tasks:
             evaluate_task(task, cfg, force=args.force)
             compute_ranking_stability(task, cfg)
+            if cfg.rq2.ranking_score != "pass@1":       # binary pass@1 as the secondary ranking
+                compute_ranking_stability(task, cfg, score_key="pass@1",
+                                          filename="rankings_pass1.json")
 
     logger.info("RQ2 phase=%s complete.", args.phase)
 

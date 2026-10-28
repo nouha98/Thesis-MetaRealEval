@@ -189,6 +189,24 @@ async def test_instrument_call_sends_the_legacy_body(tmp_path):
                              "max_tokens": 256, "n": 1}
 
 
+def test_a_seed_is_sent_and_keyed_only_when_given():
+    cfg = LLMConfig(models=[_profiled()])
+    plain = resolve_request(cfg, "m", temperature=0.8, max_tokens=10, n=2)
+    seeded = resolve_request(cfg, "m", temperature=0.8, max_tokens=10, n=2, seed=7)
+    assert "seed" not in plain.std and "seed" not in plain.key_params
+    assert seeded.std["seed"] == 7 and seeded.key_params["seed"] == 7
+    assert {k: v for k, v in seeded.key_params.items() if k != "seed"} == plain.key_params
+
+
+async def test_the_seed_reaches_the_backend(tmp_path):
+    client, _ = _client(tmp_path, _profiled())
+    fake = _FakeOpenAI()
+    client._client = fake
+    await client.complete_detailed("m", MSGS, **KW, seed=11)
+    await client.complete_detailed("m", MSGS, **KW, seed=12)
+    assert [c["seed"] for c in fake.calls] == [11, 12], "a different seed is never a cache hit"
+
+
 def test_resolve_request_without_profile_has_no_extra_body():
     cfg = LLMConfig(models=[LLMModelConfig(id="m")])
     req = resolve_request(cfg, "m", temperature=0.8, max_tokens=10, n=2)
@@ -259,6 +277,25 @@ async def test_missing_usage_is_none_not_zero(tmp_path):
     res = await client.complete_detailed("m", MSGS, **KW)
     assert res.meta["usage"] is None and res.meta["reasoning_tokens"] is None
     assert res.meta["choices"] == [{"answer_chars": 2, "reasoning_field_chars": None}]
+
+
+async def test_a_length_truncated_choice_keeps_its_reasoning_tail(tmp_path):
+    client, _ = _client(tmp_path, _profiled())
+    fake = _FakeOpenAI()
+
+    async def create(**kwargs):
+        fake.calls.append(kwargs)
+        cut = SimpleNamespace(content="", reasoning_content="x" * 5000 + "END", reasoning=None)
+        done = SimpleNamespace(content="ok", reasoning_content="short", reasoning=None)
+        return SimpleNamespace(choices=[SimpleNamespace(message=cut, finish_reason="length"),
+                                        SimpleNamespace(message=done, finish_reason="stop")],
+                               usage=None, model=kwargs["model"])
+    fake.chat = SimpleNamespace(completions=SimpleNamespace(create=create))
+    client._client = fake
+    res = await client.complete_detailed("m", MSGS, temperature=0.8, max_tokens=10, n=2)
+    cut, done = res.meta["choices"]
+    assert len(cut["reasoning_tail"]) == 2000 and cut["reasoning_tail"].endswith("END")
+    assert "reasoning_tail" not in done, "only a length-truncated choice stores its tail"
 
 
 async def test_reported_reasoning_tokens_are_kept_and_meta_survives_the_cache(tmp_path):

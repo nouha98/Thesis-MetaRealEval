@@ -201,6 +201,25 @@ class RQ2Config(BaseModel):
     #                   them would resample conditional on the outcome.
     retry_policy: Literal["legacy", "transport_only"] = "legacy"
 
+    # Two independent switches for the control arm (rq2/generator.py):
+    #   request_seeds          send a per-(task, model, relation) seed with every
+    #                          RQ2 request; the seed ranges of one cell's relations
+    #                          never overlap, so original and control_resample can
+    #                          be byte-identical prompts and still be distinct draws
+    #                          (and distinct gateway cache entries).
+    #   control_marker_models  which models get the neutral marker appended to the
+    #                          control arm's system message: None = every model (the
+    #                          legacy behaviour), [] = none.
+    # Kept apart so turning seeds off can never turn the marker back on.
+    request_seeds: bool = False
+    control_marker_models: Optional[list[str]] = None
+
+    # The per-cell score the rankings use: "pass@1" (binary, every test passes;
+    # Tier 1's metric) or "mean_primary" (the mean per-completion D3 pass rate,
+    # i.e. the fraction of valid tests passed -- RealClassEval's own metric).
+    # Whichever is not primary is written alongside as the secondary ranking.
+    ranking_score: Literal["pass@1", "mean_primary"] = "pass@1"
+
     @property
     def relations(self) -> list[str]:
         """Every relation key RQ2 generates, in a stable order.
@@ -260,6 +279,11 @@ class Config(BaseModel):
             if bare:
                 raise ValueError(f"rq2.retry_policy=transport_only needs a sampling profile "
                                  f"for every model; missing: {bare}")
+        # The legacy policy re-draws a cell by changing only the cache salt; with
+        # a fixed seed the backend would return the same draw, so the retry buys
+        # nothing. Seeds belong to the transport_only protocol.
+        if self.rq2.request_seeds and self.rq2.retry_policy != "transport_only":
+            raise ValueError("rq2.request_seeds needs rq2.retry_policy=transport_only")
         return self
 
     @classmethod

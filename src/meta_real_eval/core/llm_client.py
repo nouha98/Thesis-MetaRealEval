@@ -145,6 +145,18 @@ def _reasoning_field_chars(message) -> Optional[int]:
     return None if text is None else len(text)
 
 
+LENGTH_TAIL_CHARS = 2000
+
+
+def _length_tail(message) -> str:
+    """The last characters a length-truncated choice produced: its reasoning
+    field if it has one, else its content. Kept so a truncation can be read as
+    a repetition loop or as long, coherent work cut off (audit_rq2_generation)."""
+    text = (getattr(message, "reasoning_content", None) or getattr(message, "reasoning", None)
+            or getattr(message, "content", None) or "")
+    return text[-LENGTH_TAIL_CHARS:]
+
+
 def _usage_dict(usage) -> Optional[dict]:
     """The response's usage block exactly as returned; None if there is none."""
     if usage is None:
@@ -185,7 +197,7 @@ def logical_prompt_sha256(messages: list[dict]) -> str:
 
 def resolve_request(
     config: LLMConfig, model: str, *, temperature: float, max_tokens: int, n: int,
-    cache_salt: Optional[str] = None, use_profile: bool = True,
+    cache_salt: Optional[str] = None, use_profile: bool = True, seed: Optional[int] = None,
 ) -> ResolvedRequest:
     """Apply ``model``'s recommended sampling and request_params to a request.
 
@@ -199,6 +211,9 @@ def resolve_request(
     existing cache entry stays valid. With a profile the key also carries the
     sampling / request_params, so a recommended-config run can never be served
     an old T=0.8 response.
+
+    ``seed``, when given, is a standard argument and part of the key; when
+    None neither the request nor the key changes.
     """
     m = config.model(model)
     profiled = use_profile and m is not None and m.is_profiled
@@ -220,6 +235,8 @@ def resolve_request(
             key["request_params"] = m.request_params
 
     key = {"temperature": std["temperature"], "max_tokens": max_tokens, "n": n, **key}
+    if seed is not None:
+        std["seed"] = key["seed"] = seed
     if cache_salt is not None:
         key["cache_salt"] = cache_salt
     return ResolvedRequest(profiled=profiled, std=std, extra=extra, key_params=key)
@@ -406,6 +423,7 @@ class InnkubeClient:
         n: int = 1,
         cache_salt: Optional[str] = None,
         use_profile: bool = True,
+        seed: Optional[int] = None,
     ) -> CompletionResult:
         """Completions, finish reasons, records, and the request's telemetry.
 
@@ -419,7 +437,7 @@ class InnkubeClient:
         """
         return await self._complete(
             model, messages, temperature=temperature, max_tokens=max_tokens,
-            n=n, cache_salt=cache_salt, use_profile=use_profile,
+            n=n, cache_salt=cache_salt, use_profile=use_profile, seed=seed,
         )
 
     async def _complete(
@@ -432,6 +450,7 @@ class InnkubeClient:
         n: int,
         cache_salt: Optional[str],
         use_profile: bool = True,
+        seed: Optional[int] = None,
     ) -> CompletionResult:
         if self._mock:
             stub = f"# mock [{model}]\ndef solution():\n    pass\n"
@@ -442,7 +461,7 @@ class InnkubeClient:
 
         req = resolve_request(self._config, model, temperature=temperature,
                               max_tokens=max_tokens, n=n, cache_salt=cache_salt,
-                              use_profile=use_profile)
+                              use_profile=use_profile, seed=seed)
         cache_key = self._cache.key(model, messages, **req.key_params)
         if cached := self._cache.get(cache_key):
             logger.debug("Cache hit %s", cache_key[:12])
@@ -461,6 +480,8 @@ class InnkubeClient:
         extra_kwargs: dict[str, Any] = {}
         if not use_profile:
             extra_kwargs["use_profile"] = False
+        if seed is not None:
+            extra_kwargs["seed"] = seed
         async with self._semaphore:
             await self._rate_limiter.acquire()
             result = await self._call_with_retry(model, messages, temperature, max_tokens, n,
@@ -510,6 +531,7 @@ class InnkubeClient:
         n: int,
         *,
         use_profile: bool = True,
+        seed: Optional[int] = None,
     ) -> tuple[list[str], list[str], list[dict], dict]:
         """One logical request, with transport retries.
 
@@ -524,7 +546,7 @@ class InnkubeClient:
         """
         cfg = self._config
         req = resolve_request(cfg, model, temperature=temperature, max_tokens=max_tokens,
-                              n=n, use_profile=use_profile)
+                              n=n, use_profile=use_profile, seed=seed)
         client = self._get_client()
         options: dict[str, Any] = {}
         if req.profiled:
@@ -573,7 +595,9 @@ class InnkubeClient:
                     "reasoning_tokens": _reasoning_tokens(usage),
                     "choices": [
                         {"answer_chars": len(text),
-                         "reasoning_field_chars": _reasoning_field_chars(c.message)}
+                         "reasoning_field_chars": _reasoning_field_chars(c.message),
+                         **({"reasoning_tail": _length_tail(c.message)}
+                            if c.finish_reason == "length" else {})}
                         for (text, _record), c in zip(classified, response.choices)
                     ],
                     "attempts": attempts,

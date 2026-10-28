@@ -33,8 +33,8 @@ from meta_real_eval.core.config import (  # noqa: E402
     CalibrationError,
     write_divergence_threshold,
 )
-from meta_real_eval.rq2.ranking import collapse_tau_by_arm  # noqa: E402
-from meta_real_eval.rq2.corpus import FAMILIES, MIN_FAMILIES_COVERED  # noqa: E402
+from meta_real_eval.rq2.ranking import cell_is_scored, collapse_tau_by_arm  # noqa: E402
+from meta_real_eval.rq2.corpus import FAMILIES, min_families_covered  # noqa: E402
 from meta_real_eval.analysis.statistics import (  # noqa: E402
     bootstrap_ci,
     cliffs_delta,
@@ -47,6 +47,10 @@ from meta_real_eval.analysis.statistics import (  # noqa: E402
 )
 
 RESULTS = REPO_ROOT / "results"
+# Which per-task rankings file RQ2 aggregates: rankings.json is the primary
+# score (rq2.ranking_score); rankings_pass1.json the binary secondary when the
+# primary is graded (--rankings).
+RANKINGS = "rankings.json"
 TRADITIONAL_OPS = {"AOR", "ROR", "SDL"}
 
 # Task labels left out of every analysis (--exclude-tasks): the sensitivity run
@@ -392,13 +396,15 @@ def _sign(a: float, b: float) -> int:
     return (a > b) - (a < b)
 
 
-def task_strata() -> dict[str, str]:
+def task_strata(score_key: str = "pass@1") -> dict[str, str]:
     """Classify every task by what the intact suite can still distinguish.
 
     Shared with RQ4 (rq4.runner.task_stratum) so both report the same
-    partition. Computed from pass@1 under the *original* prompt and the intact
-    suite -- before any paraphrase or degradation -- which makes it a
-    pre-treatment covariate rather than the outcome.
+    partition. Computed from ``score_key`` (RQ2's ranking score; RQ4 keeps
+    pass@1) under the *original* prompt and the intact suite -- before any
+    paraphrase or degradation -- which makes it a pre-treatment covariate
+    rather than the outcome. Unscored cells (missing, incomplete, evaluation
+    error) are left out, never read as 0.
 
     This is the population question behind every RQ2-RQ4 statistic: a task where
     all models score the same cannot exhibit ranking movement, so tau_b is
@@ -416,7 +422,7 @@ def task_strata() -> dict[str, str]:
         if not path.exists():
             continue
         cells = load(path).get("original", {})
-        scores = {m: v["pass@1"] for m, v in cells.items() if v.get("n", 0) > 0}
+        scores = {m: v[score_key] for m, v in cells.items() if cell_is_scored(v, score_key)}
         strata[td.name] = task_stratum(scores)
     return strata
 
@@ -538,6 +544,15 @@ def analyze_rq2() -> dict:
       exists to avoid.
     """
     task_dirs = _task_dirs(RESULTS / "rq2" / "evaluate")
+    # The score every rankings file was computed from (written by ranking.py;
+    # files from before that are pass@1). Strata and the reversal rate use the
+    # same score, so the whole RQ2 block describes one metric.
+    first = next((load(td / RANKINGS) for td in task_dirs if (td / RANKINGS).is_file()), {})
+    score_key = first.get("score", "pass@1")
+    # The corpus's families (written by ranking.py; Tier 1 files predate it and
+    # are the five-family HumanEval corpus) and the all-but-one coverage gate.
+    families = first.get("corpus_families") or FAMILIES
+    min_cov = min_families_covered(families)
     per_task = []                       # one task-level mean tau_b each (coverage-passing only)
     per_relation_tau = defaultdict(list)
     # arm -> [one task-level value each]; families are collapsed inside the arm
@@ -574,6 +589,10 @@ def analyze_rq2() -> dict:
     n_tasks = 0
     n_degenerate_pairs = 0
     n_pairs = 0
+    # Pair comparisons for the reversal rate: every (task, relation, model pair)
+    # with both models scored in both conditions, how many were tied in either
+    # (excluded), and how many remained informative.
+    n_pair_comparisons = n_pair_tied = 0
     n_legacy_coverage = 0
     # The coverage gate's own sensitivity ladder: the same headline recomputed
     # with no gate at all. Together with complete_case_task_tau (5/5) this brackets
@@ -584,13 +603,13 @@ def analyze_rq2() -> dict:
     # the intact suite. On a saturated task every model ties, so tau_b is
     # undefined by construction -- those tasks contribute nothing to the mean
     # but do inflate the "how many tasks did we look at" denominators.
-    strata = task_strata()
+    strata = task_strata(score_key)
     discriminating_task_tau: list[float] = []
 
     for td in task_dirs:
         if not td.is_dir():
             continue
-        rankings_path = td / "rankings.json"
+        rankings_path = td / RANKINGS
         pass_rates_path = td / "pass_rates.json"
         if not rankings_path.exists():
             continue
@@ -632,7 +651,7 @@ def analyze_rq2() -> dict:
         # families that one easy/hard family could dominate it, and comparing
         # it against the template arm's complete coverage would not be a fair
         # comparison. See rq2/corpus.py::MIN_FAMILIES_COVERED.
-        covered = by_arm["llm"] is None or n_families_covered >= MIN_FAMILIES_COVERED
+        covered = by_arm["llm"] is None or n_families_covered >= min_cov
 
         if by_arm["primary"] is not None:
             ungated_task_tau.append(by_arm["primary"])
@@ -654,7 +673,7 @@ def analyze_rq2() -> dict:
             if by_arm["template"] is not None and by_arm["llm"] is not None:
                 paired_arms.append({"task": td.name, "control": by_arm["control"],
                                     "template": by_arm["template"], "llm": by_arm["llm"]})
-            if n_families_covered == len(FAMILIES) and by_arm["llm"] is not None:
+            if n_families_covered == len(families) and by_arm["llm"] is not None:
                 complete_case_task_tau.append(by_arm["primary"])
         # Per-family diagnostics are intentionally NOT gated by task-level
         # coverage: a task lacking `reorder` still contributes a legitimate
@@ -697,24 +716,31 @@ def analyze_rq2() -> dict:
         pr = load(pass_rates_path)
         for relation, models in pr.items():
             for model, stats in models.items():
-                model_correct[model] += stats["correct"]
-                model_n[model] += stats["n"]
+                if cell_is_scored(stats):
+                    model_correct[model] += stats["correct"]
+                    model_n[model] += stats["n"]
 
         model_ids = r.get("model_ids") or list(pr.get("original", {}).keys())
-        baseline = {m: pr["original"][m]["pass@1"] for m in model_ids if m in pr.get("original", {})}
+
+        def scored(cells: dict) -> dict[str, float]:
+            return {m: cells[m][score_key] for m in model_ids
+                    if m in cells and cell_is_scored(cells[m], score_key)}
+        baseline = scored(pr.get("original", {}))
         # pair_key -> {relation: 0/1}; collapsed per arm below, exactly as tau_b
         # is, so 15 LLM variants of one task do not outvote its 4 templates.
         this_task_pair_values = defaultdict(dict)
         for relation in pr:
             if relation == "original":
                 continue
-            variant = {m: pr[relation][m]["pass@1"] for m in model_ids if m in pr[relation]}
+            variant = scored(pr[relation])
             for i, j in combinations(model_ids, 2):
                 if i not in baseline or j not in baseline or i not in variant or j not in variant:
                     continue
+                n_pair_comparisons += 1
                 base_sign = _sign(baseline[i], baseline[j])
                 var_sign = _sign(variant[i], variant[j])
                 if base_sign == 0 or var_sign == 0:
+                    n_pair_tied += 1
                     continue  # tied in either condition: no order to reverse
                 pair_key = f"{i} vs {j}"
                 reversed_ = int(base_sign != var_sign)
@@ -759,12 +785,15 @@ def analyze_rq2() -> dict:
 
     return {
         "n_tasks": n_tasks,
+        "score": score_key,
+        "rankings_file": RANKINGS,
         "task_strata": {
             **{k: sum(1 for v in strata.values() if v == k)
                for k in ("discriminating", "saturated", "floor")},
             "discriminating_mean_tau_b": _mean_ci(discriminating_task_tau),
             "note": (
-                "Tasks classified by pass@1 under the original prompt and the "
+                "Tasks classified by the ranking score (see 'score') under the "
+                "original prompt and the "
                 "intact suite -- a pre-treatment covariate, not the outcome. A "
                 "'saturated' task has every model at 1.0 and a 'floor' task has "
                 "every model at 0.0; in both, the model-score vector is constant, "
@@ -789,7 +818,8 @@ def analyze_rq2() -> dict:
             },
             "template_understatement": _understatement(paired_arms),
             "coverage": {
-                "min_families_covered": MIN_FAMILIES_COVERED,
+                "min_families_covered": min_cov,
+                "corpus_families": families,
                 "n_tasks_passing": len(task_tau),
                 "n_tasks_excluded": len(excluded_for_coverage),
                 "excluded_tasks": excluded_for_coverage,
@@ -797,7 +827,8 @@ def analyze_rq2() -> dict:
                 "note": (
                     "A task with no LLM arm at all (template-only run) is exempt "
                     "-- there is nothing to under-cover. A task WITH an LLM arm "
-                    "must have >=1 GENERATED variant in >=4 of the 5 families or "
+                    "must have >=1 GENERATED variant in all but one of the corpus "
+                    "families (min_families_covered) or "
                     "it is excluded from grand_mean_tau_b, by_arm, and "
                     "template_understatement; per-family diagnostics "
                     "(by_llm_family) are NOT gated by this, so a covered task's "
@@ -819,8 +850,8 @@ def analyze_rq2() -> dict:
                 "note": (
                     "The coverage gate's effect on the headline, as three numbers "
                     "over three nested task samples: no gate at all (every task "
-                    "with any LLM arm), the primary >=4/5 gate, and the strict "
-                    "5/5 complete case. Three means that agree within their CIs "
+                    "with any LLM arm), the primary all-but-one gate, and the "
+                    "strict all-families complete case. Three means that agree within their CIs "
                     "say the gate is not selecting the result and the finding "
                     "generalises past the subset that survives it; a monotone "
                     "trend across the three says the opposite, and says which "
@@ -830,14 +861,14 @@ def analyze_rq2() -> dict:
                 ),
             },
             "complete_case_sensitivity": {
-                "n_families_required": len(FAMILIES),
+                "n_families_required": len(families),
                 "mean_tau_b": complete_case_mean,
                 "ci_lower": complete_case_ci[0] if complete_case_ci else None,
                 "ci_upper": complete_case_ci[1] if complete_case_ci else None,
                 "n": len(complete_case_task_tau),
                 "note": (
-                    "grand_mean_tau_b restricted to tasks with all 5 families "
-                    "filled (a strict subset of the >=4 coverage gate). Agreement "
+                    "grand_mean_tau_b restricted to tasks with every corpus family "
+                    "filled (a strict subset of the coverage gate). Agreement "
                     "with grand_mean_tau_b above is the evidence that ragged fill "
                     "in the primary sample is not driving the headline result; "
                     "a large gap between the two says the opposite."
@@ -897,6 +928,9 @@ def analyze_rq2() -> dict:
                 for arm, by_pair in pairwise_pooled.items()
             },
             "arm_vs_control_paired": _arm_vs_control(task_arm_reversal),
+            "n_pair_comparisons": n_pair_comparisons,
+            "n_tied_excluded": n_pair_tied,
+            "n_informative": n_pair_comparisons - n_pair_tied,
             "by_pair_and_relation": {
                 pair: {rel: _mean_ci(vals) for rel, vals in by_rel.items()}
                 for pair, by_rel in pairwise_by_relation.items()
@@ -1349,6 +1383,9 @@ def analyze_rq2_missingness() -> dict:
                 if rates.get("incomplete"):
                     c["incomplete"] += 1
                     tasks_with_missing.add(td.name)
+                elif rates.get("evaluation_error"):
+                    c["evaluation_error"] += 1          # harness fault: re-run evaluate
+                    tasks_with_missing.add(td.name)
                 elif rates.get("n", 0) == 0:
                     c["missing"] += 1
                     tasks_with_missing.add(td.name)
@@ -1403,7 +1440,7 @@ def apply_calibration(rq3: dict, config_path: Path) -> dict:
 # ---------------------------------------------------------------------------
 
 def main(argv=None) -> None:
-    global RESULTS
+    global RESULTS, RANKINGS
     parser = argparse.ArgumentParser(description="Aggregate a Meta-Real-Eval run")
     parser.add_argument(
         "--results", default=str(RESULTS),
@@ -1422,6 +1459,12 @@ def main(argv=None) -> None:
         help="Config file --calibrate writes to (default: config/default.yaml).",
     )
     parser.add_argument(
+        "--rankings", default=RANKINGS,
+        help="RQ2 rankings file to aggregate: rankings.json (the primary score, "
+             "rq2.ranking_score) or rankings_pass1.json (binary secondary). A "
+             "non-default choice writes analysis_summary.<file stem>.json.",
+    )
+    parser.add_argument(
         "--exclude-tasks", default=None,
         help="Sensitivity analysis: comma-separated task labels (or @file, one per "
              "line) left out of every RQ, e.g. the development-exposed M1 pilot "
@@ -1430,6 +1473,7 @@ def main(argv=None) -> None:
     )
     args = parser.parse_args(argv)
     RESULTS = Path(args.results)
+    RANKINGS = args.rankings
     if args.exclude_tasks:
         spec = args.exclude_tasks
         labels = (Path(spec[1:]).read_text(encoding="utf-8").split() if spec.startswith("@")
@@ -1450,7 +1494,8 @@ def main(argv=None) -> None:
            "cross_rq": cross_rq, "rq2_missingness": analyze_rq2_missingness()}
     if calibration is not None:
         out["calibration"] = calibration
-    out_path = RESULTS / "analysis_summary.json"
+    out_path = RESULTS / ("analysis_summary.json" if RANKINGS == "rankings.json"
+                          else f"analysis_summary.{Path(RANKINGS).stem}.json")
     if EXCLUDE:
         # rq4/summary/high_level.json is precomputed over every task and is NOT
         # filtered; everything recomputed here from per-task files is.
@@ -1593,10 +1638,13 @@ def main(argv=None) -> None:
     if cs:
         print()
         print("Coverage-gate sensitivity — the headline over three nested task samples.")
-        print("Three agreeing means say the >=4/5 gate is not selecting the result:")
+        cov = rs.get("coverage", {})
+        n_fam = len(cov.get("corpus_families") or FAMILIES)
+        gate = f"{cov.get('min_families_covered', n_fam - 1)}/{n_fam}"
+        print(f"Three agreeing means say the >={gate} gate is not selecting the result:")
         for name, label in (("ungated", "no gate (>=1)"),
-                            ("primary_gate", f"primary (>={MIN_FAMILIES_COVERED}/5)"),
-                            ("complete_case", "complete case (5/5)")):
+                            ("primary_gate", f"primary (>={gate})"),
+                            ("complete_case", f"complete case ({n_fam}/{n_fam})")):
             v = cs.get(name, {})
             if v.get("n"):
                 print(f"  {label:22s} mean tau_b={v['mean']:.3f}  "

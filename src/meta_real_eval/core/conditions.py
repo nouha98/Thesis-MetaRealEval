@@ -48,9 +48,20 @@ def _file_sha256(path: Path | None) -> str | None:
 
 def protocol_settings(cfg: Config) -> dict[str, Any]:
     """What makes two runs comparable. Excludes ``rq3.divergence_threshold``,
-    an output of calibration written into the config later."""
+    an output of calibration written into the config later.
+
+    Settings added after runs already existed appear only when non-default, so
+    a directory written before them (the 2026-10 pilot, every Tier 1 run) still
+    compares equal and can be resumed or re-evaluated."""
     b = cfg.benchmark
+    r = cfg.rq2
+    later = {k: v for k, v, default in (
+        ("request_seeds", r.request_seeds, False),
+        ("control_marker_models", r.control_marker_models, None),
+        ("ranking_score", r.ranking_score, "pass@1"),
+    ) if v != default}
     return {
+        **later,
         "project_seed": cfg.project.seed,
         "benchmark": {"name": b.name, "tasks": b.tasks, "splits": b.splits,
                       "docstring_variant": b.docstring_variant,

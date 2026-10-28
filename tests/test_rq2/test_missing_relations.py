@@ -158,3 +158,32 @@ def test_an_ungenerated_family_does_not_count_as_covered(tmp_path, task):
     assert r["n_families_generated"] == 3
     assert sorted(r["incomplete_relations"]) == ["llm_persona_01", "llm_terse_01"]
     assert r["degenerate_relations"] == []
+
+
+def test_the_graded_score_ranks_when_configured_and_names_itself(cfg, task, tmp_path):
+    # Binary says a > b; graded says b > a (b passes most tests, never all).
+    rates = {"original": {"m_a": {"pass@1": 0.2, "mean_primary": 0.3, "n": 10},
+                          "m_b": {"pass@1": 0.0, "mean_primary": 0.8, "n": 10},
+                          "m_c": {"pass@1": 0.1, "mean_primary": 0.5, "n": 10}},
+             "formal": {"m_a": {"pass@1": 0.2, "mean_primary": 0.3, "n": 10},
+                        "m_b": {"pass@1": 0.0, "mean_primary": 0.8, "n": 10},
+                        "m_c": {"pass@1": 0.1, "mean_primary": 0.5, "n": 10}}}
+    cfg.rq2.ranking_score = "mean_primary"
+    graded = _run(cfg, task, rates)
+    assert graded["score"] == "mean_primary"
+    assert graded["baseline_pass_at_1"] == {"m_a": 0.3, "m_b": 0.8, "m_c": 0.5}
+    out = task_dir(cfg, "rq2", "HumanEval_0", phase="evaluate")
+    compute_ranking_stability(task, cfg, score_key="pass@1", filename="rankings_pass1.json")
+    binary = json.loads((out / "rankings_pass1.json").read_text())
+    assert binary["score"] == "pass@1" and binary["baseline_pass_at_1"]["m_a"] == 0.2
+
+
+def test_an_evaluation_error_cell_makes_the_relation_incomplete_not_zero(cfg, task):
+    ok = {"pass@1": 0.5, "mean_primary": 0.5, "n": 10}
+    rates = {"original": {"m_a": ok, "m_b": ok, "m_c": ok},
+             "formal": {"m_a": ok, "m_b": ok,
+                        "m_c": {"n": 10, "evaluation_error": [3], "pass@1": None,
+                                "mean_primary": None}}}
+    r = _run(cfg, task, rates)
+    assert r["incomplete_relations"] == ["formal"]
+    assert r["delta_pass_at_1"]["m_c"]["formal"] is None

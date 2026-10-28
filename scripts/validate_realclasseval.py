@@ -28,6 +28,7 @@ run resumes and a changed gate never reuses stale records.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -35,6 +36,7 @@ import platform
 import statistics
 import sys
 import traceback
+import warnings
 from collections import Counter, defaultdict
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 from datetime import datetime, timezone
@@ -101,6 +103,38 @@ def _worker(task, suite_timeout, scenario_timeout, seed, pool_sizes) -> dict:
         return {"task_id": task.task_id, "split": task.split, "label": task.label,
                 "status": "excluded", "exclusion_reason": "gate_error",
                 "detail": traceback.format_exc(), "metrics": {}, "tests": {}, "scenarios": {}}
+
+
+def skeleton_defect(prompt: str) -> str | None:
+    """Why a skeleton cannot serve as a task prompt, or None if it can.
+
+    ``empty_skeleton``: nothing to implement (4 of 492 corpus rows). In the
+    pilot every model invented an unrelated class for csn/snippet_4 and qwen36
+    spent its whole token budget guessing.
+    ``unparseable_skeleton``: the specification itself is garbled (12 rows: a
+    signature cut off mid-parameter list, or stray indentation), so the model
+    gets an incomplete spec and the RQ2 paraphrase splice cannot parse it.
+    """
+    if not prompt.strip():
+        return "empty_skeleton"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", SyntaxWarning)
+        try:
+            ast.parse(prompt)
+        except (SyntaxError, ValueError):
+            return "unparseable_skeleton"
+    return None
+
+
+def exclude_invalid_skeletons(tasks, records: list[dict]) -> None:
+    """Exclude accepted tasks whose skeleton is empty or unparseable.
+
+    A data-validity rule on the prompt alone, applied when the manifest is
+    assembled, so a re-run reuses every per-task checkpoint."""
+    for task, rec in zip(tasks, records):
+        defect = skeleton_defect(task.prompt)
+        if rec["status"] == "accepted" and defect:
+            rec.update(status="excluded", exclusion_reason=defect)
 
 
 def _fmt(x) -> str:
@@ -305,6 +339,7 @@ def main() -> int:
         pool.shutdown(wait=False)
 
     ordered = [records[t.task_id] for t in tasks]
+    exclude_invalid_skeletons(tasks, ordered)
     index = 0
     for rec in ordered:
         if rec["status"] == "accepted":

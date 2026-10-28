@@ -3,7 +3,6 @@
     innkube           gemma4-31b-it                  CPU job against the Innkube gateway
     vllm-qwen38       qwen38-27b                     one vLLM GPU job (the gateway's ~9 min
                                                      request limit cuts its thinking off)
-    vllm-qwen3-next   qwen3-next-80b-a3b-instruct    one vLLM GPU job
     vllm-qwen36       qwen36-35b                     one vLLM GPU job
     combined          all models                     merge target; Stage 0 and all
                                                      evaluation run here
@@ -20,11 +19,17 @@ which is asserted after writing:
                          dedicated server batches many requests (client limits,
                          not part of the protocol)
     benchmark.tasks      only with --tasks (a pilot; needs --label)
+    rq2.max_tokens       only with --max-tokens (a ceiling trial; needs --label).
+                         RQ1 keeps the base budget (it never came near it).
+                         A different ceiling is a different protocol: never mix
+                         it into the "full" run, and change the base instead if
+                         the trial decides to.
 
 Paths stay repo-relative: run everything from the repo root.
 
     python scripts/make_run_configs.py                       # label "full"
     python scripts/make_run_configs.py --tasks 1,2,8,10,15,187,188,189,192,224 --label pilot
+    python scripts/make_run_configs.py --tasks 1,2,8 --max-tokens 49152 --label ceil49k
 """
 
 from __future__ import annotations
@@ -48,7 +53,6 @@ OUT_DIR = Path("config/tier2_runs")
 GROUPS = {
     "innkube": ["gemma4-31b-it"],
     "vllm-qwen38": ["qwen38-27b"],
-    "vllm-qwen3-next": ["qwen3-next-80b-a3b-instruct"],
     "vllm-qwen36": ["qwen36-35b"],
 }
 COMBINED = "combined"
@@ -71,7 +75,8 @@ def parse_tasks(spec: str | None) -> list[int] | None:
     return out
 
 
-def build(base_raw: dict, group: str, label: str, tasks: list[int] | None) -> dict:
+def build(base_raw: dict, group: str, label: str, tasks: list[int] | None,
+          max_tokens: int | None = None) -> dict:
     models = base_raw["llm"]["models"]
     wanted = [m["id"] for m in models] if group == COMBINED else GROUPS[group]
     raw = copy.deepcopy(base_raw)
@@ -82,16 +87,21 @@ def build(base_raw: dict, group: str, label: str, tasks: list[int] | None) -> di
         raw["llm"].update(VLLM_CLIENT)
     if tasks is not None:
         raw["benchmark"]["tasks"] = tasks
+    if max_tokens is not None:
+        raw["rq2"]["max_tokens"] = max_tokens
     return raw
 
 
-def check(base_raw: dict, written: dict[str, dict], tasks: list[int] | None) -> None:
+def check(base_raw: dict, written: dict[str, dict], tasks: list[int] | None,
+          max_tokens: int | None = None) -> None:
     base_ids = [m["id"] for m in base_raw["llm"]["models"]]
     grouped = [mid for ids in GROUPS.values() for mid in ids]
     assert sorted(grouped) == sorted(base_ids), f"groups {grouped} != base models {base_ids}"
     assert len(grouped) == len(set(grouped)), "a model is in two groups"
     allowed = {"project.output_dir", "llm.cache_dir", "llm.max_concurrent_requests",
                "llm.requests_per_minute"} | ({"benchmark.tasks"} if tasks is not None else set())
+    if max_tokens is not None:
+        allowed |= {"rq2.max_tokens"}
     base_flat = flatten(base_raw)
     dirs = set()
     for group, raw in written.items():
@@ -111,18 +121,23 @@ def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--base", type=Path, default=BASE)
     ap.add_argument("--tasks", default=None, help="positional indices: '1,2,8' or '0-9'")
+    ap.add_argument("--max-tokens", type=int, default=None,
+                    help="trial RQ2 output ceiling (needs its own --label)")
     ap.add_argument("--label", default="full", help="'full', or e.g. 'pilot' with --tasks")
     ap.add_argument("--out-dir", type=Path, default=OUT_DIR)
     args = ap.parse_args(argv)
 
     tasks = parse_tasks(args.tasks)
-    if (tasks is None) != (args.label == "full"):
-        raise SystemExit("ERROR: --tasks needs its own --label (not 'full'), and 'full' takes no --tasks")
+    if args.max_tokens is not None and args.max_tokens < 1:
+        raise SystemExit("ERROR: --max-tokens must be positive")
+    if (tasks is None and args.max_tokens is None) != (args.label == "full"):
+        raise SystemExit("ERROR: --tasks / --max-tokens need their own --label (not 'full'), "
+                         "and 'full' takes neither")
     base_path = args.base if args.base.is_absolute() else REPO_ROOT / args.base
     base_raw = yaml.safe_load(base_path.read_text(encoding="utf-8"))
 
-    written = {g: build(base_raw, g, args.label, tasks) for g in [*GROUPS, COMBINED]}
-    check(base_raw, written, tasks)
+    written = {g: build(base_raw, g, args.label, tasks, args.max_tokens) for g in [*GROUPS, COMBINED]}
+    check(base_raw, written, tasks, args.max_tokens)
     out_dir = args.out_dir if args.out_dir.is_absolute() else REPO_ROOT / args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     for group, raw in written.items():

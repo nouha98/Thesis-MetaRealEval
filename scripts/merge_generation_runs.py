@@ -29,8 +29,7 @@ provenance (models, serving info, file sha256s).
 
 Usage:
     python scripts/merge_generation_runs.py results_tier2_runs/full/innkube \\
-        results_tier2_runs/full/vllm-qwen38 results_tier2_runs/full/vllm-qwen3-next \\
-        results_tier2_runs/full/vllm-qwen36 \\
+        results_tier2_runs/full/vllm-qwen38 results_tier2_runs/full/vllm-qwen36 \\
         --config config/tier2_runs/full_combined.yaml [--phases rq1,rq2]
 """
 

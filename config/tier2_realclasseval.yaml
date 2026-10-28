@@ -22,9 +22,11 @@ llm:
   #   https://huggingface.co/Qwen/Qwen3.8-27B
   #   https://huggingface.co/Qwen/Qwen3-Next-80B-A3B-Instruct-FP8
   #   https://huggingface.co/Qwen/Qwen3.6-35B-A3B-FP8
-  # Serving: gemma4-31b-it on the Innkube gateway; the three Qwen models
-  # self-hosted with vLLM on freia. qwen3-next and qwen36 are no longer on
-  # Innkube; qwen38 is, but the gateway ends every request after ~9-10 min
+  # Panel (2026-10-28): three models. qwen3-next-80b-a3b-instruct is deferred
+  # (card settings kept below, commented out, for when it is added back).
+  # Serving: gemma4-31b-it on the Innkube gateway; the Qwen models self-hosted
+  # with vLLM on freia. qwen36 is no longer on Innkube; qwen38 is, but the
+  # gateway ends every request after ~9-10 min
   # (HTTP 408, streaming too), which its default thinking exceeds on harder
   # class tasks (results_tier2_m1_local/qwen38_recommended_check). Each serving
   # group generates into its own directory (scripts/make_run_configs.py) and the
@@ -35,8 +37,8 @@ llm:
     - id: qwen38-27b                # thinking on by default (thinking-mode preset)
       sampling: {temperature: 1.0, top_p: 0.95, top_k: 20, min_p: 0.0,
                  presence_penalty: 0.0, repetition_penalty: 1.0}
-    - id: qwen3-next-80b-a3b-instruct   # instruct only, no thinking mode
-      sampling: {temperature: 0.7, top_p: 0.8, top_k: 20, min_p: 0.0}
+    # - id: qwen3-next-80b-a3b-instruct   # deferred; instruct only, no thinking mode
+    #   sampling: {temperature: 0.7, top_p: 0.8, top_k: 20, min_p: 0.0}
     - id: qwen36-35b                # thinking on by default; the card's preset for coding
       sampling: {temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0.0,
                  presence_penalty: 0.0, repetition_penalty: 1.0}
@@ -71,6 +73,15 @@ rq2:
   # Truncated/blank/malformed outputs are model outcomes and stay in the
   # denominator; only transport failures are retried (same request).
   retry_policy: transport_only
+  # Control arm = the identical prompt with its own seed (disjoint seed ranges
+  # per cell, rq2/generator.py::request_seed); no marker for any model. Verified
+  # per endpoint by scripts/probe_seeds.py before the pilot.
+  request_seeds: true
+  control_marker_models: []
+  # Rankings use the graded score (mean fraction of valid tests passed per
+  # completion, RealClassEval's metric); binary pass@1 is written alongside as
+  # the secondary ranking (rankings_pass1.json).
+  ranking_score: mean_primary
   # rq2/paraphraser.py's _split_docstring assumes a single function signature
   # + docstring (Tier 1's shape); it has not been adapted for a class skeleton
   # and would mis-split or corrupt one. M1(b) of the Tier 2 plan explicitly

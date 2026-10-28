@@ -28,6 +28,7 @@ status (ok | transport_failure | context_overflow | generation_failed).
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 from pathlib import Path
@@ -82,6 +83,30 @@ def _build_messages(prompt_variant: str) -> list[dict]:
 _CONTROL_MARKER = "\n(internal note, not part of the task: control resample)"
 
 
+def request_seed(cfg: Config, task_id: str, model_id: str, relation: str) -> int:
+    """The seed of one (task, model, relation) cell under ``rq2.request_seeds``.
+
+    One base per (task, model) from SHA-256 (never Python's ``hash()``, which
+    changes between processes), plus ``relation_index * n_completions``. A
+    vLLM server gives the i-th of n parallel samples the seed ``seed + i``, so
+    the ranges ``[seed, seed + n)`` of a cell's relations are disjoint by
+    construction: the original and control arms never share a draw. original
+    and control are relations 0 and 1 whatever the corpus later appends, so
+    their seeds stay stable. The base is below 2**30, so the largest seed stays
+    well inside the 31-bit range backends accept.
+    """
+    digest = hashlib.sha256(f"{cfg.project.seed}|{task_id}|{model_id}".encode()).digest()
+    base = int.from_bytes(digest[:4], "big") & 0x3FFFFFFF
+    return base + cfg.rq2.relations.index(relation) * cfg.rq2.n_completions
+
+
+def _uses_marker(cfg: Config, relation: str, model_id: str) -> bool:
+    """The control marker, decided by ``rq2.control_marker_models`` alone (None =
+    every model, the legacy behaviour), never by whether seeds are sent."""
+    markers = cfg.rq2.control_marker_models
+    return relation == CONTROL_RELATION and (markers is None or model_id in markers)
+
+
 def _mark_as_control(messages: list[dict]) -> list[dict]:
     if not messages or messages[0]["role"] != "system":
         return messages
@@ -99,17 +124,20 @@ def build_task_variants(task: Task, cfg: Config) -> dict[str, tuple[str, str | N
 
     ``original``          the unmodified prompt.
     ``control_resample``  an independently issued request for the same
-                          underlying task, distinguished from ``original``
-                          only by a cache salt (so it is never served from
-                          OUR cache) and a semantically neutral marker
-                          appended to the system message by ``generate_one``
-                          (so the request differs at the byte level -- the
-                          cache salt alone is never sent to the API). The
-                          task content itself (``task.prompt``) is identical
-                          to ``original``'s. Its tau_b is the sampling-noise
-                          floor: generation/request noise under a minimally
-                          perturbed prompt, not a claim that two byte-identical
-                          requests would have produced independent samples.
+                          underlying task, distinguished from ``original`` by a
+                          cache salt (so it is never served from OUR cache)
+                          and, so the request differs at the byte level for a
+                          caching gateway (the salt is never sent), either
+                          - its own seed (``rq2.request_seeds``, Tier 2): the
+                            prompt is byte-identical to ``original``'s and the
+                            seed ranges are disjoint (:func:`request_seed`), so
+                            its tau_b is the pure sampling-noise floor; or
+                          - a semantically neutral marker appended to the
+                            system message (``rq2.control_marker_models``;
+                            every model by default, Tier 1): the floor then
+                            also contains that minimal prompt perturbation.
+                          The task content itself (``task.prompt``) is
+                          identical to ``original``'s either way.
     template relations    the deterministic transforms (control arm).
     ``llm_<family>_NN``   the validated LLM rewrites from the corpus.
 
@@ -169,14 +197,14 @@ def _failure_status(exc: BaseException) -> str:
 
 async def _complete_once(
     relation: str, model_id: str, messages: list[dict], cfg: Config, client: InnkubeClient,
-    cache_salt: str | None, meta_out: dict,
+    cache_salt: str | None, meta_out: dict, seed: int | None = None,
 ) -> tuple[list[str], str | None]:
     """``transport_only``: one logical request; the client retries transport."""
     try:
         result = await client.complete_detailed(
             model=model_id, messages=messages, temperature=cfg.rq2.temperature,
             max_tokens=cfg.rq2.max_tokens, n=cfg.rq2.n_completions,
-            cache_salt=cache_salt,
+            cache_salt=cache_salt, seed=seed,
         )
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}"
@@ -191,7 +219,7 @@ async def _complete_once(
 async def _complete_with_retries(
     task, relation: str, model_id: str, messages: list[dict],
     cfg: Config, client: InnkubeClient, cache_salt: str | None = None,
-    meta_out: dict | None = None,
+    meta_out: dict | None = None, seed: int | None = None,
 ) -> tuple[list[str], str | None]:
     """Fetch one (relation, model) cell, retrying while it comes back empty.
 
@@ -212,7 +240,7 @@ async def _complete_with_retries(
     meta_out = meta_out if meta_out is not None else {}
     if cfg.rq2.retry_policy == "transport_only":
         return await _complete_once(relation, model_id, messages, cfg, client,
-                                    cache_salt, meta_out)
+                                    cache_salt, meta_out, seed=seed)
 
     last_error: str | None = None
     attempts: list[dict] = []
@@ -336,18 +364,21 @@ async def generate_task(
 
         for model_cfg in models:
             model_id = model_cfg.id
-            use_marker = relation == CONTROL_RELATION
+            use_marker = _uses_marker(cfg, relation, model_id)
             messages = _mark_as_control(base_messages) if use_marker else base_messages
+            seed = (request_seed(cfg, task.task_id, model_id, relation)
+                    if cfg.rq2.request_seeds else None)
             cell_meta: dict = {
                 "base_prompt_sha256": logical_prompt_sha256(base_messages),
                 "sent_prompt_sha256": logical_prompt_sha256(messages),
                 "control_marker": use_marker,
                 "retry_policy": cfg.rq2.retry_policy,
                 "max_tokens": cfg.rq2.max_tokens,
+                **({"seed": seed} if seed is not None else {}),
             }
             completions, error = await _complete_with_retries(
                 task, relation, model_id, messages, cfg, client, cache_salt=cache_salt,
-                meta_out=cell_meta,
+                meta_out=cell_meta, seed=seed,
             )
             meta[relation][model_id] = cell_meta
             if not completions:

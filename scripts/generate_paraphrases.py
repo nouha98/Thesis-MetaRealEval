@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Build the RQ2 paraphrase corpus: data/paraphrases/humaneval_v1.json.
+"""Build the RQ2 paraphrase corpus: data/paraphrases/<benchmark>_v1.json.
 
 One-shot, run once on a node with LLM access. Every model under test then reads
 the same committed file, so the paraphrases are a fixed property of the
@@ -7,6 +7,9 @@ experiment rather than something regenerated per run.
 
     .venv/bin/python scripts/generate_paraphrases.py --config config/default.yaml
     .venv/bin/python scripts/generate_paraphrases.py --task-range 0-4    # pilot
+    # Tier 2: class skeletons, three families, one variant each (the default
+    # for realclasseval); --task-range takes manifest task indices
+    .venv/bin/python scripts/generate_paraphrases.py --config config/tier2_realclasseval.yaml
 
 The run is resumable: generation calls go through the normal ResponseCache, and
 ``--resume`` (default) keeps tasks already present in the output file. Re-running
@@ -35,26 +38,29 @@ from dotenv import load_dotenv
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from meta_real_eval.benchmarks import get_benchmark           # noqa: E402
 from meta_real_eval.core.cache import ResponseCache            # noqa: E402
 from meta_real_eval.core.config import Config                  # noqa: E402
 from meta_real_eval.core.data_loader import load_humaneval     # noqa: E402
 from meta_real_eval.core.llm_client import InnkubeClient       # noqa: E402
 from meta_real_eval.core.logging_setup import setup as setup_logging  # noqa: E402
 from meta_real_eval.rq2.corpus import (                        # noqa: E402
+    CLASS_FAMILIES,
+    CLASS_PROMPT_TEMPLATE_VERSION,
     CORPUS_VERSION,
     FAMILIES,
     GENERATION_MAX_TOKENS,
     GENERATION_TEMPERATURE,
-    MIN_FAMILIES_COVERED,
     N_PER_FAMILY,
     PROMPT_TEMPLATE_VERSION,
     generate_task_variants,
+    min_families_covered,
     tasks_sha256,
 )
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_OUT = REPO_ROOT / "data" / "paraphrases" / "humaneval_v1.json"
+DEFAULT_OUT_DIR = REPO_ROOT / "data" / "paraphrases"
 
 
 def _parse_task_range(spec: str | None) -> list[int] | None:
@@ -94,7 +100,8 @@ def _resolve_models(cfg: Config, args) -> tuple[str, str]:
 
 
 async def build(cfg: Config, tasks, generator_model: str, judge_model: str,
-                out_path: Path, n_per_family: int, resume: bool) -> dict:
+                out_path: Path, n_per_family: int, resume: bool,
+                families: list[str] = FAMILIES) -> dict:
     cache = ResponseCache(cfg.llm.cache_dir)
     client = InnkubeClient(cfg.llm, cache, mock=cfg.project.mock)
 
@@ -115,22 +122,23 @@ async def build(cfg: Config, tasks, generator_model: str, judge_model: str,
             continue
         entry, task_gaps, task_rejections = await generate_task_variants(
             task, generator_model, judge_model, client, n_per_family=n_per_family,
+            families=families,
         )
         corpus_tasks[task.task_id] = entry
         gaps.extend(task_gaps)
         rejections.extend(task_rejections)
         logger.info("[%d/%d] %s: %d/%d variants",
                     i, len(tasks), task.task_id, len(entry["variants"]),
-                    len(FAMILIES) * n_per_family)
+                    len(families) * n_per_family)
         _write(out_path, corpus_tasks, generator_model, judge_model,
-               n_per_family, cfg)
+               n_per_family, cfg, families)
 
     _write_sidecars(out_path, gaps, rejections)
     return _write(out_path, corpus_tasks, generator_model, judge_model,
-                  n_per_family, cfg)
+                  n_per_family, cfg, families)
 
 
-def _coverage_block(corpus_tasks: dict, n_per_family: int) -> dict:
+def _coverage_block(corpus_tasks: dict, n_per_family: int, families: list[str] = FAMILIES) -> dict:
     """Per-family fill counts and MIN_FAMILIES_COVERED pass/fail, as a manifest field.
 
     Coverage is a property of the committed artifact, not something every
@@ -140,18 +148,19 @@ def _coverage_block(corpus_tasks: dict, n_per_family: int) -> dict:
     this block is what `scripts/paraphrase_report.py` and a human skimming the
     corpus file see without cross-referencing a sidecar.
     """
-    per_family_filled = {fam: 0 for fam in FAMILIES}
+    threshold = min_families_covered(families)
+    per_family_filled = {fam: 0 for fam in families}
     n_meeting_threshold = 0
     for entry in corpus_tasks.values():
         families_here = {v["family"] for v in entry["variants"]}
         for fam in families_here:
             per_family_filled[fam] += 1
-        if len(families_here) >= MIN_FAMILIES_COVERED:
+        if len(families_here) >= threshold:
             n_meeting_threshold += 1
 
     n_tasks = len(corpus_tasks)
     return {
-        "min_families_covered": MIN_FAMILIES_COVERED,
+        "min_families_covered": threshold,
         "n_tasks_meeting_threshold": n_meeting_threshold,
         "n_tasks_total": n_tasks,
         "per_family_tasks_filled": per_family_filled,   # tasks with >=1 variant in that family
@@ -159,14 +168,15 @@ def _coverage_block(corpus_tasks: dict, n_per_family: int) -> dict:
         "per_family_slots_filled": {
             fam: sum(1 for e in corpus_tasks.values()
                      for v in e["variants"] if v["family"] == fam)
-            for fam in FAMILIES
+            for fam in families
         },
         "per_family_slots_expected": n_tasks * n_per_family,
     }
 
 
 def _write(out_path: Path, corpus_tasks: dict, generator_model: str,
-           judge_model: str, n_per_family: int, cfg: Config) -> dict:
+           judge_model: str, n_per_family: int, cfg: Config,
+           families: list[str] = FAMILIES) -> dict:
     corpus = {
         "manifest": {
             "corpus_version": CORPUS_VERSION,
@@ -174,13 +184,16 @@ def _write(out_path: Path, corpus_tasks: dict, generator_model: str,
             "judge_model": judge_model,
             "temperature": GENERATION_TEMPERATURE,
             "max_tokens": GENERATION_MAX_TOKENS,
-            "prompt_template_version": PROMPT_TEMPLATE_VERSION,
+            "benchmark": cfg.benchmark.name,
+            "prompt_template_version": (CLASS_PROMPT_TEMPLATE_VERSION
+                                        if cfg.benchmark.name == "realclasseval"
+                                        else PROMPT_TEMPLATE_VERSION),
             "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "n_tasks": len(corpus_tasks),
-            "families": FAMILIES,
+            "families": families,
             "n_per_family": n_per_family,
             "mock": cfg.project.mock,
-            "coverage": _coverage_block(corpus_tasks, n_per_family),
+            "coverage": _coverage_block(corpus_tasks, n_per_family, families),
         },
         "tasks": corpus_tasks,
     }
@@ -210,10 +223,15 @@ def main(argv=None) -> None:
     load_dotenv()
     parser = argparse.ArgumentParser(description="Build the RQ2 paraphrase corpus")
     parser.add_argument("--config", default="config/default.yaml")
-    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--out", type=Path, default=None,
+                        help="default: data/paraphrases/<benchmark>_v1.json")
     parser.add_argument("--task-range", default=None,
-                        help="e.g. 0-4 or 0,1,10 (default: all 164)")
-    parser.add_argument("--n-per-family", type=int, default=N_PER_FAMILY)
+                        help="task indices, e.g. 0-4 or 0,1,10 (default: every task)")
+    parser.add_argument("--families", default=None,
+                        help="comma-separated; default: all five for humaneval, "
+                             "lexical,formal,terse for realclasseval")
+    parser.add_argument("--n-per-family", type=int, default=None,
+                        help=f"default: {N_PER_FAMILY} for humaneval, 1 for realclasseval")
     parser.add_argument("--generator-model", default=None)
     parser.add_argument("--judge-model", default=None)
     parser.add_argument("--no-resume", action="store_true",
@@ -224,31 +242,38 @@ def main(argv=None) -> None:
     setup_logging("rq2", "paraphrase-corpus", log_dir=REPO_ROOT / "logs")
     generator_model, judge_model = _resolve_models(cfg, args)
 
-    tasks = load_humaneval(tasks=_parse_task_range(args.task_range))
+    is_class = cfg.benchmark.name == "realclasseval"
+    families = (args.families.split(",") if args.families
+                else CLASS_FAMILIES if is_class else FAMILIES)
+    n_per_family = args.n_per_family or (1 if is_class else N_PER_FAMILY)
+    out = args.out or DEFAULT_OUT_DIR / f"{cfg.benchmark.name}_v1.json"
+    indices = _parse_task_range(args.task_range)
+    tasks = (get_benchmark(cfg).load_tasks(indices) if is_class
+             else load_humaneval(tasks=indices))
     logger.info("Generating paraphrases for %d task(s): generator=%s judge=%s%s",
                 len(tasks), generator_model, judge_model,
                 " [MOCK]" if cfg.project.mock else "")
 
     corpus = asyncio.run(build(cfg, tasks, generator_model, judge_model,
-                               args.out, args.n_per_family, not args.no_resume))
+                               out, n_per_family, not args.no_resume, families))
 
     filled = sum(len(t["variants"]) for t in corpus["tasks"].values())
-    expected = len(corpus["tasks"]) * len(FAMILIES) * args.n_per_family
+    expected = len(corpus["tasks"]) * len(families) * n_per_family
     cov = corpus["manifest"]["coverage"]
-    print(f"\nWrote {args.out}")
+    print(f"\nWrote {out}")
     print(f"  tasks     : {len(corpus['tasks'])}")
     print(f"  variants  : {filled}/{expected} slots filled")
     print(f"  coverage  : {cov['n_tasks_meeting_threshold']}/{cov['n_tasks_total']} tasks "
-          f"meet >= {MIN_FAMILIES_COVERED}/{len(FAMILIES)} families "
-          "(rq2.corpus.MIN_FAMILIES_COVERED)")
-    for fam in FAMILIES:
+          f"meet >= {cov['min_families_covered']}/{len(families)} families "
+          "(rq2.corpus.min_families_covered)")
+    for fam in families:
         print(f"    {fam:10s} {cov['per_family_tasks_filled'][fam]:3d}/{cov['per_family_expected']} "
               f"tasks have >=1 variant")
     print(f"  sha256    : {corpus['manifest']['sha256']}")
     try:
-        shown = "./" + args.out.resolve().relative_to(REPO_ROOT).as_posix()
+        shown = "./" + out.resolve().relative_to(REPO_ROOT).as_posix()
     except ValueError:
-        shown = args.out.as_posix()      # --out pointed outside the repo
+        shown = out.as_posix()      # --out pointed outside the repo
     print("\nPin it in the config:")
     print(f"  rq2.paraphrase_corpus: {shown}")
     print(f"  rq2.corpus_sha256: \"{corpus['manifest']['sha256']}\"")

@@ -10,15 +10,15 @@
 #   scripts/slurm/launch_vllm_generate.sh --config config/tier2_runs/pilot_vllm-qwen36.yaml \
 #       --model qwen36-35b --model-dir /shared/karouin/models/Qwen3.6-35B-A3B-FP8 --gpus 1 \
 #       --reasoning-parser qwen3 --vllm-extra "--language-model-only"
-#   scripts/slurm/launch_vllm_generate.sh --config config/tier2_runs/full_vllm-qwen3-next.yaml \
-#       --model qwen3-next-80b-a3b-instruct --model-dir /shared/karouin/models/Qwen3-Next-80B-A3B-Instruct-FP8 \
-#       --gpus 2 [--task-range 0-99] [--phases rq1,rq2] [--time 24:00:00]
-#   scripts/slurm/launch_vllm_generate.sh --config config/tier2_runs/pilot_vllm-qwen38.yaml \
-#       --model qwen38-27b --model-dir /shared/karouin/models/Qwen3.8-27B --gpus 1 \
-#       --reasoning-parser qwen3
+#   scripts/slurm/launch_vllm_generate.sh --config config/tier2_runs/full_vllm-qwen38.yaml \
+#       --model qwen38-27b --model-dir /shared/karouin/models/Qwen3.8-27B --gpus 2 \
+#       --reasoning-parser qwen3 [--task-range 0-99] [--phases rq1,rq2] [--time 24:00:00]
 #
 # --max-model-len defaults to 40960: the 32768-token output ceiling plus the
-# prompt. Do not pass --generation-config: vLLM's default reads the checkpoint's
+# prompt. For a ceiling trial (make_run_configs.py --max-tokens N) pass
+# --max-model-len >= longest prompt + N (e.g. 65536 for N=49152): vLLM rejects a
+# request whose prompt + max_tokens exceed it (HTTP 400, recorded as
+# context_overflow). Do not pass --generation-config: vLLM's default reads the checkpoint's
 # generation_config.json, i.e. the model's own recommended defaults for anything
 # the request does not set.
 

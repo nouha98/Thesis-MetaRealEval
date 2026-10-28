@@ -111,6 +111,87 @@ async def test_control_keeps_the_marker_and_the_base_prompt_is_shared(tmp_path):
     assert ctrl["base_prompt_sha256"] == meta["original"]["m"]["base_prompt_sha256"]
 
 
+def _seeded_cfg(tmp_path, seeds=True, markers=None, n=2):
+    cfg = _cfg(tmp_path, _model(), n=n)
+    cfg.rq2.request_seeds = seeds
+    cfg.rq2.control_marker_models = markers
+    return cfg
+
+
+async def test_seeded_control_sends_the_identical_prompt_with_its_own_seed(tmp_path):
+    cfg = _seeded_cfg(tmp_path, markers=[])
+    client, calls = _client(cfg, lambda m, msgs, n, kw: (["a"] * n, ["stop"] * n))
+    await generate_task(TASK, cfg, client)
+    orig, ctrl = calls
+    assert orig["messages"] == ctrl["messages"], "no marker: byte-identical prompts"
+    assert orig["seed"] != ctrl["seed"]
+    meta = json.loads((task_dir(cfg, "rq2", TASK.label, phase="generate")
+                       / "generation_meta.json").read_text())
+    assert meta["control_resample"]["m"]["control_marker"] is False
+    assert meta["control_resample"]["m"]["seed"] == ctrl["seed"]
+    assert meta["original"]["m"]["sent_prompt_sha256"] == meta["control_resample"]["m"]["sent_prompt_sha256"]
+
+
+async def test_turning_seeds_off_never_turns_the_marker_back_on(tmp_path):
+    cfg = _cfg(tmp_path, _model())
+    cfg.rq2.control_marker_models = []
+    client, calls = _client(cfg, lambda m, msgs, n, kw: (["a"] * n, ["stop"] * n))
+    await generate_task(TASK, cfg, client)
+    assert calls[0]["messages"] == calls[1]["messages"]
+    assert "seed" not in calls[0] and "seed" not in calls[1]
+
+
+async def test_the_marker_can_be_kept_for_one_model_only(tmp_path):
+    cfg = _cfg(tmp_path, _model("a"), _model("b"))
+    cfg.rq2.request_seeds, cfg.rq2.control_marker_models = True, ["a"]
+    client, calls = _client(cfg, lambda m, msgs, n, kw: (["x"] * n, ["stop"] * n))
+    await generate_task(TASK, cfg, client)
+    sent = {(c["model"], i): c["messages"] for i, c in enumerate(calls)}
+    by_model = {}
+    for (model, _), msgs in sent.items():
+        by_model.setdefault(model, []).append(msgs)
+    assert by_model["a"][0] != by_model["a"][1], "a keeps the marker on its control arm"
+    assert by_model["b"][0] == by_model["b"][1], "b sends the identical prompt"
+
+
+def test_seed_ranges_of_a_cells_relations_are_disjoint(tmp_path):
+    from meta_real_eval.rq2.generator import request_seed
+    cfg = _seeded_cfg(tmp_path, n=10)
+    cfg.rq2.template_relations = ["persona", "formal", "reorder", "terse"]
+    for task_id in ("RealClassEval/csn/snippet_3", "HumanEval/0", "x"):
+        for model in ("gemma4-31b-it", "qwen38-27b"):
+            ranges = [range(s, s + 10) for s in
+                      (request_seed(cfg, task_id, model, r) for r in cfg.rq2.relations)]
+            used = [v for rg in ranges for v in rg]
+            assert len(used) == len(set(used)), "two relations would share a child seed"
+            assert max(used) < 2 ** 31
+
+
+def test_the_seed_is_stable_across_processes(tmp_path):
+    import subprocess
+    import sys
+    from meta_real_eval.rq2.generator import request_seed
+    cfg = _seeded_cfg(tmp_path, n=10)
+    here = request_seed(cfg, "HumanEval/0", "m", "control_resample")
+    code = ("from meta_real_eval.core.config import Config\n"
+            "from meta_real_eval.rq2.generator import request_seed\n"
+            "import sys, json\n"
+            "cfg = Config.model_validate(json.loads(sys.argv[1]))\n"
+            "print(request_seed(cfg, 'HumanEval/0', 'm', 'control_resample'))\n")
+    out = subprocess.run([sys.executable, "-c", code, cfg.model_dump_json()],
+                         capture_output=True, text=True, check=True,
+                         env={**__import__("os").environ, "PYTHONHASHSEED": "123"})
+    assert int(out.stdout.strip()) == here
+
+
+def test_request_seeds_need_the_transport_only_policy():
+    import pytest
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError, match="request_seeds"):
+        Config.model_validate({"llm": {"models": [{"id": "m"}]},
+                               "rq2": {"request_seeds": True}})
+
+
 async def test_the_profile_temperature_is_what_the_backend_sees(tmp_path):
     cfg = _cfg(tmp_path, _model())
     client = InnkubeClient(cfg.llm, ResponseCache(cfg.llm.cache_dir), mock=False)
@@ -153,3 +234,57 @@ def test_an_incomplete_cell_is_never_scored(tmp_path):
     assert rates["a"]["pass@1"] == 1.0 and not rates["a"].get("incomplete")
     assert rates["b"]["incomplete"] is True and rates["b"]["pass@1"] is None
     assert _model_pass_at1({"original": rates}, "original") == {"a": 1.0}
+
+
+def _evaluate(tmp_path, monkeypatch, cells: dict, crash_on: str | None = None, meta: dict | None = None):
+    """Evaluate one HumanEval task in-process (threads, so a patched scorer applies)."""
+    import concurrent.futures
+    from meta_real_eval.benchmarks import get_benchmark
+    from meta_real_eval.rq2 import evaluator
+
+    cfg = _cfg(tmp_path, _model("a"), _model("b"), n=3, control=False)
+    task = get_benchmark(cfg).load_tasks([0])[0]
+    monkeypatch.setattr(evaluator, "ProcessPoolExecutor", concurrent.futures.ThreadPoolExecutor)
+    if crash_on is not None:
+        real = evaluator._score_completion
+
+        def scorer(task, completion, cfg, timeout_s):
+            if completion == crash_on:
+                raise RuntimeError("worker died")
+            return real(task, completion, cfg, timeout_s)
+        monkeypatch.setattr(evaluator, "_score_completion", scorer)
+    body = task.raw.canonical_solution
+    gen = task_dir(cfg, "rq2", task.label, phase="generate")
+    gen.mkdir(parents=True)
+    (gen / "completions.json").write_text(json.dumps(
+        {"original": {m: [body if c == "BODY" else c for c in comps] for m, comps in cells.items()}}))
+    if meta is not None:
+        (gen / "generation_meta.json").write_text(json.dumps(meta))
+    evaluator.evaluate_task(task, cfg)
+    out = task_dir(cfg, "rq2", task.label, phase="evaluate")
+    return json.loads((out / "pass_rates.json").read_text())["original"], is_done(out)
+
+
+def test_an_evaluation_crash_is_not_a_score_and_leaves_the_task_open(tmp_path, monkeypatch):
+    from meta_real_eval.rq2.ranking import _model_pass_at1
+    rates, done = _evaluate(tmp_path, monkeypatch, {"a": ["BODY"] * 3, "b": ["BODY", "CRASH", "BODY"]},
+                            crash_on="CRASH")
+    assert rates["b"]["evaluation_error"] == [1]
+    assert rates["b"]["pass@1"] is None and rates["b"]["mean_primary"] is None
+    assert rates["b"]["per_completion"] is None, "RQ3 must re-execute, not read crash-as-fail"
+    assert not done, "re-running evaluate scores the same completions"
+    assert _model_pass_at1({"original": rates}, "original", "mean_primary") == {"a": 1.0}
+
+
+def test_unusable_output_is_a_counted_zero_and_length_alone_is_never_a_zero(tmp_path, monkeypatch):
+    # b's first completion is blank (a cut-off generation): it runs, fails, and
+    # stays in the denominator. b's second hit the token cap but still holds a
+    # complete answer: it is scored by its tests like any other.
+    meta = {"original": {"b": {"records": [{"finish_reason": "length"}, {"finish_reason": "length"},
+                                           {"finish_reason": "stop"}]}}}
+    rates, done = _evaluate(tmp_path, monkeypatch, {"a": ["BODY"] * 3, "b": ["", "BODY", "BODY"]},
+                            meta=meta)
+    assert done
+    assert rates["b"]["n"] == 3 and rates["b"]["correct"] == 2
+    assert rates["b"]["per_completion"] == [False, True, True]
+    assert rates["b"]["mean_primary"] == 2 / 3, "the blank one is a 0 in the graded mean too"

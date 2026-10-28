@@ -40,6 +40,7 @@ from scipy.stats import kendalltau, rankdata
 from ..benchmarks.base import Task
 from ..core.checkpoint import task_dir, write_json, read_json
 from ..core.config import Config
+from .corpus import load_corpus
 
 logger = logging.getLogger(__name__)
 
@@ -111,8 +112,24 @@ def collapse_tau_by_arm(tau_per_relation: dict[str, Optional[float]]) -> dict:
     return result
 
 
-def _model_pass_at1(pass_rates: dict, relation: str) -> dict[str, float]:
-    """Return {model_id: pass@1} for a given relation, skipping empty cells.
+def cell_is_scored(rates: dict, key: str = "pass@1") -> bool:
+    """True when a pass_rates cell carries a score under ``key``.
+
+    False for an empty cell, an ``incomplete`` one (fewer than n completions
+    under the inference protocol) and an ``evaluation_error`` one (the harness
+    crashed; re-run evaluate). A completion that ran and failed is scored --
+    as a 0 -- and is never skipped here, so missing data can never raise a
+    model's score.
+    """
+    return (rates.get("n", 0) > 0 and not rates.get("incomplete")
+            and not rates.get("evaluation_error") and rates.get(key) is not None)
+
+
+def _model_pass_at1(pass_rates: dict, relation: str, key: str = "pass@1") -> dict[str, float]:
+    """Return {model_id: score} for a given relation, skipping unscored cells.
+
+    ``key`` is the per-cell score (``rq2.ranking_score``): ``pass@1`` or the
+    graded ``mean_primary``. The name is historical.
 
     A (relation, model) cell with no completions is missing data, not a score of
     zero: pass@1 over an empty sample is 0.0, which would enter the leaderboard
@@ -120,11 +137,9 @@ def _model_pass_at1(pass_rates: dict, relation: str) -> dict[str, float]:
     models before computing a ranking statistic.
     """
     return {
-        model_id: rates["pass@1"]
+        model_id: rates[key]
         for model_id, rates in pass_rates.get(relation, {}).items()
-        # An `incomplete` cell (fewer than n completions under the inference
-        # protocol) is missing data too, never a score.
-        if rates.get("n", 0) > 0 and not rates.get("incomplete")
+        if cell_is_scored(rates, key)
     }
 
 
@@ -139,7 +154,8 @@ def _rank_vector(scores: dict[str, float], model_ids: list[str]) -> list[float]:
     return [scores.get(mid, 0.0) for mid in model_ids]
 
 
-def _relation_is_complete(pass_rates: dict, relation: str, model_ids: list[str]) -> bool:
+def _relation_is_complete(pass_rates: dict, relation: str, model_ids: list[str],
+                          key: str = "pass@1") -> bool:
     """True when every model under test has a non-empty sample for ``relation``.
 
     False covers two very different situations that both mean "no observation
@@ -148,7 +164,7 @@ def _relation_is_complete(pass_rates: dict, relation: str, model_ids: list[str])
     produce a delta or a rank movement — see the None-not-0.0 handling in
     :func:`compute_ranking_stability`.
     """
-    return len(_model_pass_at1(pass_rates, relation)) == len(model_ids)
+    return len(_model_pass_at1(pass_rates, relation, key)) == len(model_ids)
 
 
 def _mean_or_none(values) -> Optional[float]:
@@ -184,8 +200,14 @@ def _rank_positions(scores: dict[str, float], model_ids: list[str]) -> dict[str,
     return dict(zip(model_ids, ranks))
 
 
-def compute_ranking_stability(task: Task, cfg: Config) -> None:
+def compute_ranking_stability(task: Task, cfg: Config, score_key: Optional[str] = None,
+                              filename: str = "rankings.json") -> None:
     """Read pass_rates.json and write rankings.json for one task.
+
+    ``score_key`` defaults to ``rq2.ranking_score``; the RQ2 runner calls this a
+    second time with ``pass@1`` into ``rankings_pass1.json`` when the primary
+    score is the graded one. The ``*_pass_at_1`` key names are historical: the
+    values are whichever score ``"score"`` names.
 
     Always recomputed — this is pure post-processing of pass_rates.json (no LLM
     calls, no sandbox execution), so there is nothing to checkpoint around.
@@ -202,7 +224,8 @@ def compute_ranking_stability(task: Task, cfg: Config) -> None:
     model_ids = cfg.model_ids()
     relations = [r for r in cfg.rq2.relations if r != BASELINE_RELATION]
 
-    baseline_scores = _model_pass_at1(pass_rates, BASELINE_RELATION)
+    key = score_key or cfg.rq2.ranking_score
+    baseline_scores = _model_pass_at1(pass_rates, BASELINE_RELATION, key)
     baseline_vec = _rank_vector(baseline_scores, model_ids)
 
     # 1. Ranking stability: one tau_b per relation, not per model.
@@ -214,12 +237,12 @@ def compute_ranking_stability(task: Task, cfg: Config) -> None:
     complete_relations: list[str] = []
     tau_per_relation: dict[str, Optional[float]] = {}
     for relation in relations:
-        if not baseline_complete or not _relation_is_complete(pass_rates, relation, model_ids):
+        if not baseline_complete or not _relation_is_complete(pass_rates, relation, model_ids, key):
             incomplete_relations.append(relation)
             tau_per_relation[relation] = None
             continue
         complete_relations.append(relation)
-        variant_vec = _rank_vector(_model_pass_at1(pass_rates, relation), model_ids)
+        variant_vec = _rank_vector(_model_pass_at1(pass_rates, relation, key), model_ids)
         tau_per_relation[relation] = _tau_b(baseline_vec, variant_vec)
 
     # A relation that HAS data but whose tau_b is still None is degenerate: every
@@ -253,7 +276,7 @@ def compute_ranking_stability(task: Task, cfg: Config) -> None:
     delta_pass_at_1: dict[str, dict[str, Optional[float]]] = {
         model_id: {
             relation: (
-                round(_model_pass_at1(pass_rates, relation)[model_id]
+                round(_model_pass_at1(pass_rates, relation, key)[model_id]
                       - baseline_scores[model_id], 6)
                 if baseline_complete and relation in set(complete_relations)
                 else None
@@ -272,7 +295,7 @@ def compute_ranking_stability(task: Task, cfg: Config) -> None:
     # +/-1 place for every model at the ends of the leaderboard.
     baseline_ranks = _rank_positions(baseline_scores, model_ids) if baseline_complete else {}
     variant_ranks = {
-        relation: _rank_positions(_model_pass_at1(pass_rates, relation), model_ids)
+        relation: _rank_positions(_model_pass_at1(pass_rates, relation, key), model_ids)
         for relation in complete_relations
     }
     rank_change: dict[str, dict[str, Optional[float]]] = {
@@ -294,7 +317,14 @@ def compute_ranking_stability(task: Task, cfg: Config) -> None:
         if family is not None
     }
 
-    write_json(out, "rankings.json", {
+    # The corpus's own family list, so the analysis gates coverage against the
+    # families this run was asked to fill (Tier 1: 5, Tier 2: 3).
+    corpus_families = (load_corpus(cfg.rq2.paraphrase_corpus).get("manifest", {}).get("families")
+                       if cfg.rq2.paraphrase_corpus is not None else None)
+
+    write_json(out, filename, {
+        "score": key,
+        "corpus_families": corpus_families,
         "model_ids": model_ids,
         "baseline_pass_at_1": baseline_scores,
         "tau_b_per_relation": tau_per_relation,

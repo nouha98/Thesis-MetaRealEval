@@ -72,9 +72,13 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import inspect
+import io
 import json
 import logging
 import re
+import tokenize
+import warnings
 from pathlib import Path
 from typing import Optional
 
@@ -290,9 +294,10 @@ def _parse_persona_response(raw: str) -> tuple[str, str]:
     return raw, ""
 
 
-def _build_judge_messages(original: str, candidate: str) -> list[dict]:
+def _build_judge_messages(original: str, candidate: str,
+                          system: Optional[str] = None) -> list[dict]:
     return [
-        {"role": "system", "content": _JUDGE_SYSTEM_PROMPT},
+        {"role": "system", "content": system or _JUDGE_SYSTEM_PROMPT},
         {"role": "user", "content": (
             f"ORIGINAL SPECIFICATION:\n{original}\n\n"
             f"REWRITTEN SPECIFICATION:\n{candidate}"
@@ -569,6 +574,228 @@ def structural_gate(
 
 
 # ---------------------------------------------------------------------------
+# Class skeletons (Tier 2, RealClassEval)
+# ---------------------------------------------------------------------------
+#
+# The same splice principle as split_spec/assemble, for a class skeleton with
+# several docstrings (the class and each method): the generator rewrites only
+# the docstring TEXT, returned as numbered segments, and assemble_docstrings
+# puts each one back between the original quotes. Imports, signatures,
+# decorators and bodies are never retyped. Spans come from the AST, whose
+# column offsets are UTF-8 BYTE offsets, so all slicing is on the encoded
+# source (26 corpus skeletons contain non-ASCII text).
+
+# Tier 2 families: one variant each. `persona` adds framing outside the class
+# and `reorder` mostly has no examples to move in a class skeleton.
+CLASS_FAMILIES = ["lexical", "formal", "terse"]
+CLASS_PROMPT_TEMPLATE_VERSION = 1
+
+
+def min_families_covered(families: list[str]) -> int:
+    """All families but one: Tier 1's 4 of 5 (:data:`MIN_FAMILIES_COVERED`), Tier 2's 2 of 3."""
+    return max(1, len(families) - 1)
+
+
+_STR_OPEN_RE = re.compile(r"^([rRuU]?)('''|\"\"\"|'|\")")
+_SEGMENT_RE = re.compile(r"^<<<(\d+)>>>[ \t]*$", re.MULTILINE)
+
+
+def _docstring_nodes(tree: ast.AST) -> list[ast.Constant]:
+    nodes = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            first = node.body[0]
+            if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
+                    and isinstance(first.value.value, str)):
+                nodes.append(first.value)
+    return nodes
+
+
+def split_docstrings(skeleton: str) -> list[tuple[int, int]]:
+    """Byte spans ``(start, end)`` of the text inside every class / method docstring.
+
+    In source order; a span excludes the string prefix and the quotes. Raises
+    ``ValueError`` if the skeleton does not parse or a docstring is not one plain
+    string literal (e.g. implicit concatenation), which cannot be spliced.
+    """
+    data = skeleton.encode("utf-8")
+    line_starts = [0] + [i + 1 for i, b in enumerate(data) if b == 0x0A]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", SyntaxWarning)
+        tree = ast.parse(skeleton)
+    spans = []
+    for c in _docstring_nodes(tree):
+        a = line_starts[c.lineno - 1] + c.col_offset
+        b = line_starts[c.end_lineno - 1] + c.end_col_offset
+        token = data[a:b].decode("utf-8")
+        m = _STR_OPEN_RE.match(token)
+        quote = m.group(2) if m else ""
+        strings = [t for t in tokenize.generate_tokens(io.StringIO(token).readline)
+                   if t.type == tokenize.STRING]
+        if not m or len(strings) != 1 or not token.endswith(quote) or len(token) < len(m.group(0)) + len(quote):
+            raise ValueError(f"docstring at line {c.lineno} is not one plain string literal")
+        spans.append((a + len(m.group(0).encode("utf-8")), b - len(quote)))
+    return sorted(spans)
+
+
+def docstring_texts(skeleton: str) -> list[str]:
+    """The raw source text of each docstring, in the order of :func:`split_docstrings`."""
+    data = skeleton.encode("utf-8")
+    return [data[a:b].decode("utf-8") for a, b in split_docstrings(skeleton)]
+
+
+def assemble_docstrings(skeleton: str, texts: list[str]) -> str:
+    """``skeleton`` with each docstring's text replaced, everything else byte-identical."""
+    data = skeleton.encode("utf-8")
+    spans = split_docstrings(skeleton)
+    if len(texts) != len(spans):
+        raise ValueError(f"{len(texts)} text(s) for {len(spans)} docstring(s)")
+    out, pos = [], 0
+    for (a, b), text in zip(spans, texts):
+        out += [data[pos:a], text.encode("utf-8")]
+        pos = b
+    out.append(data[pos:])
+    return b"".join(out).decode("utf-8")
+
+
+def render_docstring(text: str, original: str, indent: str) -> str:
+    """Lay a rewritten (dedented) docstring out like ``original``: the same
+    leading and trailing whitespace inside the quotes, continuation lines at
+    ``indent`` (the indentation of the line the docstring starts on)."""
+    lead = original[:len(original) - len(original.lstrip())]
+    tail = original[len(original.rstrip()):]
+    lines = text.strip("\n").splitlines() or [""]
+    body = lines[0] + "".join("\n" + (indent + ln if ln.strip() else "") for ln in lines[1:])
+    return lead + body + tail
+
+
+def _docstring_indents(skeleton: str) -> list[str]:
+    data = skeleton.encode("utf-8")
+    out = []
+    for a, _b in split_docstrings(skeleton):
+        line_start = data.rfind(b"\n", 0, a) + 1
+        line = data[line_start:a].decode("utf-8")
+        out.append(line[:len(line) - len(line.lstrip())])
+    return out
+
+
+def parse_segments(raw: str, n: int) -> tuple[Optional[list[str]], Optional[str]]:
+    """``(segments, None)`` for a response of exactly ``<<<1>>>``..``<<<n>>>`` in
+    order, else ``(None, reason)``."""
+    parts = _SEGMENT_RE.split(raw)
+    if parts[0].strip():
+        return None, "text_before_segments"
+    numbers, texts = parts[1::2], parts[2::2]
+    if numbers != [str(i) for i in range(1, n + 1)]:
+        return None, "segment_count_mismatch"
+    segments = [t.strip("\n") for t in texts]
+    if any(not s.strip() for s in segments):
+        return None, "empty_segment"
+    return segments, None
+
+
+def _strip_docstrings(tree: ast.AST) -> str:
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            first = node.body[0]
+            if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
+                    and isinstance(first.value.value, str)):
+                node.body = node.body[1:]
+    return ast.dump(tree)
+
+
+def class_structural_gate(original: str, candidate: str, *,
+                          seen: Optional[set[str]] = None) -> Optional[str]:
+    """Gate A for a class skeleton: ``None`` if the candidate passes, else the reason.
+
+    Under the splice the code cannot change by construction; the AST check is
+    the backstop that also catches a rewrite that breaks its own string literal
+    (a stray closing quote, say), which would otherwise move code into or out of
+    a docstring.
+    """
+    original_n, candidate_n = _normalize(original), _normalize(candidate)
+    if candidate_n == original_n:
+        return "identical_to_original"
+    if seen is not None and candidate_n in seen:
+        return "duplicate_of_sibling"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", SyntaxWarning)
+        try:
+            cand_tree = ast.parse(candidate)
+        except (SyntaxError, ValueError):
+            return "does_not_parse"
+        orig_tree = ast.parse(original)
+    if len(_docstring_nodes(cand_tree)) != len(_docstring_nodes(orig_tree)):
+        return "docstring_count_changed"
+    if _strip_docstrings(cand_tree) != _strip_docstrings(orig_tree):
+        return "code_changed"
+    if _doctest_lines(original) != _doctest_lines(candidate):
+        return "examples_changed"
+    new_numbers = set(_NUMBER_RE.findall(candidate)) - set(_NUMBER_RE.findall(original))
+    if new_numbers:
+        return "new_numeric_literal:" + ",".join(sorted(new_numbers))
+    return None
+
+
+_CLASS_SYSTEM_PROMPT = (
+    "You rewrite the docstrings of a Python class skeleton -- nothing else. You are "
+    "given CONTEXT (the whole skeleton) purely so you understand what the class does, "
+    "and then its docstrings as numbered segments. You do NOT reproduce any code.\n\n"
+    "Your entire response is the same numbered segments, in the same order, each "
+    "followed by its rewritten text:\n<<<1>>>\n...\n<<<2>>>\n...\nand nothing else: no "
+    "code, no triple-quotes, no markdown fences, no preamble, no narration. If you need "
+    "to reason about the rewrite, do that silently.\n\n"
+    "Hard invariants - breaking any one makes your output unusable:\n"
+    "- Every segment keeps every requirement, parameter, attribute, return value, "
+    "exception and constraint it states. Do not add, remove, weaken, or strengthen a "
+    "single requirement.\n"
+    "- Write parameter, attribute, method and class names exactly as they appear.\n"
+    "- Reproduce every >>> line and every expected-output line EXACTLY.\n"
+    "- Do not introduce any number that is not already present in CONTEXT.\n"
+    "- Do not write triple quotes or a trailing backslash inside a segment."
+)
+
+_CLASS_JUDGE_SYSTEM_PROMPT = (
+    "You check whether two versions of a programming task specification -- a Python "
+    "class skeleton whose docstrings describe the required behaviour -- demand exactly "
+    "the same class.\n\n"
+    "Answer on the first line with exactly one of:\n"
+    "EQUIVALENT\nNOT_EQUIVALENT\nUNSURE\n\n"
+    "On the second line give a one-sentence reason.\n\n"
+    "Answer NOT_EQUIVALENT if any docstring of the rewrite adds, drops, weakens, or "
+    "strengthens any requirement; changes the type or meaning of an argument, attribute "
+    "or return value; changes any example; or changes the behaviour required on any "
+    "input. Wording, tone, register, and the order in which requirements are presented "
+    "are NOT differences in meaning. Answer UNSURE only if the rewrite is genuinely "
+    "ambiguous about a requirement that the original settles."
+)
+
+
+def _build_class_generation_messages(skeleton: str, family: str) -> list[dict]:
+    segments = "\n".join(f"<<<{i}>>>\n{inspect.cleandoc(t)}"
+                         for i, t in enumerate(docstring_texts(skeleton), start=1))
+    return [
+        {"role": "system", "content": _CLASS_SYSTEM_PROMPT},
+        {"role": "user", "content": (
+            f"{_FAMILY_INSTRUCTIONS[family]}\n\n"
+            f"CONTEXT (for reference only -- do not reproduce):\n{skeleton}\n\n"
+            f"DOCSTRINGS TO REWRITE:\n{segments}"
+        )},
+    ]
+
+
+def class_candidate(skeleton: str, raw: str) -> tuple[Optional[str], Optional[str]]:
+    """``(candidate skeleton, None)`` from a generator response, or ``(None, reason)``."""
+    originals = docstring_texts(skeleton)
+    segments, reason = parse_segments(strip_fence(raw).strip("\n"), len(originals))
+    if segments is None:
+        return None, reason
+    rendered = [render_docstring(s, o, ind)
+                for s, o, ind in zip(segments, originals, _docstring_indents(skeleton))]
+    return assemble_docstrings(skeleton, rendered), None
+
+
+# ---------------------------------------------------------------------------
 # Gate B - held-out judge
 # ---------------------------------------------------------------------------
 
@@ -577,8 +804,11 @@ async def judge_candidate(
     candidate: str,
     judge_model: str,
     client: InnkubeClient,
+    system: Optional[str] = None,
 ) -> tuple[str, str]:
     """Return ``(verdict, reason)`` from the held-out judge model.
+
+    ``system`` replaces the function-level judge prompt (class skeletons).
 
     A judge that fails to answer is reported as UNSURE, i.e. the candidate is
     rejected.  Admitting an unvalidated variant because the validator broke would
@@ -588,7 +818,7 @@ async def judge_candidate(
     try:
         replies = await client.complete(
             model=judge_model,
-            messages=_build_judge_messages(original, candidate),
+            messages=_build_judge_messages(original, candidate, system),
             temperature=0.0,
             max_tokens=JUDGE_MAX_TOKENS,
             n=1,
@@ -637,11 +867,22 @@ async def generate_family(
     Returns ``(accepted, rejected)``.  Accepted entries carry their own validation
     record and rejected ones carry the reason, so the rejection rate is a
     reportable statistic rather than an invisible one.
+
+    A HumanEval task (it has an ``entry_point``) rewrites its one docstring via
+    split_spec/assemble; a RealClassEval class skeleton rewrites every
+    docstring as numbered segments via :func:`class_candidate`.
     """
     accepted: list[dict] = []
     rejected: list[dict] = []
     seen = set() if seen is None else seen
-    prefix, body, suffix = split_spec(task.prompt, task.entry_point)
+    is_class = not hasattr(task, "entry_point")
+    if is_class:
+        messages = _build_class_generation_messages(task.prompt, family)
+        judge_system: Optional[str] = _CLASS_JUDGE_SYSTEM_PROMPT
+    else:
+        prefix, body, suffix = split_spec(task.prompt, task.entry_point)
+        messages = _build_generation_messages(prefix, body, family)
+        judge_system = None
 
     for attempt in range(1, MAX_REGEN + 1):
         if len(accepted) >= n_per_family:
@@ -649,7 +890,7 @@ async def generate_family(
         try:
             raw_candidates = await client.complete(
                 model=generator_model,
-                messages=_build_generation_messages(prefix, body, family),
+                messages=messages,
                 temperature=GENERATION_TEMPERATURE,
                 max_tokens=GENERATION_MAX_TOKENS,
                 n=n_per_family + 2,
@@ -665,23 +906,26 @@ async def generate_family(
         for raw in raw_candidates:
             if len(accepted) >= n_per_family:
                 break
-            raw_clean = strip_fence(raw).strip("\n")
-
-            if family == "persona":
-                framing, rewritten_body = _parse_persona_response(raw_clean)
-                candidate = assemble(prefix, rewritten_body, suffix, framing=framing)
+            if is_class:
+                candidate, reason = class_candidate(task.prompt, raw)
+                if candidate is not None:
+                    reason = class_structural_gate(task.prompt, candidate, seen=seen)
             else:
-                candidate = assemble(prefix, raw_clean, suffix)
-
-            reason = structural_gate(task.prompt, candidate, task.entry_point,
-                                     family, seen=seen)
+                raw_clean = strip_fence(raw).strip("\n")
+                if family == "persona":
+                    framing, rewritten_body = _parse_persona_response(raw_clean)
+                    candidate = assemble(prefix, rewritten_body, suffix, framing=framing)
+                else:
+                    candidate = assemble(prefix, raw_clean, suffix)
+                reason = structural_gate(task.prompt, candidate, task.entry_point,
+                                         family, seen=seen)
             if reason is not None:
                 rejected.append({"family": family, "attempt": attempt,
                                  "gate": "structural", "reason": reason})
                 continue
 
             verdict, judge_reason = await judge_candidate(
-                task.prompt, candidate, judge_model, client
+                task.prompt, candidate, judge_model, client, system=judge_system
             )
             if verdict != "EQUIVALENT":
                 rejected.append({"family": family, "attempt": attempt,

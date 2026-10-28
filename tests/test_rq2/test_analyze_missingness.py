@@ -50,3 +50,40 @@ def test_excluded_tasks_disappear_from_every_task_listing(ar, tmp_path):
     assert [d.name for d in ar._task_dirs(tmp_path / "rq2" / "evaluate")] == ["T_0"]
     rep = ar.analyze_rq2_missingness()
     assert rep["n_tasks"] == 1 and rep["complete_case_is_qualified"] is False
+
+
+def test_evaluation_errors_are_reported_as_missingness(ar, tmp_path):
+    ok = {"n": 10, "pass@1": 0.5}
+    _pass_rates(tmp_path, "T_0", {"original": {"a": ok, "b": {"n": 10, "evaluation_error": [2],
+                                                              "pass@1": None, "correct": None}}})
+    rep = ar.analyze_rq2_missingness()
+    assert rep["by_model"]["b"]["original"] == {"cells": 1, "evaluation_error": 1}
+    assert rep["tasks_with_missing_or_incomplete"] == ["T_0"]
+
+
+def _rankings(root: Path, label: str, score: str, filename: str = "rankings.json") -> None:
+    d = root / "rq2" / "evaluate" / label
+    (d / filename).write_text(json.dumps({"score": score, "model_ids": ["a", "b"],
+                                          "tau_b_per_relation": {}}))
+
+
+def test_rq2_uses_the_rankings_score_and_counts_informative_pairs(ar, tmp_path):
+    cell = lambda p1, g: {"n": 10, "correct": int(p1 * 10), "pass@1": p1, "mean_primary": g}  # noqa: E731
+    # Binary: a and b tie at 0 under both prompts -> no informative pair.
+    # Graded: a > b originally, b > a under 'formal' -> one informative reversal.
+    _pass_rates(tmp_path, "T_0", {"original": {"a": cell(0.0, 0.6), "b": cell(0.0, 0.4)},
+                                  "formal": {"a": cell(0.0, 0.3), "b": cell(0.0, 0.5)}})
+    _rankings(tmp_path, "T_0", "mean_primary")
+    graded = ar.analyze_rq2()
+    assert graded["score"] == "mean_primary"
+    rr = graded["pairwise_reversal_rate"]
+    assert (rr["n_pair_comparisons"], rr["n_tied_excluded"], rr["n_informative"]) == (1, 0, 1)
+    assert graded["task_strata"]["discriminating"] == 1
+
+    _rankings(tmp_path, "T_0", "pass@1", filename="rankings_pass1.json")
+    ar.RANKINGS = "rankings_pass1.json"
+    binary = ar.analyze_rq2()
+    assert binary["score"] == "pass@1"
+    rr = binary["pairwise_reversal_rate"]
+    assert (rr["n_pair_comparisons"], rr["n_tied_excluded"], rr["n_informative"]) == (1, 1, 0)
+    assert binary["task_strata"]["floor"] == 1, "binary sees a floor task the graded score separates"

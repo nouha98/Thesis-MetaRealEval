@@ -338,6 +338,7 @@ def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
         return
 
     pass_rates: dict[str, dict[str, dict]] = {}
+    evaluation_errors: list[str] = []
 
     # One pool for the whole task, not one per (relation, model) cell. At ~21
     # relations x 3 models that was 63 pool spin-ups per task and ~10k over the
@@ -363,15 +364,36 @@ def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
                 try:
                     results.append(f.result())
                 except Exception:
-                    results.append(None)  # a worker-process crash scores as a fail, not a hang
+                    logger.exception("%s / %s / %s: evaluation worker crashed",
+                                     label, relation, model_id)
+                    results.append(None)
+
+            # An evaluation crash (worker exception) or a missing D3 score is a
+            # fault of the harness, not of the completion: scoring it as a fail
+            # would charge the model for it, and dropping it from the graded
+            # mean would shrink that model's denominator. The cell carries no
+            # score, the task is left unmarked, and re-running evaluate scores
+            # the SAME stored completions. A completion that merely failed to
+            # extract (truncated, blank) is NOT this case: it ran, failed its
+            # tests and scores 0 like any wrong answer.
+            crashed = [i for i, r in enumerate(results) if r is None or r.primary is None]
+            if crashed:
+                evaluation_errors.append(f"{relation}/{model_id}")
+                pass_rates[relation][model_id] = {
+                    "n": len(results), "evaluation_error": crashed, "correct": None,
+                    "per_completion": None, "pass@1": None, "pass@5": None, "pass@10": None,
+                    "primary_scores": [None if r is None else r.primary for r in results],
+                    "mean_primary": None,
+                }
+                continue
 
             # passed_all / pass@k: EXACT Tier 1 semantics (a completion either
             # passes everything or it doesn't), now sourced from SuiteResult so
             # the same code path covers Tier 2. `primary` is the benchmark's D3
             # score (Tier 1: identical to passed_all; Tier 2: the continuous
-            # pass rate) -- additive, nothing downstream reads it yet.
-            per_completion = [bool(r.passed_all) if r is not None else False for r in results]
-            primary_scores = [r.primary if r is not None else None for r in results]
+            # pass rate); rq2.ranking_score picks which one the rankings use.
+            per_completion = [bool(r.passed_all) for r in results]
+            primary_scores = [r.primary for r in results]
             n = len(per_completion)
             correct = sum(per_completion)
 
@@ -407,5 +429,10 @@ def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
                          pass_rates[relation][model_id]["pass@1"])
 
     write_json(out, "pass_rates.json", pass_rates)
+    if evaluation_errors:
+        logger.error("%s: evaluation crashed in %d cell(s) (%s) -- not marked done; re-run "
+                     "evaluate to score the same completions", label, len(evaluation_errors),
+                     ", ".join(evaluation_errors))
+        return
     mark_done(out)
     logger.info("Evaluated %s", label)

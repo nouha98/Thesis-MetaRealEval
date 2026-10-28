@@ -151,6 +151,11 @@ export INNKUBE_API_KEY="dummy"
     --job-id "${SLURM_JOB_ID:-local}" --started-at "${STARTED_AT}" \
     || fail_gate serving_info "could not record serving info"
 
+# --- seeded-sampling probe (evidence only; never stops the job) -------------------
+"${PY}" scripts/probe_seeds.py --config "${CONFIG}" --model "${MODEL}" \
+    --out "${JOB_DIR}/probe_seeds.json" > "${JOB_DIR}/probe_seeds.stdout" 2>&1 \
+    || echo "probe_seeds failed (non-fatal); see ${JOB_DIR}/probe_seeds.stdout"
+
 # --- generate -----------------------------------------------------------------
 RANGE_ARGS=()
 [[ -n "${TASK_RANGE}" ]] && RANGE_ARGS=(--task-range "${TASK_RANGE}")

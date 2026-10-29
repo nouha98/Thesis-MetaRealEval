@@ -60,16 +60,18 @@ stage0:
 
 rq1:
   operators: [AOR, ROR, SDL]
-  max_tokens: 32768             # the same ceiling as rq2: one budget for every model call
+  max_tokens: 32768             # mutants are short; the RQ1 pilot never came near it
 
 rq2:
   n_completions: 10
   # Fallback only: every model above has its own recommended temperature.
   temperature: 0.8
-  # One common output ceiling for every model (reasoning + answer). At 8192 the
-  # thinking models truncated most completions on class tasks (M1 audit);
-  # check truncation in the pilot (scripts/audit_rq2_generation.py).
-  max_tokens: 32768
+  # One common output ceiling for every model (reasoning + answer), a stated
+  # resource policy below the Qwen3.8 card's long-horizon budget. At 8192 the
+  # thinking models truncated most completions (M1 audit); at 32768 qwen38
+  # truncated 10/180 (pilot, 2026-10-26); at 49152 1/180 (S4 trial, 2026-10-29,
+  # <= 3/180 rule). vLLM servers need --max-model-len >= prompt + this (65536).
+  max_tokens: 49152
   # Truncated/blank/malformed outputs are model outcomes and stay in the
   # denominator; only transport failures are retried (same request).
   retry_policy: transport_only

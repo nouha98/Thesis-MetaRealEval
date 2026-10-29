@@ -35,7 +35,7 @@
 
 set -uo pipefail     # no -e: gates are checked explicitly so cleanup and reporting always run
 
-CONFIG="" MODEL="" MODEL_DIR="" GPUS=1 TP="" MAX_LEN=40960 PARSER="" EXTRA="" IMAGE=""
+CONFIG="" MODEL="" MODEL_DIR="" GPUS=1 TP="" MAX_LEN=65536 PARSER="" EXTRA="" IMAGE=""
 TASK_RANGE="" PHASES="rq1,rq2" MARGIN=900
 while [[ $# -gt 0 ]]; do
     case "$1" in

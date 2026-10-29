@@ -14,9 +14,11 @@
 #       --model qwen38-27b --model-dir /shared/karouin/models/Qwen3.8-27B --gpus 2 \
 #       --reasoning-parser qwen3 [--task-range 0-99] [--phases rq1,rq2] [--time 24:00:00]
 #
-# --max-model-len defaults to 40960: the 32768-token output ceiling plus the
-# prompt. For a ceiling trial (make_run_configs.py --max-tokens N) pass
-# --max-model-len >= longest prompt + N (e.g. 65536 for N=49152): vLLM rejects a
+# qwen38 needs --gpus 2: on one H200 (TP=1) vLLM 0.17 stalls on its first request.
+#
+# --max-model-len defaults to 65536: the 49152-token RQ2 output ceiling plus the
+# prompt. For another ceiling (make_run_configs.py --max-tokens N) pass
+# --max-model-len >= longest prompt + N: vLLM rejects a
 # request whose prompt + max_tokens exceed it (HTTP 400, recorded as
 # context_overflow). Do not pass --generation-config: vLLM's default reads the checkpoint's
 # generation_config.json, i.e. the model's own recommended defaults for anything
@@ -27,7 +29,7 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${REPO_DIR}"
 
-CONFIG="" MODEL="" MODEL_DIR="" GPUS=1 TP="" MAX_LEN=40960 PARSER="" EXTRA=""
+CONFIG="" MODEL="" MODEL_DIR="" GPUS=1 TP="" MAX_LEN=65536 PARSER="" EXTRA=""
 TASK_RANGE="" PHASES="rq1,rq2" TIME="24:00:00"
 IMAGE="/shared/karouin/containers/vllm-v0.17.0.sif" CONSTRAINT="gpumem.80gib" MEM="64G"
 while [[ $# -gt 0 ]]; do

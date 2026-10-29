@@ -205,6 +205,13 @@ def _write(out_path: Path, corpus_tasks: dict, generator_model: str,
     return corpus
 
 
+def sidecar_path(corpus: Path, name: str) -> Path:
+    """<corpus stem>.<name> next to the corpus, so two corpora in one directory
+    (Tier 1 humaneval_v1, Tier 2 realclasseval_*) never overwrite each other's
+    sidecars. The Tier 1 corpus predates this and has the bare names."""
+    return corpus.with_name(f"{corpus.stem}.{name}")
+
+
 def _write_sidecars(out_path: Path, gaps: list[dict], rejections: list[dict]) -> None:
     """Persist unfilled slots and every rejection, so both are reportable.
 
@@ -213,9 +220,9 @@ def _write_sidecars(out_path: Path, gaps: list[dict], rejections: list[dict]) ->
     instead of invisible.
     """
     if gaps:
-        (out_path.parent / "generation_gaps.json").write_text(
+        sidecar_path(out_path, "generation_gaps.json").write_text(
             json.dumps(gaps, indent=2), encoding="utf-8")
-    (out_path.parent / "generation_rejections.json").write_text(
+    sidecar_path(out_path, "generation_rejections.json").write_text(
         json.dumps(rejections, indent=2, ensure_ascii=False), encoding="utf-8")
 
 

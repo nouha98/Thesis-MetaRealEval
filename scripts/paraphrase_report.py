@@ -56,8 +56,15 @@ def sample_variants(corpus: dict, n: int, seed: int) -> list[dict]:
     return sampled
 
 
-def rejection_stats(corpus_dir: Path) -> dict:
-    path = corpus_dir / "generation_rejections.json"
+def sidecar(corpus: Path, name: str) -> Path:
+    """<corpus stem>.<name> (generate_paraphrases.sidecar_path), else the bare
+    name the Tier 1 corpus was written with."""
+    path = corpus.with_name(f"{corpus.stem}.{name}")
+    return path if path.exists() else corpus.parent / name
+
+
+def rejection_stats(corpus: Path) -> dict:
+    path = sidecar(corpus, "generation_rejections.json")
     if not path.exists():
         return {}
     rejections = json.loads(path.read_text(encoding="utf-8"))
@@ -151,14 +158,14 @@ def main(argv=None) -> None:
     for attempt in sorted(attempts):
         print(f"  attempt {attempt}: {attempts[attempt]}")
 
-    stats = rejection_stats(args.corpus.parent)
+    stats = rejection_stats(args.corpus)
     if stats:
         print(f"\nrejections  : {stats['total']}")
         print(f"  by gate   : {stats['by_gate']}")
         print(f"  by reason : {stats['by_reason']}")
         print(f"  by family : {stats['by_family']}")
 
-    gaps_path = args.corpus.parent / "generation_gaps.json"
+    gaps_path = sidecar(args.corpus, "generation_gaps.json")
     if gaps_path.exists():
         gaps = json.loads(gaps_path.read_text(encoding="utf-8"))
         print(f"\ngaps        : {len(gaps)} (task, family) slot group(s) unfilled")

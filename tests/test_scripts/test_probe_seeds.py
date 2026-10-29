@@ -50,3 +50,19 @@ def test_probe_reports_independent_seeded_draws(tmp_path, monkeypatch):
     sent = _FakeOpenAI.calls[0]
     assert sent["temperature"] == 1.0 and sent["extra_body"]["top_k"] == 20, "the model's card sampling"
     assert _FakeOpenAI.calls[-1]["extra_body"]["cache"] == {"no-cache": True}
+
+
+def test_a_hung_endpoint_exits_3_after_naming_the_step(tmp_path, monkeypatch, capsys):
+    import httpx
+
+    class _Hangs(_FakeOpenAI):
+        def _create(self, **kw):
+            if kw.get("seed") is not None and kw["n"] > 1:
+                raise openai.APITimeoutError(request=httpx.Request("POST", "http://x"))
+            return super()._create(**kw)
+
+    monkeypatch.setattr(openai, "OpenAI", _Hangs)
+    rc = probe.main(["--config", str(REPO / "config" / "tier2_realclasseval.yaml"),
+                     "--model", "qwen38-27b", "--out", str(tmp_path / "p.json")])
+    assert rc == 3
+    assert "HANG after T0b" in capsys.readouterr().out

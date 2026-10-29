@@ -152,9 +152,17 @@ export INNKUBE_API_KEY="dummy"
     || fail_gate serving_info "could not record serving info"
 
 # --- seeded-sampling probe (evidence only; never stops the job) -------------------
-"${PY}" scripts/probe_seeds.py --config "${CONFIG}" --model "${MODEL}" \
-    --out "${JOB_DIR}/probe_seeds.json" > "${JOB_DIR}/probe_seeds.stdout" 2>&1 \
-    || echo "probe_seeds failed (non-fatal); see ${JOB_DIR}/probe_seeds.stdout"
+# A HANG (exit 3, or timeout's 124) is fatal: an engine that stopped producing
+# tokens would stall the generation the same way, for hours.
+timeout 900 "${PY}" scripts/probe_seeds.py --config "${CONFIG}" --model "${MODEL}" \
+    --out "${JOB_DIR}/probe_seeds.json" > "${JOB_DIR}/probe_seeds.stdout" 2>&1
+probe_rc=$?
+if [[ "${probe_rc}" == "3" || "${probe_rc}" == "124" ]]; then
+    cat "${JOB_DIR}/probe_seeds.stdout" >&2
+    fail_gate probe_hang "vLLM stopped answering on the seeded probe (rc=${probe_rc}); see ${JOB_DIR}/probe_seeds.stdout and server.log"
+elif [[ "${probe_rc}" != "0" ]]; then
+    echo "probe_seeds failed rc=${probe_rc} (non-fatal); see ${JOB_DIR}/probe_seeds.stdout"
+fi
 
 # --- generate -----------------------------------------------------------------
 RANGE_ARGS=()

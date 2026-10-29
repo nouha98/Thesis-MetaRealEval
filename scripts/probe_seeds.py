@@ -20,6 +20,11 @@ only, never proof; a person reads the output.
     T6  --try-no-cache: T5 with LiteLLM's documented request-body cache control
         {"cache": {"no-cache": true}}
 
+Before T1 two warm-up requests run (unseeded n=10, seeded n=1) so a hang can be
+pinned on seeded n>1. Each request has a short timeout and no retries; a timeout
+prints "HANG after <step>" and exits 3 (the vLLM launcher then fails the job
+instead of waiting hours on an engine that has stopped producing tokens).
+
 Every response header containing "cache" is recorded. The request shape (the
 model's recommended sampling) comes from the config via resolve_request; only
 max_tokens is small. The text compared is content + reasoning field, so a
@@ -70,6 +75,13 @@ def call(client, cfg: Config, model: str, n: int, seed: int | None, max_tokens: 
     return {"seed": seed, "texts": [_text(c) for c in resp.choices], "cache_headers": headers}
 
 
+def step(label: str, *a, **kw) -> dict:
+    print(f"{label} ...", flush=True)
+    r = call(*a, **kw)
+    print(f"{label}: distinct {len(set(r['texts']))}/{len(r['texts'])}", flush=True)
+    return r
+
+
 def summarize(r: dict) -> dict:
     texts = r["texts"]
     return {"seed": r["seed"], "n": len(texts), "distinct": len(set(texts)),
@@ -83,22 +95,35 @@ def main(argv=None) -> int:
     ap.add_argument("--seed", type=int, default=424242)
     ap.add_argument("--max-tokens", type=int, default=48)
     ap.add_argument("--try-no-cache", action="store_true")
+    ap.add_argument("--timeout", type=float, default=120,
+                    help="seconds per request; no retries (a hung engine must fail fast)")
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args(argv)
 
     load_dotenv(REPO_ROOT / ".env")
+    import openai
     from openai import OpenAI
     cfg = Config.from_yaml(args.config)
     client = OpenAI(api_key=os.environ.get("INNKUBE_API_KEY", ""),
                     base_url=os.environ.get("INNKUBE_BASE_URL", "").rstrip("/") + "/v1",
-                    timeout=cfg.llm.request_timeout_s or 600, max_retries=2)
+                    timeout=args.timeout, max_retries=0)
     S, mt, m = args.seed, args.max_tokens, args.model
 
-    t1 = call(client, cfg, m, 10, S, mt)
-    t2 = [call(client, cfg, m, 1, S + i, mt) for i in range(5)]
-    t3 = call(client, cfg, m, 10, S, mt)
-    t4 = [call(client, cfg, m, 10, S + 1000 * (k + 1), mt) for k in range(5)]
-    t5 = [call(client, cfg, m, 1, None, mt) for _ in range(2)]
+    last = "start"
+    try:
+        step("T0a unseeded n=10", client, cfg, m, 10, None, mt)
+        last = "T0a"
+        step("T0b seeded n=1", client, cfg, m, 1, S, mt)
+        last = "T0b"
+        t1 = step("T1 seeded n=10", client, cfg, m, 10, S, mt)
+        last = "T1"
+        t2 = [call(client, cfg, m, 1, S + i, mt) for i in range(5)]
+        t3 = call(client, cfg, m, 10, S, mt)
+        t4 = [call(client, cfg, m, 10, S + 1000 * (k + 1), mt) for k in range(5)]
+        t5 = [call(client, cfg, m, 1, None, mt) for _ in range(2)]
+    except openai.APITimeoutError:
+        print(f"HANG after {last}: no response in {args.timeout:.0f}s", flush=True)
+        return 3
 
     within_dupes = sum(len(r["texts"]) - len(set(r["texts"])) for r in [t1, *t4])
     owners: dict[str, set[int]] = {}

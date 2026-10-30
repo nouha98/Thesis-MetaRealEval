@@ -588,7 +588,12 @@ def structural_gate(
 # Tier 2 families: one variant each. `persona` adds framing outside the class
 # and `reorder` mostly has no examples to move in a class skeleton.
 CLASS_FAMILIES = ["lexical", "formal", "terse"]
-CLASS_PROMPT_TEMPLATE_VERSION = 1
+CLASS_PROMPT_TEMPLATE_VERSION = 2
+# A whole skeleton's docstrings plus soofi's inline reasoning outgrow the
+# function-level budgets: in the pilot2 corpus (2026-10-29) 64 of 375 generations
+# came back blank at 8192 tokens and 18 judge calls gave no verdict at 4096.
+CLASS_GENERATION_MAX_TOKENS = 16384
+CLASS_JUDGE_MAX_TOKENS = 8192
 
 
 def min_families_covered(families: list[str]) -> int:
@@ -681,11 +686,19 @@ def _docstring_indents(skeleton: str) -> list[str]:
 
 def parse_segments(raw: str, n: int) -> tuple[Optional[list[str]], Optional[str]]:
     """``(segments, None)`` for a response of exactly ``<<<1>>>``..``<<<n>>>`` in
-    order, else ``(None, reason)``."""
+    order, else ``(None, reason)``.
+
+    The ``<<<1>>>`` marker alone may be missing (text, then ``<<<2>>>``..``<<<n>>>``):
+    the generator often drops it, since the prompt's own list starts with it. That
+    text is then segment 1 and goes through the same gates. Any other text before
+    the markers is still rejected.
+    """
     parts = _SEGMENT_RE.split(raw)
-    if parts[0].strip():
-        return None, "text_before_segments"
     numbers, texts = parts[1::2], parts[2::2]
+    if parts[0].strip():
+        if numbers != [str(i) for i in range(2, n + 1)]:
+            return None, "text_before_segments"
+        numbers, texts = ["1", *numbers], [parts[0], *texts]
     if numbers != [str(i) for i in range(1, n + 1)]:
         return None, "segment_count_mismatch"
     segments = [t.strip("\n") for t in texts]
@@ -779,7 +792,8 @@ def _build_class_generation_messages(skeleton: str, family: str) -> list[dict]:
         {"role": "user", "content": (
             f"{_FAMILY_INSTRUCTIONS[family]}\n\n"
             f"CONTEXT (for reference only -- do not reproduce):\n{skeleton}\n\n"
-            f"DOCSTRINGS TO REWRITE:\n{segments}"
+            f"DOCSTRINGS TO REWRITE:\n{segments}\n\n"
+            "Begin your response with the line <<<1>>> and keep every marker on its own line."
         )},
     ]
 
@@ -805,6 +819,7 @@ async def judge_candidate(
     judge_model: str,
     client: InnkubeClient,
     system: Optional[str] = None,
+    max_tokens: int = JUDGE_MAX_TOKENS,
 ) -> tuple[str, str]:
     """Return ``(verdict, reason)`` from the held-out judge model.
 
@@ -820,7 +835,7 @@ async def judge_candidate(
             model=judge_model,
             messages=_build_judge_messages(original, candidate, system),
             temperature=0.0,
-            max_tokens=JUDGE_MAX_TOKENS,
+            max_tokens=max_tokens,
             n=1,
         )
     except Exception as exc:
@@ -879,10 +894,12 @@ async def generate_family(
     if is_class:
         messages = _build_class_generation_messages(task.prompt, family)
         judge_system: Optional[str] = _CLASS_JUDGE_SYSTEM_PROMPT
+        gen_tokens, judge_tokens = CLASS_GENERATION_MAX_TOKENS, CLASS_JUDGE_MAX_TOKENS
     else:
         prefix, body, suffix = split_spec(task.prompt, task.entry_point)
         messages = _build_generation_messages(prefix, body, family)
         judge_system = None
+        gen_tokens, judge_tokens = GENERATION_MAX_TOKENS, JUDGE_MAX_TOKENS
 
     for attempt in range(1, MAX_REGEN + 1):
         if len(accepted) >= n_per_family:
@@ -892,9 +909,13 @@ async def generate_family(
                 model=generator_model,
                 messages=messages,
                 temperature=GENERATION_TEMPERATURE,
-                max_tokens=GENERATION_MAX_TOKENS,
+                max_tokens=gen_tokens,
                 n=n_per_family + 2,
                 cache_salt=f"paraphrase-attempt-{attempt}",
+                # The gateway's response cache ignores the salt and replayed
+                # attempt 1 for every retry; a seed is in its key. Attempt 1
+                # stays unseeded so existing cache entries still match.
+                seed=None if attempt == 1 else attempt,
             )
         except Exception as exc:
             logger.warning("Generation call failed for %s/%s attempt %d: %s",
@@ -925,7 +946,8 @@ async def generate_family(
                 continue
 
             verdict, judge_reason = await judge_candidate(
-                task.prompt, candidate, judge_model, client, system=judge_system
+                task.prompt, candidate, judge_model, client, system=judge_system,
+                max_tokens=judge_tokens,
             )
             if verdict != "EQUIVALENT":
                 rejected.append({"family": family, "attempt": attempt,

@@ -148,6 +148,36 @@ def test_parse_segments_round_trip():
     assert parse_segments(_raw(["a", "b c"]), 2) == (["a", "b c"], None)
 
 
+def test_a_missing_first_marker_makes_the_leading_text_segment_one():
+    # soofi's most common format slip in the pilot2 corpus (91 of 375 generations)
+    assert parse_segments("\nfirst\n<<<2>>>\nsecond\n<<<3>>>\nthird\n", 3) == (
+        ["first", "second", "third"], None)
+    assert parse_segments("\nonly one\n", 1) == (["only one"], None)
+    assert parse_segments("\nfirst\nsecond\nthird\n", 3) == (None, "text_before_segments")
+    assert parse_segments("intro\n<<<1>>>\na\n<<<2>>>\nb\n", 2) == (None, "text_before_segments")
+    assert parse_segments("first\n<<<3>>>\nb\n", 3) == (None, "text_before_segments")
+
+
+def test_class_prompt_asks_for_the_first_marker_and_class_calls_use_class_budgets():
+    from meta_real_eval.rq2.corpus import (CLASS_GENERATION_MAX_TOKENS, CLASS_JUDGE_MAX_TOKENS,
+                                           _build_class_generation_messages)
+    assert _build_class_generation_messages(SKELETON, "lexical")[1]["content"].endswith(
+        "Begin your response with the line <<<1>>> and keep every marker on its own line.")
+    client = _FakeClient()
+    seen_kw = []
+    orig = client.complete
+
+    async def complete(model, messages, **kw):
+        seen_kw.append((model, kw["max_tokens"]))
+        return await orig(model, messages, **kw)
+
+    client.complete = complete
+    task = SimpleNamespace(task_id="RealClassEval/csn/snippet_0", prompt=SKELETON, target="Cache")
+    asyncio.run(generate_family(task, "lexical", "gen", "judge", client, n_per_family=1))
+    assert ("gen", CLASS_GENERATION_MAX_TOKENS) in seen_kw
+    assert ("judge", CLASS_JUDGE_MAX_TOKENS) in seen_kw
+
+
 # --- generate_family's class path -------------------------------------------
 
 class _FakeClient:

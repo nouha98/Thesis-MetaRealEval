@@ -46,10 +46,13 @@ from meta_real_eval.core.llm_client import InnkubeClient       # noqa: E402
 from meta_real_eval.core.logging_setup import setup as setup_logging  # noqa: E402
 from meta_real_eval.rq2.corpus import (                        # noqa: E402
     CLASS_FAMILIES,
+    CLASS_GENERATION_MAX_TOKENS,
+    CLASS_JUDGE_MAX_TOKENS,
     CLASS_PROMPT_TEMPLATE_VERSION,
     CORPUS_VERSION,
     FAMILIES,
     GENERATION_MAX_TOKENS,
+    JUDGE_MAX_TOKENS,
     GENERATION_TEMPERATURE,
     N_PER_FAMILY,
     PROMPT_TEMPLATE_VERSION,
@@ -183,7 +186,10 @@ def _write(out_path: Path, corpus_tasks: dict, generator_model: str,
             "generator_model": generator_model,
             "judge_model": judge_model,
             "temperature": GENERATION_TEMPERATURE,
-            "max_tokens": GENERATION_MAX_TOKENS,
+            "max_tokens": (CLASS_GENERATION_MAX_TOKENS if cfg.benchmark.name == "realclasseval"
+                           else GENERATION_MAX_TOKENS),
+            "judge_max_tokens": (CLASS_JUDGE_MAX_TOKENS if cfg.benchmark.name == "realclasseval"
+                                 else JUDGE_MAX_TOKENS),
             "benchmark": cfg.benchmark.name,
             "prompt_template_version": (CLASS_PROMPT_TEMPLATE_VERSION
                                         if cfg.benchmark.name == "realclasseval"

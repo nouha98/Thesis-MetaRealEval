@@ -334,6 +334,7 @@ class InnkubeClient:
         n: int = 1,
         cache_salt: Optional[str] = None,
         use_profile: bool = True,
+        seed: Optional[int] = None,
     ) -> list[str]:
         """Return *n* completion strings.  Returns mock strings if mock=True.
 
@@ -344,7 +345,9 @@ class InnkubeClient:
         arm report a sampling-noise floor of exactly zero, and would make the
         paraphrase generator's retry budget replay its first attempt forever.
         Callers that pass nothing keep their existing keys, so adding this
-        parameter invalidates no cache entry.
+        parameter invalidates no cache entry. A gateway with its own response
+        cache (LiteLLM) never sees the salt; ``seed`` is sent and is part of
+        that cache's key, so a re-sample that must reach the model passes one.
 
         ``use_profile=False`` marks an *instrument* call (SBC): the model's
         sampling and request_params are not applied and the request is exactly
@@ -355,7 +358,7 @@ class InnkubeClient:
         """
         result = await self._complete(
             model, messages, temperature=temperature, max_tokens=max_tokens,
-            n=n, cache_salt=cache_salt, use_profile=use_profile,
+            n=n, cache_salt=cache_salt, use_profile=use_profile, seed=seed,
         )
         return result.choices
 

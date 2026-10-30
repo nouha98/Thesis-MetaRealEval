@@ -91,9 +91,11 @@ rq2:
   # template relations are ported (tracked, not done).
   template_relations: []
   include_control_resample: true
-  # The Tier 2 paraphrase corpus is built in M2; until then the template arm only.
-  paraphrase_corpus: null
-  corpus_sha256: null
+  # Pilot2 corpus (24 tasks, 3 families x 1, template v2), Gate C reviewed
+  # 2026-10-30: 8 of 72 variants removed (manifest gate_c_removed), 23/24 tasks
+  # covered. The full-run corpus replaces both lines before S8.
+  paraphrase_corpus: ./data/paraphrases/realclasseval_pilot2.json
+  corpus_sha256: "c6595185eaee8475f3192b49882c7e5932081ca138580d62c2723a1b3d0437d4"
   generator_model: soofi-s-isar-preview
   judge_model: soofi-s-isar-preview
 

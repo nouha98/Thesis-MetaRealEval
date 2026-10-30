@@ -131,13 +131,18 @@ def _generate_dir(root: Path, stage: str, label: str) -> Path:
     return root / stage / "generate" / label
 
 
-def merge_rq2(cfg: Config, labels: list[str], sources: dict[Path, dict], owner: dict[str, Path],
-              problems: _Problems, allow_failures: bool) -> dict[str, dict]:
-    """``{label: {"completions": ..., "meta": ..., "failures": [...]}}``."""
+def merge_rq2(cfg: Config, relations_by_label: dict[str, list[str]], sources: dict[Path, dict],
+              owner: dict[str, Path], problems: _Problems,
+              allow_failures: bool) -> dict[str, dict]:
+    """``{label: {"completions": ..., "meta": ..., "failures": [...]}}``.
+
+    ``relations_by_label`` holds exactly the relations the generator issues for
+    each task (rq2.generator.build_task_variants): a corpus variant a task lacks
+    (a generation gap, or one removed at Gate C) has no cell, and must not.
+    """
     n = cfg.rq2.n_completions
-    relations = cfg.rq2.relations
     out: dict[str, dict] = {}
-    for label in labels:
+    for label, relations in relations_by_label.items():
         completions = {r: {} for r in relations}
         meta = {r: {} for r in relations}
         failures: list[dict] = []
@@ -315,7 +320,11 @@ def merge(source_dirs: list[Path], cfg: Config, phases: list[str], allow_failure
         tasks = get_benchmark(cfg).load_tasks(cfg.benchmark.tasks)
     labels = [t.label for t in tasks]
 
-    rq2 = merge_rq2(cfg, labels, sources, owner, problems, allow_failures) if "rq2" in phases else None
+    rq2 = None
+    if "rq2" in phases:
+        from meta_real_eval.rq2.generator import build_task_variants
+        relations_by_label = {t.label: list(build_task_variants(t, cfg)) for t in tasks}
+        rq2 = merge_rq2(cfg, relations_by_label, sources, owner, problems, allow_failures)
     rq1 = merge_rq1(cfg, labels, owner, problems, allow_failures) if "rq1" in phases else None
     problems.raise_if_any("coverage / prompt-identity checks failed")
 

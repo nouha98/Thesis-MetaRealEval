@@ -239,3 +239,28 @@ def test_rq1_partial_failure_is_refused_unless_allowed_and_lineage_is_kept(tmp_p
     merged = json.loads((task_dir(comb, "rq1", "HumanEval_0", phase="generate")
                          / "llm_mutants.json").read_text())
     assert [m["source_model"] for m in merged] == ["a"]
+
+
+async def test_a_corpus_variant_a_task_lacks_is_not_a_missing_cell(tmp_path):
+    """Gate C removed HumanEval/1's variant: no model generates that cell, and
+    the merge expects exactly the relations the generator issued per task."""
+    corpus = tmp_path / "corpus.json"
+    corpus.write_text(json.dumps({
+        "manifest": {"families": ["lexical"], "n_per_family": 1},
+        "tasks": {"HumanEval/0": {"original": TASKS[0].prompt, "variants": [
+                      {"variant_id": "llm_lexical_01", "family": "lexical",
+                       "text": "def f0():\n    'reworded'\n"}]},
+                  "HumanEval/1": {"original": TASKS[1].prompt, "variants": []}},
+    }), encoding="utf-8")
+    g1 = _cfg(tmp_path, "g1", A, paraphrase_corpus=str(corpus))
+    g2 = _cfg(tmp_path, "g2", B, paraphrase_corpus=str(corpus))
+    await _generate(g1)
+    await _generate(g2)
+    comb = _cfg(tmp_path, "comb", A, B, paraphrase_corpus=str(corpus))
+    _merge(g1, g2, comb)
+    merged = json.loads((Path(comb.project.output_dir) / "rq2" / "generate" / "HumanEval_1"
+                         / "completions.json").read_text(encoding="utf-8"))
+    assert "llm_lexical_01" not in merged and set(merged["original"]) == {"a", "b"}
+    merged0 = json.loads((Path(comb.project.output_dir) / "rq2" / "generate" / "HumanEval_0"
+                          / "completions.json").read_text(encoding="utf-8"))
+    assert set(merged0["llm_lexical_01"]) == {"a", "b"}

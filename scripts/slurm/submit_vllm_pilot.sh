@@ -166,9 +166,9 @@ cd "${PILOT_DIR}"
 PIPE_CMDS="${PY} -m meta_real_eval.rq2.runner --config ${PILOT_DIR}/config.yaml --phase generate; ... --phase evaluate"
 "${PY}" "${REPO_DIR}/scripts/write_run_info.py" --pilot-dir "${PILOT_DIR}" --tier "${TIER}" --stage "${STAGE}" \
     --base-config "${BASE}" --model-dir "${MODEL_DIR}" --gpus "${GPUS}" --tp "${TP}" --max-model-len "${MAX_LEN}" \
-    --reasoning-parser "${PARSER}" --vllm-extra "${EXTRA}" --port "${PORT}" \
+    --reasoning-parser "${PARSER}" --vllm-extra="${EXTRA}" --port "${PORT}" \
     --server-cmd "apptainer ${APPTAINER_ARGS[*]} ${SERVER_ARGS[*]}" --pipeline-cmds "${PIPE_CMDS}" \
-    --image "${IMAGE}" --gpus-detected "${HOST_GPUS}" --apptainer-extra "${MRE_APPTAINER_EXTRA:-}" \
+    --image "${IMAGE}" --gpus-detected "${HOST_GPUS}" --apptainer-extra="${MRE_APPTAINER_EXTRA:-}" \
     --started-at "${STARTED_AT}"
 
 echo "== Stage A/5: server smoke + raw-response probe =="

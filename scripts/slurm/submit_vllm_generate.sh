@@ -147,7 +147,7 @@ export INNKUBE_API_KEY="dummy"
 # --- record what serves the model ------------------------------------------------
 "${PY}" scripts/write_serving_info.py --config "${CONFIG}" --model "${MODEL}" --model-dir "${MODEL_DIR}" \
     --job-dir "${JOB_DIR}" --out-dir "${OUT_DIR}" --image "${IMAGE}" --server-cmd "${SERVER_CMD}" \
-    --max-model-len "${MAX_LEN}" --tp "${TP}" --reasoning-parser "${PARSER}" --vllm-extra "${EXTRA}" \
+    --max-model-len "${MAX_LEN}" --tp "${TP}" --reasoning-parser "${PARSER}" --vllm-extra="${EXTRA}" \
     --job-id "${SLURM_JOB_ID:-local}" --started-at "${STARTED_AT}" \
     || fail_gate serving_info "could not record serving info"
 

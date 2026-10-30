@@ -28,7 +28,9 @@ instead of waiting hours on an engine that has stopped producing tokens).
 Every response header containing "cache" is recorded. The request shape (the
 model's recommended sampling) comes from the config via resolve_request; only
 max_tokens is small. The text compared is content + reasoning field, so a
-thinking model that spends the whole budget reasoning still compares.
+thinking model that spends the whole budget reasoning still compares. The
+budget must reach past a thinking model's formulaic opening: at 48 tokens
+qwen36 gave 2/10 distinct even UNSEEDED (pilot2, 2026-10-30), so 512.
 
 Calls the endpoint directly (never the response cache). Endpoint and key from
 INNKUBE_BASE_URL / INNKUBE_API_KEY (.env), like the pipeline.
@@ -93,7 +95,7 @@ def main(argv=None) -> int:
     ap.add_argument("--config", required=True)
     ap.add_argument("--model", required=True)
     ap.add_argument("--seed", type=int, default=424242)
-    ap.add_argument("--max-tokens", type=int, default=48)
+    ap.add_argument("--max-tokens", type=int, default=512)
     ap.add_argument("--try-no-cache", action="store_true")
     ap.add_argument("--timeout", type=float, default=120,
                     help="seconds per request; no retries (a hung engine must fail fast)")

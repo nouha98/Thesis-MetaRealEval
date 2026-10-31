@@ -16,7 +16,7 @@
 #
 # qwen38 needs --gpus 2: on one H200 (TP=1) vLLM 0.17 stalls on its first request.
 #
-# --max-model-len defaults to 65536: the 49152-token RQ2 output ceiling plus the
+# --max-model-len defaults to 73728: the 65536-token RQ2 output ceiling plus the
 # prompt. For another ceiling (make_run_configs.py --max-tokens N) pass
 # --max-model-len >= longest prompt + N: vLLM rejects a
 # request whose prompt + max_tokens exceed it (HTTP 400, recorded as
@@ -29,7 +29,7 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${REPO_DIR}"
 
-CONFIG="" MODEL="" MODEL_DIR="" GPUS=1 TP="" MAX_LEN=65536 PARSER="" EXTRA=""
+CONFIG="" MODEL="" MODEL_DIR="" GPUS=1 TP="" MAX_LEN=73728 PARSER="" EXTRA=""
 TASK_RANGE="" PHASES="rq1,rq2" TIME="24:00:00"
 IMAGE="/shared/karouin/containers/vllm-v0.17.0.sif" CONSTRAINT="gpumem.80gib" MEM="64G"
 while [[ $# -gt 0 ]]; do

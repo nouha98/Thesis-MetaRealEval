@@ -69,9 +69,13 @@ rq2:
   # One common output ceiling for every model (reasoning + answer), a stated
   # resource policy below the Qwen3.8 card's long-horizon budget. At 8192 the
   # thinking models truncated most completions (M1 audit); at 32768 qwen38
-  # truncated 10/180 (pilot, 2026-10-26); at 49152 1/180 (S4 trial, 2026-10-29,
-  # <= 3/180 rule). vLLM servers need --max-model-len >= prompt + this (65536).
-  max_tokens: 49152
+  # truncated 10/180 (pilot, 2026-10-26); at 49152 1/180 on the 9 S4 tasks
+  # (2026-10-29) but 34/140 (10 with no answer) on the 3 pilot2 tasks where it
+  # concentrated. At 65536 on those 14 cells: 2/140 truncated, 1/140 no answer,
+  # +2.5% tokens (+0.6% of qwen38's pilot2 total) (ceil65k, 2026-10-31; rule
+  # written beforehand: truncation at most halved, fewer unusable, cost fits).
+  # vLLM servers need --max-model-len >= prompt + this (73728).
+  max_tokens: 65536
   # Truncated/blank/malformed outputs are model outcomes and stay in the
   # denominator; only transport failures are retried (same request).
   retry_policy: transport_only

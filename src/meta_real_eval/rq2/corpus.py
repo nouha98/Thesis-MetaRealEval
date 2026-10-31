@@ -717,6 +717,51 @@ def _strip_docstrings(tree: ast.AST) -> str:
     return ast.dump(tree)
 
 
+_EXC_NAME_RE = re.compile(r"\b[A-Z]\w*(?:Error|Exception)\b")
+
+
+def _required_names(skeleton: str) -> list[set[str]]:
+    """Per docstring, in source order: the names its text states and a rewrite must keep.
+
+    The parameters of its def (a class docstring: of ``__init__``) that the text
+    mentions, and every exception class it names. A one- or two-letter parameter
+    counts only where it is introduced as one (``k:``, ``k (``): as a bare word it
+    also matches ordinary prose. A rewrite that drops such a name has dropped part
+    of the contract; the Gate C review of the pilot2 corpus found 5 of its 8
+    contract-changing variants this way (the other 3 changed an exception's
+    condition, which only a judge or a person can see).
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", SyntaxWarning)
+        tree = ast.parse(skeleton)
+    owners = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            first = node.body[0]
+            if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
+                    and isinstance(first.value.value, str)):
+                owners.append((first.value.lineno, first.value.col_offset, node))
+    owners.sort(key=lambda o: o[:2])
+    required = []
+    for (_, _, node), text in zip(owners, docstring_texts(skeleton)):
+        fn = node
+        if isinstance(node, ast.ClassDef):
+            fn = next((n for n in node.body
+                       if isinstance(n, ast.FunctionDef) and n.name == "__init__"), None)
+        args = fn.args.posonlyargs + fn.args.args + fn.args.kwonlyargs if fn else []
+        names = set()
+        for a in args:
+            p = a.arg
+            if p in ("self", "cls"):
+                continue
+            pattern = (rf"(?:^|[\s(]){re.escape(p)}\s*[:(]" if len(p) <= 2
+                       else rf"\b{re.escape(p)}\b")
+            if re.search(pattern, text):
+                names.add(p)
+        required.append(names | set(_EXC_NAME_RE.findall(text)))
+    return required
+
+
 def class_structural_gate(original: str, candidate: str, *,
                           seen: Optional[set[str]] = None) -> Optional[str]:
     """Gate A for a class skeleton: ``None`` if the candidate passes, else the reason.
@@ -724,7 +769,8 @@ def class_structural_gate(original: str, candidate: str, *,
     Under the splice the code cannot change by construction; the AST check is
     the backstop that also catches a rewrite that breaks its own string literal
     (a stray closing quote, say), which would otherwise move code into or out of
-    a docstring.
+    a docstring. A docstring must also keep every parameter and exception name
+    its original states (:func:`_required_names`).
     """
     original_n, candidate_n = _normalize(original), _normalize(candidate)
     if candidate_n == original_n:
@@ -747,6 +793,10 @@ def class_structural_gate(original: str, candidate: str, *,
     new_numbers = set(_NUMBER_RE.findall(candidate)) - set(_NUMBER_RE.findall(original))
     if new_numbers:
         return "new_numeric_literal:" + ",".join(sorted(new_numbers))
+    for names, text in zip(_required_names(original), docstring_texts(candidate)):
+        dropped = sorted(n for n in names if not re.search(rf"\b{re.escape(n)}\b", text))
+        if dropped:
+            return "dropped_name:" + ",".join(dropped)
     return None
 
 

@@ -204,3 +204,36 @@ def test_generate_family_rewrites_a_class_skeleton():
     gen_messages = client.calls[0][1]
     assert "<<<1>>>" in gen_messages[1]["content"] and "CONTEXT" in gen_messages[1]["content"]
     assert rejected == [], "the slot was filled by the first candidate; the second is never read"
+
+
+RAISING = (
+    "class Lock:\n"
+    '    """A lock."""\n\n'
+    "    def acquire(self, timeout=None, *, k=1):\n"
+    '        """Wait at most timeout seconds for k slots.\n\n'
+    "        k: how many slots to take. Raises RuntimeError on expiry.\n"
+    '        """\n'
+    "        pass\n"
+)
+
+
+def _gate_on(skeleton: str, segments: list[str]):
+    candidate, reason = class_candidate(skeleton, _raw(segments))
+    return reason or class_structural_gate(skeleton, candidate)
+
+
+def test_gate_rejects_a_rewrite_that_drops_a_parameter_or_exception_name():
+    keeps = "Block up to timeout seconds for k slots. k: the slot count. RuntimeError on expiry."
+    assert _gate_on(RAISING, ["A mutex.", keeps]) is None
+    assert _gate_on(RAISING, ["A mutex.", keeps.replace("timeout ", "")]) == "dropped_name:timeout"
+    assert _gate_on(RAISING, ["A mutex.", keeps.replace("RuntimeError", "an error")]) == (
+        "dropped_name:RuntimeError")
+    # a one-letter parameter counts where it is introduced as one ("k:"), and a
+    # rewrite must keep it; the bare letter inside ordinary words is not required
+    assert _gate_on(RAISING, ["A mutex.", "Block up to timeout seconds for slots. "
+                                          "RuntimeError on expiry."]) == "dropped_name:k"
+
+
+def test_a_short_parameter_mentioned_only_as_prose_is_not_required():
+    skeleton = 'class A:\n    """Hold a value."""\n\n    def f(self, a):\n        """Return a doubled."""\n        pass\n'
+    assert _gate_on(skeleton, ["Store one value.", "Double the input and return it."]) is None

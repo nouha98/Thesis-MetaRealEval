@@ -32,4 +32,6 @@ logs/*
 
 archive/
 .cache_model_check/
-doc/
+doc/*
+# Gate C review sheets are part of the corpus record (data/ is not tracked)
+!doc/gate_c/

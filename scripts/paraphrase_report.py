@@ -87,8 +87,8 @@ def write_sheet(sampled: list[dict], corpus: dict, out: Path) -> None:
         f"- sample: {len(sampled)} variants",
         "",
         "For each item, mark **equivalent** or **not equivalent**: does the rewrite "
-        "demand exactly the same function as the original? Wording, tone and the "
-        "order of requirements are not differences in meaning.",
+        "demand exactly the same function (or class) as the original? Wording, tone "
+        "and the order of requirements are not differences in meaning.",
         "",
         "| # | verdict (fill in) | note |",
         "|---|---|---|",

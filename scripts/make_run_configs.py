@@ -57,6 +57,11 @@ GROUPS = {
 }
 COMBINED = "combined"
 VLLM_CLIENT = {"max_concurrent_requests": 16, "requests_per_minute": 600}
+# qwen38 on 2xH200 at the 65,536 ceiling: 16 requests x n=10 = 160 sequences fill
+# the KV cache (99-100% for hours, throughput 3,300 -> 250-400 tok/s while vLLM
+# preempts, 74 client timeouts in 7 h; chunk job 5193079, 2026-11-01). A client
+# limit, not part of the protocol, so it is not in the manifest comparison.
+VLLM_CLIENT_BY_GROUP = {"vllm-qwen38": {"max_concurrent_requests": 6}}
 
 
 def parse_tasks(spec: str | None) -> list[int] | None:
@@ -84,7 +89,7 @@ def build(base_raw: dict, group: str, label: str, tasks: list[int] | None,
     raw["llm"]["cache_dir"] = f"cache/llm_responses_tier2_runs/{label}/{group}"
     raw["llm"]["models"] = [copy.deepcopy(m) for m in models if m["id"] in wanted]
     if group.startswith("vllm-"):
-        raw["llm"].update(VLLM_CLIENT)
+        raw["llm"].update({**VLLM_CLIENT, **VLLM_CLIENT_BY_GROUP.get(group, {})})
     if tasks is not None:
         raw["benchmark"]["tasks"] = tasks
     if max_tokens is not None:

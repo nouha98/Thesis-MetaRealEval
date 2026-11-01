@@ -57,11 +57,11 @@ GROUPS = {
 }
 COMBINED = "combined"
 VLLM_CLIENT = {"max_concurrent_requests": 16, "requests_per_minute": 600}
-# qwen38 on 2xH200 at the 65,536 ceiling: 16 requests x n=10 = 160 sequences fill
+# qwen38 on 2xH200 (KV cache 783k tokens) at the 65,536 ceiling: 16 requests x n=10 = 160 sequences fill
 # the KV cache (99-100% for hours, throughput 3,300 -> 250-400 tok/s while vLLM
 # preempts, 74 client timeouts in 7 h; chunk job 5193079, 2026-11-01). A client
 # limit, not part of the protocol, so it is not in the manifest comparison.
-VLLM_CLIENT_BY_GROUP = {"vllm-qwen38": {"max_concurrent_requests": 6}}
+VLLM_CLIENT_BY_GROUP = {"vllm-qwen38": {"max_concurrent_requests": 4}}
 
 
 def parse_tasks(spec: str | None) -> list[int] | None:

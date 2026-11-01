@@ -48,7 +48,7 @@ def test_every_group_has_its_own_dirs_and_vllm_gets_server_client_limits(tmp_pat
     caches = {c.llm.cache_dir.as_posix() for c in cfgs.values()}
     assert len(outs) == len(caches) == 4
     assert cfgs["full_vllm-qwen36"].llm.max_concurrent_requests == 16
-    assert cfgs["full_vllm-qwen38"].llm.max_concurrent_requests == 6
+    assert cfgs["full_vllm-qwen38"].llm.max_concurrent_requests == 4
     assert cfgs["full_innkube"].llm.max_concurrent_requests == BASE["llm"]["max_concurrent_requests"]
 
 

@@ -12,9 +12,12 @@
 #       --reasoning-parser qwen3 --vllm-extra "--language-model-only"
 #   scripts/slurm/launch_vllm_generate.sh --config config/tier2_runs/full_vllm-qwen38.yaml \
 #       --model qwen38-27b --model-dir /shared/karouin/models/Qwen3.8-27B --gpus 2 \
-#       --reasoning-parser qwen3 [--task-range 0-99] [--phases rq1,rq2] [--time 24:00:00]
+#       --constraint gpumem.141gib --mem 128G --reasoning-parser qwen3 \
+#       [--task-range 0-99] [--phases rq1,rq2] [--time 24:00:00]
 #
 # qwen38 needs --gpus 2: on one H200 (TP=1) vLLM 0.17 stalls on its first request.
+# It also gets --mem 128G: the job's memory limit counts the page cache, and the
+# job reads all its weights into that cache before the server starts.
 #
 # --max-model-len defaults to 73728: the 65536-token RQ2 output ceiling plus the
 # prompt. For another ceiling (make_run_configs.py --max-tokens N) pass

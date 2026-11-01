@@ -393,6 +393,39 @@ def test_gpu_count_helper_counts_listed_gpus_and_reports_zero(tmp_path):
     assert _bash_lines(f'mre_count_gpus "{empty.as_posix()}"') == ["0"]
 
 
+@requires_bash
+def test_prefetch_reads_every_weight_file_and_logs_its_rate(tmp_path):
+    model = tmp_path / "model"
+    model.mkdir()
+    (model / "a.safetensors").write_bytes(b"x" * 2048)
+    (model / "b.safetensors").write_bytes(b"y" * 2048)
+    (model / "config.json").write_text("{}")
+    log = tmp_path / "prefetch.log"
+    lines = _bash_lines(f'mre_prefetch_weights "{model.as_posix()}" "{log.as_posix()}" 60')
+    assert lines[0].startswith("prefetch: 2 weight file(s)")
+    assert lines[-1].endswith("rc=0")
+    text = log.read_text()
+    assert "a.safetensors" in text and "b.safetensors" in text and "MiB/s" in text
+    assert "config.json" not in text
+
+
+@requires_bash
+def test_prefetch_never_fails_the_job(tmp_path):
+    log = tmp_path / "prefetch.log"
+    lines = _bash_lines(f'mre_prefetch_weights "{(tmp_path / "missing").as_posix()}" "{log.as_posix()}" 60; echo survived')
+    assert lines[-1] == "survived"
+
+
+def test_generate_job_prefetches_before_the_server_and_ties_the_two_ready_clocks():
+    job = (SCRIPTS / "slurm" / "submit_vllm_generate.sh").read_text()
+    order = ['export VLLM_ENGINE_READY_TIMEOUT_S="${READY_TIMEOUT}"', 'mre_apptainer_args "${IMAGE}"',
+             'mre_startup_sampler "${JOB_DIR}/startup_samples.log" &', 'mre_prefetch_weights "${MODEL_DIR}"',
+             'mre_server_args "${MODEL}"', 'echo "server ready after', "stop_sampler\n"]
+    assert all(token in job for token in order), [t for t in order if t not in job]
+    positions = [job.index(token) for token in order[:-1]] + [job.rindex(order[-1])]
+    assert positions == sorted(positions)
+
+
 def test_job_script_gates_are_ordered_and_use_the_container_not_srun():
     job = (SCRIPTS / "slurm" / "submit_vllm_pilot.sh").read_text()
     # Anchored on the executable lines (the header comment also names these steps).

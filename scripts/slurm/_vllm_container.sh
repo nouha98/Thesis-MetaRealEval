@@ -41,8 +41,9 @@ mre_apptainer_args() {
         --env "HF_HOME=${HF_HOME:-${cache_dir}/huggingface}"
         --env "HF_HUB_OFFLINE=1"
         # vLLM gives up on the engine after 600 s by default; cold weight loads of
-        # the 27B model from the shared filesystem can exceed that (qwen38 jobs
-        # 5193078/5193080, 2026-11-01). Our own wait loop allows READY_TIMEOUT.
+        # the 27B model from the shared filesystem exceed that, and 1800 s too
+        # (qwen38 jobs 5193078/5193080, 5194830, 2026-11-01). Callers keep this
+        # equal to their READY_TIMEOUT, so neither clock fires first by accident.
         --env "VLLM_ENGINE_READY_TIMEOUT_S=${VLLM_ENGINE_READY_TIMEOUT_S:-1800}"
     )
     [[ -n "${rw_dir}" ]] && APPTAINER_ARGS+=(--bind "${rw_dir}:${rw_dir}")
@@ -74,6 +75,40 @@ mre_server_args() {
 # the container, so a binding problem shows up as a count mismatch.
 mre_count_gpus() {
     "${@:-nvidia-smi}" -L 2>/dev/null | grep -c '^GPU' || true
+}
+
+# mre_prefetch_weights MODEL_DIR LOG [BUDGET_S] [PARALLEL]
+# Reads every weight file once so vLLM finds them in the page cache, on a clock of
+# its own: qwen38 was ready in minutes while another job on the node was reading
+# the same files (5193079) and not within 30 min cold (5194830). Seconds and MiB/s
+# per file go to LOG. Never fails the job: whatever it misses, the server reads.
+mre_prefetch_weights() {
+    local model_dir="$1" log="$2" budget="${3:-3600}" parallel="${4:-4}" t0=${SECONDS} rc
+    echo "prefetch: $(find -L "${model_dir}" -maxdepth 1 -type f -name '*.safetensors' | wc -l) weight file(s), budget ${budget}s" | tee -a "${log}"
+    find -L "${model_dir}" -maxdepth 1 -type f -name '*.safetensors' -print0 \
+        | timeout "${budget}" xargs -0 -r -n 1 -P "${parallel}" bash -c '
+            s=$(date +%s.%N); cat "$1" > /dev/null; e=$(date +%s.%N)
+            awk -v f="${1##*/}" -v b="$(stat -L -c %s "$1")" -v s="$s" -v e="$e" "BEGIN {
+                d = e - s; m = b / 1048576
+                printf \"%s %.0f MiB %.0f s %.0f MiB/s\n\", f, m, d, m / (d > 0 ? d : 1) }"' _ >> "${log}"
+    rc=${PIPESTATUS[1]}
+    echo "prefetch: done in $((SECONDS - t0))s rc=${rc}" | tee -a "${log}"
+    return 0
+}
+
+# mre_startup_sampler LOG [INTERVAL_S]  (run in the background, killed by the job)
+# One line per interval, so a server that never comes up leaves evidence: GPU memory
+# before the server starts shows leftovers, a rising figure shows weights arriving,
+# flat memory with processes in D state shows a blocked read.
+mre_startup_sampler() {
+    local log="$1" every="${2:-30}"
+    while :; do
+        printf '%s gpu_mib=%s d_state=%s cached_gib=%s\n' "$(date +%H:%M:%S)" \
+            "$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null | paste -sd,)" \
+            "$(ps -eo stat= | grep -c '^D')" \
+            "$(awk '/^Cached:/ { printf "%.0f", $2 / 1048576 }' /proc/meminfo)" >> "${log}"
+        sleep "${every}"
+    done
 }
 
 # mre_seconds_left TIMELEFT -> seconds, from squeue's %L format

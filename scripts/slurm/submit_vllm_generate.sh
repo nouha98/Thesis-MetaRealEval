@@ -69,8 +69,9 @@ mkdir -p "${JOB_DIR}" "${REPO_DIR}/.cache/container_home"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "config: ${CONFIG}  model: ${MODEL}  out: ${OUT_DIR}  job dir: ${JOB_DIR}"
 
-SERVER_PID=""
-cleanup() { [[ -n "${SERVER_PID}" ]] && kill "${SERVER_PID}" 2>/dev/null && wait "${SERVER_PID}" 2>/dev/null; }
+SERVER_PID="" SAMPLER_PID=""
+stop_sampler() { [[ -n "${SAMPLER_PID}" ]] && kill "${SAMPLER_PID}" 2>/dev/null; SAMPLER_PID=""; }
+cleanup() { stop_sampler; [[ -n "${SERVER_PID}" ]] && kill "${SERVER_PID}" 2>/dev/null && wait "${SERVER_PID}" 2>/dev/null; }
 trap cleanup EXIT
 
 fail_gate() {   # fail_gate <check-name> <message>
@@ -93,6 +94,8 @@ command -v apptainer >/dev/null 2>&1 || fail_gate apptainer "apptainer not found
 [[ -f "${IMAGE}" ]] || fail_gate image "image not found: ${IMAGE}"
 [[ -d "${MODEL_DIR}" ]] || fail_gate model_dir "model dir not found: ${MODEL_DIR}"
 
+READY_TIMEOUT="${READY_TIMEOUT:-3600}"
+export VLLM_ENGINE_READY_TIMEOUT_S="${READY_TIMEOUT}"
 mre_apptainer_args "${IMAGE}" "${MODEL_DIR}" "${REPO_DIR}" "${JOB_DIR}"
 
 # --- Gate 2: GPUs, measured on the host and inside the container -------------
@@ -114,6 +117,11 @@ apptainer "${APPTAINER_ARGS[@]}" python3 "${MRE_CONTAINER_SCRIPTS_PATH}/vllm_fea
     > "${JOB_DIR}/feasibility_container.stdout" 2> "${JOB_DIR}/feasibility_container.stderr" \
     || fail_gate container_preflight "see ${JOB_DIR}/feasibility_container.json"
 
+# --- weights into the page cache, before the server's clock starts ---------------
+mre_startup_sampler "${JOB_DIR}/startup_samples.log" &
+SAMPLER_PID=$!
+mre_prefetch_weights "${MODEL_DIR}" "${JOB_DIR}/prefetch.log" "${PREFETCH_TIMEOUT:-3600}"
+
 # --- Gate 4: server -----------------------------------------------------------
 PORT=$("${PY}" -c "import socket; s=socket.socket(); s.bind(('127.0.0.1',0)); print(s.getsockname()[1])")
 mre_server_args "${MODEL}" "${PORT}" "${TP}" "${MAX_LEN}" "${PARSER}" "${EXTRA}"
@@ -122,7 +130,6 @@ echo "server: ${SERVER_CMD}"
 apptainer "${APPTAINER_ARGS[@]}" "${SERVER_ARGS[@]}" > "${JOB_DIR}/server.log" 2>&1 &
 SERVER_PID=$!
 
-READY_TIMEOUT="${READY_TIMEOUT:-1800}"
 ready=0
 for ((t = 0; t < READY_TIMEOUT; t += 5)); do
     if ! kill -0 "${SERVER_PID}" 2>/dev/null; then echo "vLLM exited during startup" >&2; break; fi
@@ -140,6 +147,7 @@ PYEOF
 done
 [[ "${ready}" == "1" ]] || { tail -40 "${JOB_DIR}/server.log" >&2; fail_gate server_start "vLLM not ready; see ${JOB_DIR}/server.log"; }
 echo "server ready after ~${t}s"
+stop_sampler
 
 export INNKUBE_BASE_URL="http://127.0.0.1:${PORT}"     # the client appends /v1
 export INNKUBE_API_KEY="dummy"

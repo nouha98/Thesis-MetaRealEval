@@ -95,11 +95,12 @@ rq2:
   # template relations are ported (tracked, not done).
   template_relations: []
   include_control_resample: true
-  # Pilot2 corpus (24 tasks, 3 families x 1, template v2), Gate C reviewed
-  # 2026-10-30: 8 of 72 variants removed (manifest gate_c_removed), 23/24 tasks
-  # covered. The full-run corpus replaces both lines before S8.
-  paraphrase_corpus: ./data/paraphrases/realclasseval_pilot2.json
-  corpus_sha256: "c6595185eaee8475f3192b49882c7e5932081ca138580d62c2723a1b3d0437d4"
+  # Full corpus v1 (375 tasks, 3 families x 1, template v2, Gate A with the
+  # dropped-name check), generated 2026-10-31: 1110/1125 slots, then Gate C
+  # (doc/gate_c/): 8 removed, 1102 variants, 372/375 tasks cover >= 2/3 families.
+  # The pilot2 corpus (c6595185..., 64/72 after Gate C) is the pre-S8 pin.
+  paraphrase_corpus: ./data/paraphrases/realclasseval_v1.json
+  corpus_sha256: "bdd59b636edce4bef351583e97d98e506e4c724edfab7117cb4ea3f80b6bcf8a"
   generator_model: soofi-s-isar-preview
   judge_model: soofi-s-isar-preview
 

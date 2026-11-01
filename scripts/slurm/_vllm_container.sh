@@ -40,6 +40,10 @@ mre_apptainer_args() {
         --env "XDG_CACHE_HOME=${XDG_CACHE_HOME:-${cache_dir}/xdg}"
         --env "HF_HOME=${HF_HOME:-${cache_dir}/huggingface}"
         --env "HF_HUB_OFFLINE=1"
+        # vLLM gives up on the engine after 600 s by default; cold weight loads of
+        # the 27B model from the shared filesystem can exceed that (qwen38 jobs
+        # 5193078/5193080, 2026-11-01). Our own wait loop allows READY_TIMEOUT.
+        --env "VLLM_ENGINE_READY_TIMEOUT_S=${VLLM_ENGINE_READY_TIMEOUT_S:-1800}"
     )
     [[ -n "${rw_dir}" ]] && APPTAINER_ARGS+=(--bind "${rw_dir}:${rw_dir}")
     # shellcheck disable=SC2206

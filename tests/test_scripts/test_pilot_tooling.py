@@ -343,6 +343,7 @@ def test_apptainer_args_use_nv_bind_model_readonly_and_pass_cache_env():
                      "/r/results_test/t/m:/r/results_test/t/m",
                      "TRITON_CACHE_DIR=/r/.cache/triton", "XDG_CACHE_HOME=/r/.cache/xdg",
                      "HF_HOME=/r/.cache/huggingface", "HF_HUB_OFFLINE=1",
+                     "VLLM_ENGINE_READY_TIMEOUT_S=1800",
                      "/r/.cache/container_home:/r/.cache/container_home"):
         assert expected in joined, expected
     assert "--home" in lines

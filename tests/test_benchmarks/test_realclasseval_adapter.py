@@ -406,3 +406,55 @@ def test_an_empty_degraded_suite_runs_nothing(bench, task, monkeypatch):
     monkeypatch.setattr(rce, "execute_pytest", lambda *a, **k: pytest.fail("executed an empty suite"))
     r = bench.run_suite(task, task.reference_code, timeout_s=30, suite=bench.degrade(task, 0.8, seed=42))
     assert r.scores["primary"] is None and not r.passed_all and r.outcomes == {}
+
+
+# --- RQ4 oracle-unit degradation (plan rev. 6, 8.1) --------------------------------
+
+def test_oracle_units_of_the_fixture(bench, task):
+    assert [u.unit_id for u in bench.oracle_units(task)] == [
+        "test_case_0#a0", "test_case_1", "test_case_2", "test_case_3#a0"]   # test_case_4 is invalid
+
+
+def test_level_zero_is_exactly_the_intact_suite(bench, task):
+    suite, info = bench.degrade_units(task, 0.0, seed=42)
+    assert suite.subset is None and suite.test_code is None and info["n_removed"] == 0
+    wrong = task.reference_code.replace("self.count += n", "self.count += n + 1")
+    assert bench.run_suite(task, wrong, 30, suite=suite).scores == bench.run_suite(task, wrong, 30).scores
+
+
+def test_the_reference_passes_every_degraded_level(bench, task):
+    for level in (0.2, 0.5, 1.0):
+        suite, _ = bench.degrade_units(task, level, seed=42)
+        assert bench.run_suite(task, task.reference_code, 30, suite=suite).scores["primary"] == 1.0
+
+
+def test_removing_every_unit_drops_value_checks_keeps_crash_checks_and_the_denominator_shrinks(bench, task):
+    suite, info = bench.degrade_units(task, 1.0, seed=42)
+    assert info["n_remaining"] == 0 and suite.subset == frozenset({"test_case_0", "test_case_3"})
+    wrong = task.reference_code.replace("self.count += n", "self.count += n + 1")
+    intact = bench.run_suite(task, wrong, 30)
+    weakened = bench.run_suite(task, wrong, 30, suite=suite)
+    assert intact.scores["primary"] == 0.5          # both value asserts fail, both exception tests pass
+    assert weakened.scores["primary"] == 1.0 and weakened.scores["n_valid"] == 2
+    crash = task.reference_code.replace("self.count += n", "raise RuntimeError('crash')")
+    assert bench.run_suite(task, crash, 30, suite=suite).scores["primary"] == 0.0
+
+
+def test_an_unremoved_assert_still_checks(bench, task):
+    """test_case_0#a0 is removed at 0.2 or test_case_3#a0 is: the other still fails a wrong value."""
+    suite, info = bench.degrade_units(task, 0.2, seed=42)
+    assert info["n_removed"] == 1
+    wrong = task.reference_code.replace("self.count += n", "self.count += n + 1")
+    r = bench.run_suite(task, wrong, 30, suite=suite)
+    removed = info["removed"][0]
+    behavioural_left = {"test_case_0", "test_case_3"} - {removed.split("#")[0]}
+    assert any(r.outcomes[t].outcome == "ordinary_fail" for t in behavioural_left)
+
+
+def test_augmentation_is_built_on_the_weakened_code(bench, task):
+    suite, _ = bench.degrade_units(task, 1.0, seed=42)
+    ca = "def test_ca_0():\n    assert module_0.Counter(1).count == 1\n"
+    aug = bench.augmented_suite(task, suite, ca, 1)
+    assert aug.test_code.startswith(suite.test_code) and aug.subset == suite.subset | {"test_ca_0"}
+    r = bench.run_suite(task, task.reference_code, 30, suite=aug)
+    assert r.scores["primary"] == 1.0 and r.scores["n_valid"] == 3

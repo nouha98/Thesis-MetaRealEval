@@ -1128,6 +1128,10 @@ def analyze_rq4() -> dict:
     summary_path = RESULTS / "rq4" / "summary" / "high_level.json"
     if not degrade_root.exists():
         return {"available": False, "note": "results/rq4/degrade not found"}
+    if any(degrade_root.glob("*/degradation_tier2.json")):
+        return {"available": False,
+                "note": "Tier 2 RQ4 degrades oracle units; its analysis is "
+                        "rq4/summary/tier2_rq4.txt (python -m meta_real_eval.rq4.runner --phase analyze)"}
 
     per_task: dict[str, dict] = {}
     trend_blocks: list[list[float]] = []

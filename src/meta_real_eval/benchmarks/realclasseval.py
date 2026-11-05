@@ -40,8 +40,10 @@ from ..core.sandbox import execute_pytest
 from ..rq2.evaluator import _FENCE_RE, _OPEN_FENCE_RE
 from .base import DegradedSuite, InputPool, Observation, SDLScope, SuiteResult, Task
 from .forkserver import run_scenarios
-from .gate import VALID, VALID_BEHAVIOURAL, GatedTest
+from .gate import VALID, VALID_BEHAVIOURAL, VALID_EXCEPTION_ORACLE, GatedTest
 from .observe import nondeterminism_mask, traces_agree
+from .oracle_units import (EXCEPTION_UNIT, OracleUnit, find_oracle_units, n_removed,
+                           removal_order, weaken_asserts)
 from .outcomes import TIMEOUT as OUTCOME_TIMEOUT
 from .outcomes import classify_run, static_test_info
 from .scenarios import build_pool, extract_scenarios
@@ -254,6 +256,10 @@ class RealClassEvalBenchmark:
     # cold parallel imports passed the 30 s timeout in the S8 run. Tier 1 keeps
     # its evaluation unchanged.
     rerun_whole_suite_timeouts = True
+    # RQ4 degrades oracle units (asserts, exception tests), not whole tests: the
+    # suites average 3.24 valid tests, so whole-test removal empties 307 of 375 at
+    # level 0.8. rq4/tier2.py; whole-test degrade() is the sensitivity analysis.
+    rq4_design = "oracle_units"
 
     def __init__(
         self,
@@ -497,6 +503,40 @@ class RealClassEvalBenchmark:
         removed = {names[i] for i in order[:n_remove]}
         return DegradedSuite(level=level, subset=frozenset(n for n in names if n not in removed))
 
+    def oracle_units(self, task: Task) -> list[OracleUnit]:
+        """RQ4's oracle units for this task (plan rev. 6, 8.1; see oracle_units.py)."""
+        tests = task.meta.get("tests") or {}
+        return find_oracle_units(task.test_code, task.module_name,
+                                 [n for n, v in tests.items() if v["validity"] == VALID_BEHAVIOURAL],
+                                 [n for n, v in tests.items() if v["validity"] == VALID_EXCEPTION_ORACLE])
+
+    def degrade_units(self, task: Task, level: float, seed: int) -> tuple[DegradedSuite, dict]:
+        """RQ4's primary degradation: remove ``ceil(level * n)`` oracle units.
+
+        Assert units are weakened in place (``test_code``), exception units leave
+        the selected suite (``subset``). One seeded shuffle per task, then
+        prefixes, so the levels are nested. Level 0 (nothing removed) is the plain
+        intact suite, the exact call RQ2's evaluator makes. ``info`` records the
+        counts and the removed unit ids; ``n_remaining == 0`` is a missing level.
+        """
+        tests = task.meta.get("tests") or {}
+        behavioural = [n for n, v in tests.items() if v["validity"] == VALID_BEHAVIOURAL]
+        exception = [n for n, v in tests.items() if v["validity"] == VALID_EXCEPTION_ORACLE]
+        units = find_oracle_units(task.test_code, task.module_name, behavioural, exception)
+        k = n_removed(len(units), level)
+        removed = removal_order(units, f"{seed}|{task.task_id}")[:k]
+        info = {"n_units": len(units), "n_removed": k, "n_remaining": len(units) - k,
+                "removed": removed}
+        if not removed:
+            return DegradedSuite(level=level), info
+        kind = {u.unit_id: u for u in units}
+        dropped_tests = {kind[i].test for i in removed if kind[i].kind == EXCEPTION_UNIT}
+        test_code = weaken_asserts(task.test_code, task.module_name, behavioural, exception, removed)
+        subset = (frozenset(g.nodeid for g in self._gated(task) if g.nodeid not in dropped_tests)
+                  if dropped_tests else None)
+        return DegradedSuite(level=level, subset=subset,
+                             test_code=None if test_code == task.test_code else test_code), info
+
     def consistency_suite(self, task: Task, divergence_data: dict, threshold, max_assertions: int = 20):
         """Build ``test_ca_<i>`` functions from RQ3's generic consensus.
 
@@ -581,6 +621,9 @@ class RealClassEvalBenchmark:
         if not ca_code:
             return degraded
         ca_names = frozenset(f"test_ca_{i}" for i in range(ca_count))
-        test_code = task.test_code + "\n\n" + ca_code
+        # On top of the degraded source: under oracle-unit degradation its asserts
+        # are weakened in test_code (whole-test degradation leaves it None).
+        base = degraded.test_code if degraded.test_code is not None else task.test_code
+        test_code = base + "\n\n" + ca_code
         subset = (degraded.subset | ca_names) if degraded.subset is not None else None
         return DegradedSuite(level=degraded.level, subset=subset, test_code=test_code, extra_valid=ca_names)

@@ -50,7 +50,15 @@ logger = logging.getLogger(__name__)
 # Degrade phase
 # ---------------------------------------------------------------------------
 
+def _tier2(bench) -> bool:
+    """Tier 2 degrades oracle units (rq4/tier2.py); Tier 1 keeps this module's path."""
+    return getattr(bench, "rq4_design", None) == "oracle_units"
+
+
 def run_degrade_one(task, cfg: Config, bench, force: bool = False) -> None:
+    if _tier2(bench):
+        from .tier2 import run_degrade_tier2
+        return run_degrade_tier2(task, cfg, bench, force=force)
     label = task.label
     out = task_dir(cfg, "rq4", label, phase="degrade")
 
@@ -89,6 +97,9 @@ def run_degrade_one(task, cfg: Config, bench, force: bool = False) -> None:
 # ---------------------------------------------------------------------------
 
 def run_augment_one(task, cfg: Config, bench, force: bool = False) -> None:
+    if _tier2(bench):
+        from .tier2 import run_augment_tier2
+        return run_augment_tier2(task, cfg, bench, force=force)
     label = task.label
     out = task_dir(cfg, "rq4", label, phase="augment")
 
@@ -468,6 +479,9 @@ def main(argv=None) -> None:
     elif args.phase == "augment":
         for task in tasks:
             run_augment_one(task, cfg, bench, force=args.force)
+    elif _tier2(bench):
+        from .tier2 import run_analyze_tier2
+        run_analyze_tier2(cfg, tasks)
     else:
         run_analyze(cfg, tasks)
 

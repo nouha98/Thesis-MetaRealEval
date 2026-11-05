@@ -93,6 +93,16 @@ _LLM_MUTATION_SYSTEM_PROMPT = (
 )
 
 
+# RQ3 SBC reverse generation: rq3.sbc_scorer._REVERSE_GEN_SYSTEM reworded for a
+# class, as _LLM_MUTATION_SYSTEM_PROMPT rewords RQ1's.
+_SBC_SYSTEM_PROMPT = (
+    "You are a software specification analyst. "
+    "Given a Python class implementation, infer and describe its intended specification "
+    "in 2-4 clear sentences. Describe what the class and its methods are supposed to do, "
+    "including edge cases they handle. Do not reference implementation details."
+)
+
+
 class ManifestMissing(RuntimeError):
     """Scoring and task loading need the M0 gate's manifest."""
 
@@ -326,6 +336,11 @@ class RealClassEvalBenchmark:
         if subset is not None:
             names = [n for n in names if n in subset]
         test_code = suite.test_code if suite is not None and suite.test_code is not None else task.test_code
+        if not names:
+            # A degraded suite with every test removed (RQ4 at 0.8 on a task of up
+            # to 4 valid tests). execute_pytest with no selection would run the
+            # whole file; the scope is empty, so the score is None either way.
+            return SuiteResult(outcomes={}, scores=self.score_outcomes(task, {}, subset, extra_valid))
         run = execute_pytest(task.module_name, code, test_code, timeout_s=timeout_s, select=names)
         outcomes = classify_run(
             run, static_test_info(test_code),
@@ -366,6 +381,23 @@ class RealClassEvalBenchmark:
 
     def suite_timed_out(self, result: SuiteResult) -> bool:
         return any(o.outcome == OUTCOME_TIMEOUT for o in result.outcomes.values())
+
+    def sbc_spec(self, task: Task) -> dict:
+        """RQ3's SBC request for a class: class wording, and every docstring of the
+        skeleton as the reference (the class docstring alone, which the Tier 1
+        regex finds, leaves out the methods' specifications; median 4 per task)."""
+        import inspect
+
+        from ..rq2.corpus import docstring_texts
+        try:
+            docs = [inspect.cleandoc(d) for d in docstring_texts(task.prompt)]
+        except (SyntaxError, ValueError):
+            docs = []
+        return {
+            "system": _SBC_SYSTEM_PROMPT,
+            "user_label": "Class implementation",
+            "reference": "\n\n".join(d for d in docs if d.strip()),
+        }
 
     # --- ScenarioProvider -------------------------------------------------------
 

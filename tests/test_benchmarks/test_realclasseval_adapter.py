@@ -393,3 +393,16 @@ def test_consistency_suite_end_to_end(bench, task):
         "consistency assertion, even though it never contributed to building them"
     )
     assert not violator.passed_all
+
+
+def test_sbc_spec_uses_class_wording_and_every_docstring(bench, task):
+    spec = bench.sbc_spec(task)
+    assert "class" in spec["system"] and spec["user_label"] == "Class implementation"
+    assert spec["reference"] == "A counter.\n\nAdd n; negative n raises ValueError."
+
+
+def test_an_empty_degraded_suite_runs_nothing(bench, task, monkeypatch):
+    import meta_real_eval.benchmarks.realclasseval as rce
+    monkeypatch.setattr(rce, "execute_pytest", lambda *a, **k: pytest.fail("executed an empty suite"))
+    r = bench.run_suite(task, task.reference_code, timeout_s=30, suite=bench.degrade(task, 0.8, seed=42))
+    assert r.scores["primary"] is None and not r.passed_all and r.outcomes == {}

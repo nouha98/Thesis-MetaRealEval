@@ -185,6 +185,7 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, bench, force: boo
     # The SBC reverse generator is an instrument; generated configs pin it so
     # the order of llm.models can never change it (None = legacy: first model).
     model_id = cfg.rq3.sbc_model or cfg.model_ids()[0]
+    spec = bench.sbc_spec(task) if hasattr(bench, "sbc_spec") else None
     sbc_results: dict[str, dict] = {}
 
     # Same containment as the execute phase, and for the same reason: SBC costs
@@ -213,7 +214,7 @@ async def _score_one(task, cfg: Config, client: InnkubeClient, bench, force: boo
             code = bench.build_solution(task, best)
             key = f"{relation}/{mid}"
             try:
-                sbc_results[key] = await compute_sbc_score(task, code, model_id, client)
+                sbc_results[key] = await compute_sbc_score(task, code, model_id, client, spec=spec)
             except Exception as exc:
                 logger.warning("SBC failed for %s/%s: %s", label, key, exc)
 

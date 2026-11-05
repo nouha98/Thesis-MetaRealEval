@@ -58,3 +58,20 @@ def test_the_sbc_model_is_pinned_by_config_not_by_model_order():
     cfg = Config.model_validate({"llm": {"models": [{"id": "qwen36-35b"}, {"id": "gemma4-31b-it"}]},
                                  "rq3": {"sbc_model": "gemma4-31b-it"}})
     assert (cfg.rq3.sbc_model or cfg.model_ids()[0]) == "gemma4-31b-it"
+
+
+async def test_a_benchmark_spec_rewords_the_request_and_sets_the_reference(tmp_path):
+    cache = ResponseCache(tmp_path / "cache")
+    client = InnkubeClient(LLMConfig(models=[LLMModelConfig(id="m")]), cache, mock=False)
+    fake = _FakeOpenAI()
+    client._client = fake
+    task = SimpleNamespace(prompt="class C:\n    '''Unrelated class text.'''\n")
+    spec = {"system": "CLASS SYSTEM", "user_label": "Class implementation",
+            "reference": "adds two numbers"}
+
+    r = await compute_sbc_score(task, "class C: ...", "m", client, spec=spec)
+
+    assert fake.calls[0]["messages"] == [
+        {"role": "system", "content": "CLASS SYSTEM"},
+        {"role": "user", "content": "Class implementation:\n\nclass C: ..."}]
+    assert r["completeness_score"] == 1.0          # scored against spec["reference"]

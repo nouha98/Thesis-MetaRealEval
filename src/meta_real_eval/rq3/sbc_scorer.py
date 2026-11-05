@@ -68,11 +68,18 @@ async def compute_sbc_score(
     solution_code: str,
     model_id: str,
     client: InnkubeClient,
+    spec: dict | None = None,
 ) -> dict:
-    """Return SBC scores for one solution."""
+    """Return SBC scores for one solution.
+
+    ``spec`` (a benchmark's ``sbc_spec(task)``) replaces the Tier 1 function
+    wording and the reference text: ``system``, ``user_label`` and
+    ``reference``. Without it the request is the legacy one, byte for byte.
+    """
+    spec = spec or {}
     messages = [
-        {"role": "system", "content": _REVERSE_GEN_SYSTEM},
-        {"role": "user", "content": f"Function implementation:\n\n{solution_code}"},
+        {"role": "system", "content": spec.get("system", _REVERSE_GEN_SYSTEM)},
+        {"role": "user", "content": f"{spec.get('user_label', 'Function implementation')}:\n\n{solution_code}"},
     ]
 
     try:
@@ -98,6 +105,8 @@ async def compute_sbc_score(
     docstring_match = re.search(r'"""(.*?)"""', task.prompt, re.DOTALL) or \
         re.search(r"'''(.*?)'''", task.prompt, re.DOTALL)
     original_spec = docstring_match.group(1).strip() if docstring_match else task.prompt
+    if spec.get("reference"):
+        original_spec = spec["reference"]
 
     bleu = _bleu_1gram(original_spec, inferred_spec)
     completeness = _completeness_score(original_spec, inferred_spec)

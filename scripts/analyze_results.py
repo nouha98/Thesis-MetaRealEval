@@ -1622,11 +1622,12 @@ def main(argv=None) -> None:
     cov = rs.get("coverage", {})
     if cov.get("n_tasks_excluded"):
         print()
+        n_fam_cov = len(cov.get("corpus_families") or FAMILIES)
         print(f"Coverage: {cov['n_tasks_excluded']} task(s) excluded from the primary "
-              f"analysis (< {cov['min_families_covered']}/5 LLM families filled):")
+              f"analysis (< {cov['min_families_covered']}/{n_fam_cov} LLM families filled):")
         for x in cov["excluded_tasks"]:
             fams = ",".join(x["families_covered"]) or "none"
-            print(f"  {x['task']:20s} {x['n_families_covered']}/5 families ({fams})")
+            print(f"  {x['task']:20s} {x['n_families_covered']}/{n_fam_cov} families ({fams})")
 
     if cov.get("n_tasks_legacy_coverage_fallback"):
         print(f"  NOTE: {cov['n_tasks_legacy_coverage_fallback']} task(s) predate the "
@@ -1656,17 +1657,21 @@ def main(argv=None) -> None:
         print(f"  {relation:18s} mean={s['mean']:.3f}  CI=[{s['ci_lower']:.3f}, {s['ci_upper']:.3f}]  n={s['n']}")
 
     print()
-    print("Per-model sensitivity (vs original prompt; both are mean-of-|change| per task, 95% CI over tasks):")
+    # The delta fields are named delta_pass_at_1 for history; they hold the change in the
+    # ranking score (mean_primary under the graded primary run), overall_pass@1 is always binary.
+    sk = rq2.get("score", "pass@1")
+    print("Per-model sensitivity (vs original prompt; both are mean-of-|change| per task, 95% CI over tasks;"
+          f" delta = change in {sk}):")
     for m, v in sorted(rq2["model_sensitivity"].items(),
                        key=lambda kv: -kv[1]["delta_pass@1"]["mean"]):
         dp, rc = v["delta_pass@1"], v["rank_change"]
         print(f"  {m:30s} overall_pass@1={v['overall_pass@1']*100:5.1f}%")
-        print(f"      mean|delta pass@1| = {dp['mean']:.4f}  CI=[{dp['ci_lower']:.4f}, {dp['ci_upper']:.4f}]")
+        print(f"      mean|delta {sk}| = {dp['mean']:.4f}  CI=[{dp['ci_lower']:.4f}, {dp['ci_upper']:.4f}]")
         print(f"      mean|rank change|  = {rc['mean']:.4f}  CI=[{rc['ci_lower']:.4f}, {rc['ci_upper']:.4f}]  "
               f"(0=never moves, 1=avg. one position)")
         for rel, d in v["mean_delta_pass@1_by_relation"].items():
             c = v["mean_rank_change_by_relation"].get(rel, float("nan"))
-            print(f"      {rel:10s} delta pass@1 = {d:+.4f}   rank change = {c:+.4f}")
+            print(f"      {rel:10s} delta {sk} = {d:+.4f}   rank change = {c:+.4f}")
 
     print()
     print("Pairwise reversal rate (how often a model pair's relative order flips vs. original,")

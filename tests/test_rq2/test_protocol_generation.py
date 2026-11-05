@@ -312,3 +312,43 @@ def test_tier2_cells_store_sensitivity_scores_and_outcome_counts():
     assert f["nontrivial_scores"] == [0.5, None] and f["mean_nontrivial"] is None
     assert f["outcome_counts"] == [{"ordinary_pass": 1, "ordinary_fail": 1}, {"timeout": 2}]
     assert f["n_timed_out"] == 1
+
+
+def test_a_whole_suite_timeout_is_re_run_alone_and_a_real_hang_keeps_its_zero(tmp_path, monkeypatch):
+    """Cold parallel imports timed out gemma's first 4 baseline completions per heavy
+    task in S8; a completion where every test timed out is re-run once, after the pool."""
+    import concurrent.futures
+    from meta_real_eval.benchmarks import get_benchmark
+    from meta_real_eval.benchmarks.base import SuiteResult
+    from meta_real_eval.benchmarks.humaneval import HumanEvalBenchmark
+    from meta_real_eval.benchmarks.outcomes import TestOutcome
+    from meta_real_eval.rq2 import evaluator
+
+    cfg = _cfg(tmp_path, _model("a"), _model("b"), n=3, control=False)
+    task = get_benchmark(cfg).load_tasks([0])[0]
+    monkeypatch.setattr(evaluator, "ProcessPoolExecutor", concurrent.futures.ThreadPoolExecutor)
+    monkeypatch.setattr(HumanEvalBenchmark, "rerun_whole_suite_timeouts", True, raising=False)
+    warmed = []
+    monkeypatch.setattr(evaluator, "_warm_up", lambda bench, task, t, label: warmed.append(label))
+    calls = {}
+
+    def scorer(task, completion, cfg, timeout_s):
+        calls[completion] = calls.get(completion, 0) + 1
+        timed_out = completion == "HANG" or (completion == "COLD" and calls[completion] == 1)
+        outcome = "timeout" if timed_out else "ordinary_pass"
+        return SuiteResult(outcomes={"check": TestOutcome("check", outcome)},
+                           scores={"primary": 0.0 if timed_out else 1.0,
+                                   "passed_all": 0.0 if timed_out else 1.0})
+    monkeypatch.setattr(evaluator, "_score_completion", scorer)
+    gen = task_dir(cfg, "rq2", task.label, phase="generate")
+    gen.mkdir(parents=True)
+    (gen / "completions.json").write_text(json.dumps(
+        {"original": {"a": ["COLD", "OK1", "OK2"], "b": ["HANG", "OK3", "OK4"]}}))
+    evaluator.evaluate_task(task, cfg)
+    rates = json.loads((task_dir(cfg, "rq2", task.label, phase="evaluate")
+                        / "pass_rates.json").read_text())["original"]
+
+    assert warmed == [task.label]
+    assert rates["a"]["primary_scores"] == [1.0, 1.0, 1.0] and rates["a"]["timeout_reruns"] == [0]
+    assert rates["b"]["primary_scores"] == [0.0, 1.0, 1.0] and rates["b"]["timeout_reruns"] == [0]
+    assert calls == {"COLD": 2, "HANG": 2, "OK1": 1, "OK2": 1, "OK3": 1, "OK4": 1}

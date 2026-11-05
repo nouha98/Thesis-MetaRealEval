@@ -14,6 +14,7 @@ import logging
 import math
 import re
 import textwrap
+import time
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from typing import Callable
@@ -346,6 +347,56 @@ def _sensitivity_fields(results: list[SuiteResult]) -> dict:
     return fields
 
 
+def _whole_suite_timed_out(r: SuiteResult | None) -> bool:
+    return r is not None and bool(r.outcomes) and all(o.outcome == "timeout" for o in r.outcomes.values())
+
+
+def _warm_up(bench, task: Task, timeout_s: float, label: str) -> None:
+    """Run the reference suite once, unscored, before the pool starts.
+
+    The pool's first ``cpu_workers`` completions otherwise start together, each
+    importing the task's libraries (torch, sklearn, spacy) from a cold cache, and
+    can pass the timeout before running a test. The first submissions are always
+    ``original`` / the first model, so in the S8 run that zeroed gemma's baseline
+    completions #0-3 on such tasks (29 of 43 whole-suite timeouts were in that
+    first batch).
+    """
+    t0 = time.monotonic()
+    try:
+        r = bench.run_suite(task, task.reference_code, timeout_s)
+        logger.info("%s: warm-up reference run %.1fs, primary=%s", label, time.monotonic() - t0, r.primary)
+    except Exception:
+        logger.exception("%s: warm-up reference run failed (scoring continues)", label)
+
+
+def _rerun_whole_suite_timeouts(task: Task, cfg: Config, completions_data: dict,
+                                results_by_cell: dict, label: str) -> dict[tuple[str, str], list[int]]:
+    """Re-run, once and one at a time, every completion on which EVERY test timed out.
+
+    Such a run never reached a test, which under a loaded pool is as likely the
+    machine as the completion. The re-run happens with nothing else running; a
+    completion that really hangs times out again and keeps its 0. Applied to
+    every model alike; the indices are recorded per cell as ``timeout_reruns``.
+    A completion with only some tests timed out ran, so it is never re-run.
+    """
+    reruns: dict[tuple[str, str], list[int]] = {}
+    for (relation, model_id), results in results_by_cell.items():
+        for i, r in enumerate(results):
+            if not _whole_suite_timed_out(r):
+                continue
+            reruns.setdefault((relation, model_id), []).append(i)
+            try:
+                results[i] = _score_completion(task, completions_data[relation][model_id][i],
+                                               cfg, cfg.execution.timeout_s)
+            except Exception:
+                logger.exception("%s / %s / %s: re-run of #%d crashed", label, relation, model_id, i)
+                results[i] = None
+            logger.info("%s / %s / %s #%d: whole suite timed out, re-run alone -> %s", label,
+                        relation, model_id, i,
+                        "timed out again" if _whole_suite_timed_out(results[i]) else "ran")
+    return reruns
+
+
 def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
     """Evaluate cached completions for one task and write pass rates."""
     label = task.label
@@ -370,10 +421,16 @@ def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
     pass_rates: dict[str, dict[str, dict]] = {}
     evaluation_errors: list[str] = []
 
+    bench = get_benchmark(cfg)
+    timed_reruns = getattr(bench, "rerun_whole_suite_timeouts", False)
+    if timed_reruns:
+        _warm_up(bench, task, cfg.execution.timeout_s, label)
+
     # One pool for the whole task, not one per (relation, model) cell. At ~21
     # relations x 3 models that was 63 pool spin-ups per task and ~10k over the
     # corpus, each paying Windows process-creation cost for 10 subprocess
     # launches of actual work.
+    results_by_cell: dict[tuple[str, str], list[SuiteResult | None]] = {}
     with ProcessPoolExecutor(max_workers=cfg.execution.cpu_workers) as pool:
         futures_by_cell: dict[tuple[str, str], list] = {}
         for relation, model_completions in completions_data.items():
@@ -397,67 +454,74 @@ def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
                     logger.exception("%s / %s / %s: evaluation worker crashed",
                                      label, relation, model_id)
                     results.append(None)
+            results_by_cell[(relation, model_id)] = results
 
-            # An evaluation crash (worker exception) or a missing D3 score is a
-            # fault of the harness, not of the completion: scoring it as a fail
-            # would charge the model for it, and dropping it from the graded
-            # mean would shrink that model's denominator. The cell carries no
-            # score, the task is left unmarked, and re-running evaluate scores
-            # the SAME stored completions. A completion that merely failed to
-            # extract (truncated, blank) is NOT this case: it ran, failed its
-            # tests and scores 0 like any wrong answer.
-            crashed = [i for i, r in enumerate(results) if r is None or r.primary is None]
-            if crashed:
-                evaluation_errors.append(f"{relation}/{model_id}")
-                pass_rates[relation][model_id] = {
-                    "n": len(results), "evaluation_error": crashed, "correct": None,
-                    "per_completion": None, "pass@1": None, "pass@5": None, "pass@10": None,
-                    "primary_scores": [None if r is None else r.primary for r in results],
-                    "mean_primary": None,
-                }
-                continue
+    # After the pool is gone, so nothing else competes for the CPU.
+    reruns_by_cell = (_rerun_whole_suite_timeouts(task, cfg, completions_data, results_by_cell, label)
+                      if timed_reruns else {})
 
-            # passed_all / pass@k: EXACT Tier 1 semantics (a completion either
-            # passes everything or it doesn't), now sourced from SuiteResult so
-            # the same code path covers Tier 2. `primary` is the benchmark's D3
-            # score (Tier 1: identical to passed_all; Tier 2: the continuous
-            # pass rate); rq2.ranking_score picks which one the rankings use.
-            per_completion = [bool(r.passed_all) for r in results]
-            primary_scores = [r.primary for r in results]
-            n = len(per_completion)
-            correct = sum(per_completion)
-
-            # Under the inference protocol a cell holds exactly n completions or
-            # none (a documented transport failure; ranking already treats an
-            # empty cell as missing). Anything in between is never scored:
-            # pass@k over fewer than n samples is not comparable with the other
-            # models' and would silently enter the leaderboard.
-            expected_n = cfg.rq2.n_completions
-            if cfg.rq2.retry_policy == "transport_only" and 0 < n != expected_n:
-                logger.error("%s / %s / %s: %d completion(s), expected %d -- marked "
-                             "incomplete, not scored", label, relation, model_id, n, expected_n)
-                pass_rates[relation][model_id] = {
-                    "n": n, "expected_n": expected_n, "incomplete": True,
-                    "correct": correct, "per_completion": per_completion,
-                    "pass@1": None, "pass@5": None, "pass@10": None,
-                    "primary_scores": primary_scores, "mean_primary": None,
-                }
-                continue
-
+    for (relation, model_id), results in results_by_cell.items():
+        # An evaluation crash (worker exception) or a missing D3 score is a
+        # fault of the harness, not of the completion: scoring it as a fail
+        # would charge the model for it, and dropping it from the graded
+        # mean would shrink that model's denominator. The cell carries no
+        # score, the task is left unmarked, and re-running evaluate scores
+        # the SAME stored completions. A completion that merely failed to
+        # extract (truncated, blank) is NOT this case: it ran, failed its
+        # tests and scores 0 like any wrong answer.
+        crashed = [i for i, r in enumerate(results) if r is None or r.primary is None]
+        if crashed:
+            evaluation_errors.append(f"{relation}/{model_id}")
             pass_rates[relation][model_id] = {
-                "n": n,
-                "correct": correct,
-                "per_completion": per_completion,
-                "pass@1":  pass_at_k(n, correct, 1),
-                "pass@5":  pass_at_k(n, correct, 5),
-                "pass@10": pass_at_k(n, correct, 10),
-                "primary_scores": primary_scores,
-                "mean_primary": _mean_or_none(primary_scores),
-                **_sensitivity_fields(results),
+                "n": len(results), "evaluation_error": crashed, "correct": None,
+                "per_completion": None, "pass@1": None, "pass@5": None, "pass@10": None,
+                "primary_scores": [None if r is None else r.primary for r in results],
+                "mean_primary": None,
             }
-            logger.debug("  %s / %s / %s: pass@1=%.3f",
-                         label, relation, model_id,
-                         pass_rates[relation][model_id]["pass@1"])
+            continue
+
+        # passed_all / pass@k: EXACT Tier 1 semantics (a completion either
+        # passes everything or it doesn't), now sourced from SuiteResult so
+        # the same code path covers Tier 2. `primary` is the benchmark's D3
+        # score (Tier 1: identical to passed_all; Tier 2: the continuous
+        # pass rate); rq2.ranking_score picks which one the rankings use.
+        per_completion = [bool(r.passed_all) for r in results]
+        primary_scores = [r.primary for r in results]
+        n = len(per_completion)
+        correct = sum(per_completion)
+
+        # Under the inference protocol a cell holds exactly n completions or
+        # none (a documented transport failure; ranking already treats an
+        # empty cell as missing). Anything in between is never scored:
+        # pass@k over fewer than n samples is not comparable with the other
+        # models' and would silently enter the leaderboard.
+        expected_n = cfg.rq2.n_completions
+        if cfg.rq2.retry_policy == "transport_only" and 0 < n != expected_n:
+            logger.error("%s / %s / %s: %d completion(s), expected %d -- marked "
+                         "incomplete, not scored", label, relation, model_id, n, expected_n)
+            pass_rates[relation][model_id] = {
+                "n": n, "expected_n": expected_n, "incomplete": True,
+                "correct": correct, "per_completion": per_completion,
+                "pass@1": None, "pass@5": None, "pass@10": None,
+                "primary_scores": primary_scores, "mean_primary": None,
+            }
+            continue
+
+        pass_rates[relation][model_id] = {
+            "n": n,
+            "correct": correct,
+            "per_completion": per_completion,
+            "pass@1":  pass_at_k(n, correct, 1),
+            "pass@5":  pass_at_k(n, correct, 5),
+            "pass@10": pass_at_k(n, correct, 10),
+            "primary_scores": primary_scores,
+            "mean_primary": _mean_or_none(primary_scores),
+            **_sensitivity_fields(results),
+            **({"timeout_reruns": reruns_by_cell.get((relation, model_id), [])} if timed_reruns else {}),
+        }
+        logger.debug("  %s / %s / %s: pass@1=%.3f",
+                     label, relation, model_id,
+                     pass_rates[relation][model_id]["pass@1"])
 
     write_json(out, "pass_rates.json", pass_rates)
     if evaluation_errors:

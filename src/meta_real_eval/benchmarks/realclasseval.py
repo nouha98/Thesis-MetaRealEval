@@ -238,6 +238,12 @@ def build_solution_with_report(completion: str, prompt: str, class_name: str) ->
 
 class RealClassEvalBenchmark:
     name = "realclasseval"
+    # RQ2 evaluate warms the task's imports up with one reference run and re-runs a
+    # completion alone when every test timed out (rq2.evaluator._warm_up and
+    # _rerun_whole_suite_timeouts): class suites import torch/sklearn/spacy, and
+    # cold parallel imports passed the 30 s timeout in the S8 run. Tier 1 keeps
+    # its evaluation unchanged.
+    rerun_whole_suite_timeouts = True
 
     def __init__(
         self,

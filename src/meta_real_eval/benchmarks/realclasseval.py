@@ -180,8 +180,10 @@ def extract_class_module(raw: str, class_name: str) -> tuple[str, str]:
     Mirrors Tier 1's ``_extract_function_body``: whole modules are kept whole
     (imports and helpers above the class stay), and only unparseable prose
     before or after the code is trimmed. If nothing defines the class, the
-    best-effort text is returned unchanged with ``how="failed"`` -- it then
-    fails at run time, which is the model's failure, not a harness choice.
+    best-effort text is returned unchanged with ``how="failed"``;
+    :func:`build_solution_with_report` then runs :func:`no_class_module`
+    instead, so the completion scores 0 -- the model's failure, not a harness
+    choice.
     """
     for how, src in _candidate_sources(raw, class_name):
         if _defines_class(_parse(src), class_name):
@@ -204,10 +206,26 @@ def extract_class_module(raw: str, class_name: str) -> tuple[str, str]:
     return _candidate_sources(raw, class_name)[0][1], "failed"
 
 
+def no_class_module(class_name: str) -> str:
+    """The module run for a completion that defines no ``class <class_name>``.
+
+    It fails on import, so every test errors and the completion scores 0 on every
+    metric. Running the completion's own text instead (an empty string, prose,
+    some other class) makes ``module_0.<class_name>`` raise AttributeError, which
+    an exception-oracle test whose reference also raises AttributeError counts as
+    a pass: in the S8 run 18 completions without the class scored up to 1.0 that
+    way (csn_snippet_156 gives an empty module 1.0). The plan fixed the rule
+    before any results: no extractable class, tests fail, score 0.
+    """
+    return f"raise ImportError({f'completion defines no class {class_name}'!r})\n"
+
+
 def build_solution_with_report(completion: str, prompt: str, class_name: str) -> tuple[str, BuildReport]:
     code, how = extract_class_module(completion, class_name)
     imports_prompt = _top_level_imports(prompt)
     imports_completion = _top_level_imports(code)
+    if how == "failed":
+        return no_class_module(class_name), BuildReport(how, imports_prompt, imports_completion, [])
     reattached = [imp for imp in imports_prompt if imp not in imports_completion]
     if reattached:
         code = "\n".join(reattached) + "\n" + code

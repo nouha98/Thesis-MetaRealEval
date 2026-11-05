@@ -288,3 +288,27 @@ def test_unusable_output_is_a_counted_zero_and_length_alone_is_never_a_zero(tmp_
     assert rates["b"]["n"] == 3 and rates["b"]["correct"] == 2
     assert rates["b"]["per_completion"] == [False, True, True]
     assert rates["b"]["mean_primary"] == 2 / 3, "the blank one is a 0 in the graded mean too"
+
+
+def test_tier1_pass_rates_carry_no_sensitivity_fields(tmp_path, monkeypatch):
+    """HumanEval scores have only primary/passed_all: its cells must stay byte-identical."""
+    rates, _ = _evaluate(tmp_path, monkeypatch, {"a": ["BODY"] * 3, "b": ["BODY"] * 3})
+    assert set(rates["a"]) == {"n", "correct", "per_completion", "pass@1", "pass@5", "pass@10",
+                               "primary_scores", "mean_primary"}
+
+
+def test_tier2_cells_store_sensitivity_scores_and_outcome_counts():
+    from meta_real_eval.benchmarks.base import SuiteResult
+    from meta_real_eval.benchmarks.outcomes import TestOutcome
+    from meta_real_eval.rq2.evaluator import _sensitivity_fields
+
+    def result(beh, nontriv, outcomes):
+        return SuiteResult(outcomes={f"t{i}": TestOutcome(f"t{i}", o) for i, o in enumerate(outcomes)},
+                           scores={"primary": 0.5, "passed_all": 0.0, "behavioural_pass_rate": beh,
+                                   "nontrivial_pass_rate": nontriv})
+    f = _sensitivity_fields([result(1.0, 0.5, ["ordinary_pass", "ordinary_fail"]),
+                             result(0.0, None, ["timeout", "timeout"])])
+    assert f["behavioural_scores"] == [1.0, 0.0] and f["mean_behavioural"] == 0.5
+    assert f["nontrivial_scores"] == [0.5, None] and f["mean_nontrivial"] is None
+    assert f["outcome_counts"] == [{"ordinary_pass": 1, "ordinary_fail": 1}, {"timeout": 2}]
+    assert f["n_timed_out"] == 1

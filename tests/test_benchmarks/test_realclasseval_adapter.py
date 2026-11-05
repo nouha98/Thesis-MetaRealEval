@@ -253,6 +253,36 @@ def test_broken_completion_scores_zero(bench, task):
     assert r.scores["primary"] == 0.0
 
 
+@pytest.mark.parametrize("completion,scored_before", [
+    ("", True), ("class Other:\n    pass\n", True),
+    ("I cannot help with that.", False),        # prose does not even import: always 0
+])
+def test_a_completion_without_the_class_scores_zero_even_on_an_attribute_error_oracle(
+        bench, task, completion, scored_before):
+    """Run as-is, a module lacking the class makes ``module_0.Counter`` raise
+    AttributeError, which an exception-oracle test whose reference also raises
+    AttributeError counts as a pass (S8: csn_snippet_156 gave an empty module 1.0).
+    The plan's rule: no extractable class, every test fails, score 0."""
+    import dataclasses
+    tests = {**task.meta["tests"], "test_case_2": {
+        "validity": VALID_EXCEPTION_ORACLE, "ref_exc_type": "builtins.AttributeError", "trivial": False}}
+    oracle_task = dataclasses.replace(task, meta={**task.meta, "tests": tests})
+
+    as_is = bench.run_suite(oracle_task, completion, timeout_s=30).scores["primary"]
+    assert (as_is > 0) is scored_before                                                     # the hole
+    code, report = build_solution_with_report(completion, task.prompt, task.target)
+    assert report.extraction == "failed"
+    r = bench.run_suite(oracle_task, code, timeout_s=30)
+    assert r.scores["primary"] == 0.0
+    assert r.scores["behavioural_pass_rate"] == 0.0 and r.scores["nontrivial_pass_rate"] == 0.0
+    assert {o.outcome for o in r.outcomes.values()} == {"error"}
+
+
+def test_a_completion_with_the_class_is_built_as_before(task):
+    code, report = build_solution_with_report("```python\nclass Counter:\n    x = 1\n```", task.prompt, "Counter")
+    assert report.extraction == "fenced" and code.strip() == "class Counter:\n    x = 1"
+
+
 def test_degrade_levels_are_nested(bench, task):
     subsets = [bench.degrade(task, lvl, seed=42).subset for lvl in (0.0, 0.2, 0.5, 0.8)]
     assert subsets[0] == frozenset({"test_case_0", "test_case_1", "test_case_2", "test_case_3"})

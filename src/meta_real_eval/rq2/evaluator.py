@@ -14,6 +14,7 @@ import logging
 import math
 import re
 import textwrap
+from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from typing import Callable
 
@@ -316,6 +317,35 @@ def _mean_or_none(values) -> float | None:
     return sum(defined) / len(defined) if defined else None
 
 
+# Per-completion D3 sensitivity scores, stored next to the primary one when the
+# benchmark computes them (Tier 2), as  <prefix>_scores  and  mean_<prefix>.
+# A score is None for a task with no test of that kind (no behavioural test,
+# every test trivial): a property of the task, so a cell's mean is None too.
+_SENSITIVITY_SCORES = (("behavioural_pass_rate", "behavioural"),
+                       ("nontrivial_pass_rate", "nontrivial"))
+
+
+def _sensitivity_fields(results: list[SuiteResult]) -> dict:
+    """Sensitivity scores plus each completion's D1 outcome counts, for the cell.
+
+    Empty for a benchmark whose scores carry none of them (Tier 1), so its
+    pass_rates.json is unchanged. The outcome counts make a timed-out run (every
+    test ``timeout``, score 0) visible apart from a completion that ran and failed.
+    """
+    if not any(score in r.scores for r in results for score, _ in _SENSITIVITY_SCORES):
+        return {}
+    fields: dict = {}
+    for score, prefix in _SENSITIVITY_SCORES:
+        values = [r.scores.get(score) for r in results]
+        fields[f"{prefix}_scores"] = values
+        fields[f"mean_{prefix}"] = (None if any(v is None for v in values)
+                                    else sum(values) / len(values))
+    fields["outcome_counts"] = [dict(Counter(o.outcome for o in r.outcomes.values())) for r in results]
+    fields["n_timed_out"] = sum(any(o.outcome == "timeout" for o in r.outcomes.values())
+                                for r in results)
+    return fields
+
+
 def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
     """Evaluate cached completions for one task and write pass rates."""
     label = task.label
@@ -423,6 +453,7 @@ def evaluate_task(task: Task, cfg: Config, force: bool = False) -> None:
                 "pass@10": pass_at_k(n, correct, 10),
                 "primary_scores": primary_scores,
                 "mean_primary": _mean_or_none(primary_scores),
+                **_sensitivity_fields(results),
             }
             logger.debug("  %s / %s / %s: pass@1=%.3f",
                          label, relation, model_id,

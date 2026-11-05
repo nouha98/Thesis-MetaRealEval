@@ -200,6 +200,35 @@ def _rank_positions(scores: dict[str, float], model_ids: list[str]) -> dict[str,
     return dict(zip(model_ids, ranks))
 
 
+# Sensitivity rankings over the D3 scores the evaluator stores next to the primary
+# one (Tier 2 only): the ranking without exception-oracle tests, and without
+# trivial tests (ones the bare skeleton already passes).
+SENSITIVITY_RANKINGS = (("mean_behavioural", "rankings_behavioural.json"),
+                        ("mean_nontrivial", "rankings_nontrivial.json"))
+
+
+def write_sensitivity_rankings(task: Task, cfg: Config) -> list[str]:
+    """Write each :data:`SENSITIVITY_RANKINGS` file for a task whose baseline cells
+    carry that score; returns the files written.
+
+    A task with no test of that kind (no behavioural test, say) has no such score
+    for any model, so it gets no file and is simply not part of that sensitivity
+    analysis, rather than appearing as a task whose relations all went missing.
+    """
+    out = task_dir(cfg, "rq2", task.label, phase="evaluate")
+    try:
+        baseline = read_json(out, "pass_rates.json").get(BASELINE_RELATION, {})
+    except FileNotFoundError:
+        return []
+    written = []
+    for key, filename in SENSITIVITY_RANKINGS:
+        (out / filename).unlink(missing_ok=True)
+        if baseline and all(cell.get(key) is not None for cell in baseline.values()):
+            compute_ranking_stability(task, cfg, score_key=key, filename=filename)
+            written.append(filename)
+    return written
+
+
 def compute_ranking_stability(task: Task, cfg: Config, score_key: Optional[str] = None,
                               filename: str = "rankings.json") -> None:
     """Read pass_rates.json and write rankings.json for one task.

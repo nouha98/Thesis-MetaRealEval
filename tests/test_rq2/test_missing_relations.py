@@ -187,3 +187,53 @@ def test_an_evaluation_error_cell_makes_the_relation_incomplete_not_zero(cfg, ta
     r = _run(cfg, task, rates)
     assert r["incomplete_relations"] == ["formal"]
     assert r["delta_pass_at_1"]["m_c"]["formal"] is None
+
+
+# ---------------------------------------------------------------------------
+# 3. Sensitivity rankings (Tier 2: behavioural / non-trivial scores)
+# ---------------------------------------------------------------------------
+
+def _write_rates(cfg, pass_rates: dict):
+    out = task_dir(cfg, "rq2", "HumanEval_0", phase="evaluate")
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "pass_rates.json").write_text(json.dumps(pass_rates))
+    return out
+
+
+def test_sensitivity_rankings_use_their_own_score(cfg, task):
+    from meta_real_eval.rq2.ranking import write_sensitivity_rankings
+
+    def cells(beh):
+        return {m: {"pass@1": 0.0, "n": 10, "mean_behavioural": b, "mean_nontrivial": 0.5}
+                for m, b in zip(MODELS, beh)}
+    out = _write_rates(cfg, {"original": cells([0.9, 0.5, 0.2]), "formal": cells([0.2, 0.5, 0.9])})
+
+    assert write_sensitivity_rankings(task, cfg) == ["rankings_behavioural.json",
+                                                     "rankings_nontrivial.json"]
+    r = json.loads((out / "rankings_behavioural.json").read_text())
+    assert r["score"] == "mean_behavioural"
+    assert r["tau_b_per_relation"]["formal"] == pytest.approx(-1.0)
+    # every model ties on the non-trivial score: defined data, undefined tau_b
+    assert json.loads((out / "rankings_nontrivial.json").read_text())["tau_b_per_relation"]["formal"] is None
+
+
+def test_a_task_without_that_kind_of_test_gets_no_sensitivity_file(cfg, task):
+    """No behavioural test: the score is None for every model, so the task is not in
+    that analysis at all, instead of entering it as a task with every relation missing."""
+    from meta_real_eval.rq2.ranking import write_sensitivity_rankings
+
+    rates = {m: {"pass@1": 0.5, "n": 10, "mean_behavioural": None, "mean_nontrivial": 0.4}
+             for m in MODELS}
+    out = _write_rates(cfg, {"original": rates, "formal": rates})
+    (out / "rankings_behavioural.json").write_text("{}")         # stale, from an earlier run
+
+    assert write_sensitivity_rankings(task, cfg) == ["rankings_nontrivial.json"]
+    assert not (out / "rankings_behavioural.json").exists()
+
+
+def test_tier1_pass_rates_get_no_sensitivity_files(cfg, task):
+    from meta_real_eval.rq2.ranking import write_sensitivity_rankings
+
+    out = _write_rates(cfg, {"original": _rates({"m_a": 0.9, "m_b": 0.5, "m_c": 0.2})})
+    assert write_sensitivity_rankings(task, cfg) == []
+    assert not list(out.glob("rankings_*.json"))

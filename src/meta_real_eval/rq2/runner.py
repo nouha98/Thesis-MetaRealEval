@@ -33,7 +33,7 @@ from ..core.logging_setup import setup as setup_logging
 from ..core.task_selection import add_task_selection_args, resolve_task_filter
 from .evaluator import evaluate_task
 from .generator import run_generate
-from .ranking import compute_ranking_stability
+from .ranking import compute_ranking_stability, write_sensitivity_rankings
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +81,7 @@ def main(argv=None) -> None:
             if cfg.rq2.ranking_score != "pass@1":       # binary pass@1 as the secondary ranking
                 compute_ranking_stability(task, cfg, score_key="pass@1",
                                           filename="rankings_pass1.json")
+            write_sensitivity_rankings(task, cfg)    # Tier 2: behavioural / non-trivial
 
     logger.info("RQ2 phase=%s complete.", args.phase)
 

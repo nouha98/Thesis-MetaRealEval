@@ -4,6 +4,7 @@ import math
 
 from meta_real_eval.analysis.statistics import (
     cliffs_delta,
+    cochran_q,
     mannwhitney_test,
     roc_auc,
     spearman_rho,
@@ -65,3 +66,10 @@ def test_mannwhitney_handles_independent_groups_of_different_size():
 
 def test_spearman_is_one_for_a_monotone_relationship():
     assert math.isclose(spearman_rho([1, 2, 3, 4], [10, 20, 30, 40])["rho"], 1.0)
+
+
+def test_cochran_q_and_its_undefined_case():
+    r = cochran_q([[0, 1], [0, 1]])                     # k = 2: McNemar's chi-square, 2 discordant
+    assert math.isclose(r["q"], 2.0) and math.isclose(r["p_value"], 0.1572992, rel_tol=1e-6)
+    assert cochran_q([[0, 0, 1, 0], [0, 0, 0, 0]])["q"] == 3.0
+    assert cochran_q([[0, 0], [1, 1]])["q"] is None     # no block varies across conditions

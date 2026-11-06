@@ -109,6 +109,25 @@ def pages_l_test(blocks: list[list[float]], descending: bool = True) -> dict:
     }
 
 
+def cochran_q(table: list[list[int]]) -> dict:
+    """Cochran's Q for k related binary outcomes (RQ4 ranking collapse).
+
+    ``table`` has one row per block (task) and one 0/1 per condition (level).
+    Q is undefined (None) when every row is constant -- no block varies.
+    """
+    from scipy.stats import chi2
+
+    k = len(table[0])
+    col = [sum(r[j] for r in table) for j in range(k)]
+    row_sums = [sum(r) for r in table]
+    total = sum(row_sums)
+    denom = k * total - sum(x * x for x in row_sums)
+    if not denom:
+        return {"q": None, "p_value": None, "n_blocks": len(table), "k": k}
+    q = (k - 1) * (k * sum(c * c for c in col) - total * total) / denom
+    return {"q": float(q), "p_value": float(chi2.sf(q, k - 1)), "n_blocks": len(table), "k": k}
+
+
 def spearman_rho(a: list[float], b: list[float]) -> dict:
     """Spearman rank correlation."""
     from scipy.stats import spearmanr

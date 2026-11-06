@@ -32,6 +32,7 @@ in scripts/analyze_results.py.
 from __future__ import annotations
 
 import logging
+from fractions import Fraction
 from typing import Optional
 
 import numpy as np
@@ -125,11 +126,26 @@ def cell_is_scored(rates: dict, key: str = "pass@1") -> bool:
             and not rates.get("evaluation_error") and rates.get(key) is not None)
 
 
+def comparable(score: float) -> float:
+    """``score`` as the exact fraction it is, so that equal scores compare equal.
+
+    A graded mean is a sum of per-completion fractions, and the order of that sum
+    decides its last bit: 19/30 is stored both as 0.6333333333333333 and as
+    0.6333333333333334, which ranked two tied models apart (16 RQ2 relation cells in
+    13 Tier 2 tasks). Every score is a fraction whose denominator is at most
+    completions x tests (a few thousand), and two such fractions differ by far more
+    than a float's error, so the nearest fraction with a denominator <= 10**6 is the
+    exact value. pass@1 and an exact graded mean come back unchanged.
+    """
+    return float(Fraction(score).limit_denominator(10 ** 6))
+
+
 def _model_pass_at1(pass_rates: dict, relation: str, key: str = "pass@1") -> dict[str, float]:
     """Return {model_id: score} for a given relation, skipping unscored cells.
 
     ``key`` is the per-cell score (``rq2.ranking_score``): ``pass@1`` or the
-    graded ``mean_primary``. The name is historical.
+    graded ``mean_primary``. The name is historical. Scores are returned
+    :func:`comparable`, so every statistic below sees exact ties.
 
     A (relation, model) cell with no completions is missing data, not a score of
     zero: pass@1 over an empty sample is 0.0, which would enter the leaderboard
@@ -137,7 +153,7 @@ def _model_pass_at1(pass_rates: dict, relation: str, key: str = "pass@1") -> dic
     models before computing a ranking statistic.
     """
     return {
-        model_id: rates[key]
+        model_id: comparable(rates[key])
         for model_id, rates in pass_rates.get(relation, {}).items()
         if cell_is_scored(rates, key)
     }

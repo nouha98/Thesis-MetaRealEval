@@ -33,11 +33,12 @@ from meta_real_eval.core.config import (  # noqa: E402
     CalibrationError,
     write_divergence_threshold,
 )
-from meta_real_eval.rq2.ranking import cell_is_scored, collapse_tau_by_arm  # noqa: E402
+from meta_real_eval.rq2.ranking import cell_is_scored, collapse_tau_by_arm, comparable  # noqa: E402
 from meta_real_eval.rq2.corpus import FAMILIES, min_families_covered  # noqa: E402
 from meta_real_eval.analysis.statistics import (  # noqa: E402
     bootstrap_ci,
     cliffs_delta,
+    cochran_q,
     mannwhitney_test,
     pages_l_test,
     roc_auc,
@@ -422,7 +423,7 @@ def task_strata(score_key: str = "pass@1") -> dict[str, str]:
         if not path.exists():
             continue
         cells = load(path).get("original", {})
-        scores = {m: v[score_key] for m, v in cells.items() if cell_is_scored(v, score_key)}
+        scores = {m: comparable(v[score_key]) for m, v in cells.items() if cell_is_scored(v, score_key)}
         strata[td.name] = task_stratum(scores)
     return strata
 
@@ -723,7 +724,8 @@ def analyze_rq2() -> dict:
         model_ids = r.get("model_ids") or list(pr.get("original", {}).keys())
 
         def scored(cells: dict) -> dict[str, float]:
-            return {m: cells[m][score_key] for m in model_ids
+            # comparable: equal graded scores summed in a different order are a tie
+            return {m: comparable(cells[m][score_key]) for m in model_ids
                     if m in cells and cell_is_scored(cells[m], score_key)}
         baseline = scored(pr.get("original", {}))
         # pair_key -> {relation: 0/1}; collapsed per arm below, exactly as tau_b
@@ -1244,19 +1246,12 @@ def _ranking_collapse(rows: list[list[bool]], stats: dict) -> dict:
     """
     if not rows:
         return {"n_discriminating": 0}
-    from scipy.stats import chi2
-    table = [[0] + [int(f) for f in r] for r in rows]
-    k = len(table[0])
-    col = [sum(r[j] for r in table) for j in range(k)]
-    row_sums = [sum(r) for r in table]
-    total = sum(row_sums)
-    denom = k * total - sum(x * x for x in row_sums)
-    q = (k - 1) * (k * sum(c * c for c in col) - total * total) / denom if denom else None
+    q = cochran_q([[0] + [int(f) for f in r] for r in rows])
     return {
         "n_discriminating": len(rows),
         "by_level": stats,
-        "cochran_q": None if q is None else float(q),
-        "p_value": None if q is None else float(chi2.sf(q, k - 1)),
+        "cochran_q": q["q"],
+        "p_value": q["p_value"],
         "note": "post-hoc; tasks where the degraded suite ties every model (original prompt)",
     }
 

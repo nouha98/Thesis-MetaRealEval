@@ -257,40 +257,77 @@ def test_tier1_keeps_its_own_rq4_path():
     assert not _tier2(HumanEvalBenchmark())
 
 
+def _level(orig: dict, variant: dict | None = None) -> dict:
+    """A stored level: one completion per model on 'original' and 'r1' (the same value
+    under both scores); the analysis computes the summaries from these cells."""
+    cell = lambda s: {"n": 1, "mean_primary": s, "pass@1": s, "primary_scores": [s], "per_completion": [s == 1]}
+    return {"missing": False, "removed": [],
+            "cells": {"original": {m: cell(s) for m, s in orig.items()},
+                      "r1": {m: cell(s) for m, s in (variant or orig).items()}}}
+
+
+LEVELS = ("0.0", "0.2", "0.5", "0.8")
+SPREAD, FLIPPED, TIED = {"m_a": 1, "m_b": .5, "m_c": 0}, {"m_a": 0, "m_b": .5, "m_c": 1}, {m: 1 for m in MODELS}
+
+
 def test_analysis_counts_only_eligible_checked_tasks(cfg, bench, task):
-    """Synthetic per-task files: one eligible task, one that failed the check,
-    one ineligible -- only the first enters H1b."""
-    def level(tau, scores):
-        return {"missing": False, "by_score": {k: {"mean_tau_b": tau, "tau_b_by_arm": {"control": 1.0},
-                                                   "scores": {"original": scores}} for k in tier2.SCORES},
-                "cells": {}}
-    elig = lambda ok, n=2: {"designs": {d: {k: {"eligible": ok, "reasons": [] if ok else
+    """Synthetic per-task files: two eligible tasks, one that failed the check, two
+    ineligible. Only tau_b defined at every level enters Page's L: the task whose
+    ranking collapsed at 0.5 is counted out, and the collapse enters Cochran's Q."""
+    elig = lambda ok, n=2: {"n_valid_tests": 1, "designs": {d: {k: {"eligible": ok, "reasons": [] if ok else
                                                 [f"fewer than 5 oracle units ({n})"]}
                                             for k in tier2.SCORES} for d in ("units", "tests")}}
+    mono = {"n_violations": 0}
     good = {"executed": True, "eligibility": elig(True),
             "baseline_check": {"ok": True, "n_completions": 12, "rerun_alone": []},
-            "designs": {"units": {"levels": {"0.0": level(1.0, {"m_a": 1, "m_b": .5, "m_c": 0}),
-                                             "0.2": level(1 / 3, {"m_a": 1, "m_b": .5, "m_c": 0}),
-                                             "0.5": level(1 / 3, {"m_a": 1, "m_b": 1, "m_c": 1}),
-                                             "0.8": level(-1.0, {"m_a": 0, "m_b": .5, "m_c": 1})},
-                                  "monotonicity": {"n_violations": 0}}}}
+            "designs": {"units": {"levels": {"0.0": _level(SPREAD), "0.2": _level(SPREAD),
+                                             "0.5": _level(TIED), "0.8": _level(FLIPPED)}, "monotonicity": mono}}}
+    good2 = {**good, "designs": {"units": {"levels": {k: _level(SPREAD, FLIPPED if k == "0.8" else None)
+                                                      for k in LEVELS}, "monotonicity": mono}}}
     failed = {**good, "baseline_check": {"ok": False, "n_completions": 12, "rerun_alone": [["o", "m", 0]]}}
-    for label, rec in (("RCE_csn_snippet_3", good), ("T_failed", failed),
+    for label, rec in (("RCE_csn_snippet_3", good), ("T_good2", good2), ("T_failed", failed),
                        ("T_small", {"eligibility": elig(False, 2)}),
                        ("T_small2", {"eligibility": elig(False, 4)})):     # different counts, one reason
         d = task_dir(cfg, "rq4", label, phase="degrade")
         d.mkdir(parents=True)
         (d / tier2.DEGRADE_FILE).write_text(json.dumps(rec))
-    tasks = [task] + [type(task)(**{**task.__dict__, "label": n}) for n in ("T_failed", "T_small", "T_small2")]
+    tasks = [task] + [type(task)(**{**task.__dict__, "label": n})
+                      for n in ("T_good2", "T_failed", "T_small", "T_small2")]
     s = tier2.analyze_tier2(cfg, tasks)
     r = s["designs"]["units"]["mean_primary"]
     assert s["baseline_check"]["n_failed"] == 1 and s["baseline_check"]["failed_tasks"] == ["T_failed"]
-    assert r["n_eligible"] == 1 and r["eligible_tasks"] == ["RCE_csn_snippet_3"]
+    assert r["n_eligible"] == 2 and r["eligible_tasks"] == ["RCE_csn_snippet_3", "T_good2"]
     assert r["ineligible_reasons"] == {"baseline check failed": 1, "fewer than 5 oracle units": 2}
     assert r["h1b_pages_l"]["n_blocks"] == 1
+    assert r["h1b_excluded"] == {"no tau_b on the intact suite": 0, "ranking collapsed at a degraded level": 1,
+                                 "a paraphrase ranking tied otherwise": 0}
+    assert r["tau_b_by_level"]["0.5"]["llm"] == {"mean": 1.0, "n": 1}         # computed from the cells
+    assert r["tau_b_by_level"]["0.8"]["llm"] == {"mean": 0.0, "n": 2}         # +1 and -1
     assert r["ranking_collapse"] == {"0.2": 0, "0.5": 1, "0.8": 0}
+    assert r["ranking_collapse_cochran_q"]["q"] == 3.0                         # rows 0010 and 0000
     assert not r["h1a"]["available"]
-    assert "PRIMARY" in tier2.report(s)
+    text = tier2.report(s)
+    assert "PRIMARY for H1b" in text and "PRIMARY for H1a" in text and "Cochran's Q" in text
+
+
+def test_equal_graded_scores_tie_however_they_were_summed():
+    a, b = 0.6333333333333334, 0.6333333333333333                 # both 19/30, summed in two orders
+    assert a != b and tier2.comparable(a) == tier2.comparable(b) == 19 / 30
+    s = tier2.level_summary(_level({"m_a": a, "m_b": b, "m_c": 0.0}, SPREAD)["cells"],
+                            MODELS, ["original", "r1"], "mean_primary")
+    assert s["tau_b_per_relation"]["r1"] == pytest.approx(2 / 6 ** 0.5)     # a tie, not a > b
+
+
+def test_the_block_weighted_score_counts_the_assertions_as_one_test():
+    # 5 valid tests, one exception test removed -> 4; 10 assertions. Completion 1 passes
+    # 3 tests and all 10 assertions (13/14), completion 2 passes 1 and 5 (6/14).
+    deg = {"eligibility": {"n_valid_tests": 5}, "designs": {"units": {"levels": {"0.5": {
+        "removed": ["t_exc", "t1#a0"], "cells": {"original": {"m_a": {"primary_scores": [3 / 4, 1 / 4]}}}}}}}}
+    aug = {"n_consistency_assertions": 10, "designs": {"units": {"levels": {"0.5": {
+        "cells": {"original": {"m_a": {"primary_scores": [13 / 14, 6 / 14]}}}}}}}}
+    assert tier2._block_weighted(deg, aug, "units", "0.5") == pytest.approx({"m_a": (0.8 + 0.3) / 2})
+    aug["designs"]["units"]["levels"]["0.5"]["cells"]["original"]["m_a"]["primary_scores"][0] = 0.99
+    assert tier2._block_weighted(deg, aug, "units", "0.5") is None     # not (tests + assertions) / (n + c)
 
 
 def test_augment_needs_the_calibrated_threshold_builds_on_the_degraded_suite_and_reuses_without_ca(
@@ -332,20 +369,15 @@ def test_h1a_is_estimated_on_tasks_that_got_assertions_and_pooled_beside_it(cfg)
     """A task without assertions reuses its degraded results (recovery exactly 0), so it
     can only dilute H1a: the primary population is the tasks with >= 1 assertion."""
     from types import SimpleNamespace
-    intact, wrecked = {"m_a": 1, "m_b": .5, "m_c": 0}, {"m_a": 0, "m_b": .5, "m_c": 1}
-
-    def level(scores):
-        return {"missing": False, "by_score": {k: {"mean_tau_b": 1.0, "tau_b_by_arm": {"control": 1.0},
-                                                   "scores": {"original": scores}} for k in tier2.SCORES},
-                "cells": {}}
-    levels = ("0.0", "0.2", "0.5", "0.8")
-    elig = {"designs": {d: {k: {"eligible": True, "reasons": []} for k in tier2.SCORES} for d in ("units", "tests")}}
-    degraded = {k: level(intact if k == "0.0" else wrecked) for k in levels}
+    levels = LEVELS
+    elig = {"n_valid_tests": 1,
+            "designs": {d: {k: {"eligible": True, "reasons": []} for k in tier2.SCORES} for d in ("units", "tests")}}
+    degraded = {k: _level(SPREAD if k == "0.0" else FLIPPED) for k in levels}
     deg_rec = {"executed": True, "eligibility": elig, "baseline_check": {"ok": True, "n_completions": 1, "rerun_alone": []},
                "designs": {"units": {"levels": degraded, "monotonicity": {"n_violations": 0}}}}
-    restored = {k: level(intact) for k in levels}                      # the assertions restore the ranking
+    restored = {k: _level(SPREAD) for k in levels}                     # the assertions restore the ranking
     mono = {"n_violations": 0}
-    aug = lambda ca, lv: {"has_consistency_assertions": ca,
+    aug = lambda ca, lv: {"has_consistency_assertions": ca, "n_consistency_assertions": int(ca),
                           "designs": {"units": {"levels": lv, "monotonicity_vs_degraded": mono}}}
     for label, a in (("A1", aug(True, restored)), ("A2", aug(True, restored)), ("B", aug(False, degraded))):
         for ph, fn, rec in (("degrade", tier2.DEGRADE_FILE, deg_rec), ("augment", tier2.AUGMENT_FILE, a)):

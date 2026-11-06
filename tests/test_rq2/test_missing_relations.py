@@ -178,6 +178,18 @@ def test_the_graded_score_ranks_when_configured_and_names_itself(cfg, task, tmp_
     assert binary["score"] == "pass@1" and binary["baseline_pass_at_1"]["m_a"] == 0.2
 
 
+def test_equal_graded_scores_summed_in_a_different_order_are_a_tie(cfg, task):
+    a, b = 0.6333333333333334, 0.6333333333333333            # both 19/30 (csn_snippet_173)
+    cell = lambda s: {"pass@1": 0.0, "mean_primary": s, "n": 10}
+    rates = {"original": {"m_a": cell(a), "m_b": cell(b), "m_c": cell(0.1)},
+             "formal": {"m_a": cell(0.9), "m_b": cell(0.5), "m_c": cell(0.1)}}
+    cfg.rq2.ranking_score = "mean_primary"
+    r = _run(cfg, task, rates)
+    assert r["baseline_pass_at_1"] == {"m_a": 19 / 30, "m_b": 19 / 30, "m_c": 0.1}
+    assert r["tau_b_per_relation"]["formal"] == pytest.approx(2 / 6 ** 0.5)    # a tie, not a > b
+    assert r["rank_change"]["m_a"]["formal"] == 0.5 and r["rank_change"]["m_b"]["formal"] == -0.5
+
+
 def test_an_evaluation_error_cell_makes_the_relation_incomplete_not_zero(cfg, task):
     ok = {"pass@1": 0.5, "mean_primary": 0.5, "n": 10}
     rates = {"original": {"m_a": ok, "m_b": ok, "m_c": ok},

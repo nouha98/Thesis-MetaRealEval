@@ -18,6 +18,16 @@ Fixed before any RQ4 result, per score (graded ``mean_primary`` primary, binary
      pool of cpu_workers, an isolated re-run of whole-suite timeouts). A
      completion that still differs after one isolated re-run fails the task.
 A level with no unit left is missing: never executed, never a zero.
+
+H1a's primary score is pass@1, a deviation decided after the full run
+(2026-11-06): under the graded score the up-to-20 consistency assertions enter
+the denominator of 3-9-test suites and dominate it (shown exactly from the stored
+scores), so graded rank recovery mostly measures the assertions' own share.
+pass@1 has no denominator to dilute. The graded H1a is reported beside it, as
+pre-registered and, post hoc, with the assertions counted as one test. H1b keeps
+the graded score as primary. Rankings compare scores as exact fractions
+(rq2.ranking.comparable), and the analysis recomputes every level summary from
+the stored cells, so files written before that rule are read under it.
 """
 
 from __future__ import annotations
@@ -35,7 +45,7 @@ from ..benchmarks.oracle_units import ASSERT_UNIT, min_units_for_levels
 from ..core.checkpoint import clear_done, is_done, mark_done, read_json, task_dir, write_json
 from ..core.config import BASELINE_RELATION, Config
 from ..rq2.evaluator import _warm_up, _whole_suite_timed_out, pass_at_k
-from ..rq2.ranking import _rank_vector, _tau_b, cell_is_scored, collapse_tau_by_arm
+from ..rq2.ranking import _rank_vector, _tau_b, cell_is_scored, collapse_tau_by_arm, comparable
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +81,7 @@ def eligibility(task, bench, cfg: Config, pass_rates: dict) -> dict:
         "designs": {UNITS: {}, TESTS: {}},
     }
     for key in SCORES:
-        vals = [base[m][key] for m in models if cell_is_scored(base.get(m, {}), key)]
+        vals = [comparable(base[m][key]) for m in models if cell_is_scored(base.get(m, {}), key)]
         ranking_defined = len(vals) == len(models) and len(set(vals)) > 1
         for design, n, what in ((UNITS, len(units), "oracle units"), (TESTS, n_valid, "valid tests")):
             reasons = []
@@ -147,7 +157,7 @@ def cells_record(scored: dict) -> dict:
 
 def level_summary(cells: dict, model_ids: list[str], relations: list[str], key: str) -> dict:
     """RQ2's per-task ranking statistics for one score under one suite."""
-    scores = {rel: {m: c[key] for m, c in by_model.items() if c["n"] and c[key] is not None}
+    scores = {rel: {m: comparable(c[key]) for m, c in by_model.items() if c["n"] and c[key] is not None}
               for rel, by_model in cells.items()}
     complete = {rel for rel, s in scores.items() if all(m in s for m in model_ids)}
     base_ok = BASELINE_RELATION in complete
@@ -427,9 +437,40 @@ def _mean_n(values: list) -> dict:
     return {"mean": float(np.mean(v)) if v else None, "n": len(v)}
 
 
+def _rescore(designs: dict, cfg: Config) -> None:
+    """Recompute every executed level's summaries from its stored cells, in place."""
+    for dd in designs.values():
+        for lv in dd["levels"].values():
+            if not lv["missing"]:
+                lv["by_score"] = {k: level_summary(lv["cells"], cfg.model_ids(), cfg.rq2.relations, k)
+                                  for k in SCORES}
+
+
+def _block_weighted(deg: dict, aug: dict, design: str, k: str) -> Optional[dict]:
+    """{model: graded score} on the original prompt under the augmented suite with the
+    consistency assertions counted as ONE test, scored by the fraction of them passed
+    (post hoc). Recovered from the stored scores: an augmented completion's graded score
+    is (tests passed + assertions passed) / (n + c), so the assertions it passed are
+    augmented * (n + c) - degraded * n. None if that is not a whole number in [0, c]."""
+    d, a = deg["designs"][design]["levels"][k], aug["designs"][design]["levels"][k]
+    c = aug["n_consistency_assertions"]
+    n = (d["n_remaining"] if design == TESTS else          # units: removed exception tests leave
+         deg["eligibility"]["n_valid_tests"] - sum("#" not in u for u in d["removed"]))
+    scores = {}
+    for m, ca in a["cells"][BASELINE_RELATION].items():
+        per = []
+        for pa, pd in zip(ca["primary_scores"], d["cells"][BASELINE_RELATION][m]["primary_scores"]):
+            passed = pa * (n + c) - pd * n
+            if abs(passed - round(passed)) > 1e-6 or not 0 <= round(passed) <= c:
+                return None
+            per.append((pd * n + round(passed) / c) / (n + 1))
+        scores[m] = comparable(sum(per) / len(per))
+    return scores
+
+
 def analyze_tier2(cfg: Config, tasks) -> dict:
     """Per design x score: eligibility, H1b (Page's L), ranking collapse, H1a."""
-    from ..analysis.statistics import pages_l_test, wilcoxon_test
+    from ..analysis.statistics import cochran_q, pages_l_test, wilcoxon_test
     from .runner import _mde, _rank_recovery
 
     models = cfg.model_ids()
@@ -443,6 +484,8 @@ def analyze_tier2(cfg: Config, tasks) -> dict:
             augments[task.label] = read_json(task_dir(cfg, "rq4", task.label, phase="augment"), AUGMENT_FILE)
         except FileNotFoundError:
             pass
+    for r in (*records.values(), *augments.values()):
+        _rescore(r.get("designs", {}), cfg)
 
     checked = {t: r["baseline_check"] for t, r in records.items() if "baseline_check" in r}
     failed = sorted(t for t, c in checked.items() if not c["ok"])
@@ -453,6 +496,9 @@ def analyze_tier2(cfg: Config, tasks) -> dict:
         "baseline_check": {"n_checked": len(checked), "n_failed": len(failed), "failed_tasks": failed,
                            "n_completions": sum(c["n_completions"] for c in checked.values()),
                            "n_rerun_alone": sum(len(c["rerun_alone"]) for c in checked.values())},
+        "primary": {"h1b": f"{UNITS}/mean_primary", "h1a": f"{UNITS}/pass@1",
+                    "note": "H1a on pass@1 is a post-run deviation: the graded score is diluted "
+                            "by the assertions, see rq4/tier2.py"},
         "designs": {},
     }
     levels = [str(l) for l in cfg.rq4.degradation_levels]
@@ -471,16 +517,32 @@ def analyze_tier2(cfg: Config, tasks) -> dict:
             res = {"n_eligible": len(eligible), "ineligible_reasons": dict(reasons),
                    "eligible_tasks": sorted(eligible)}
             lvl = {t: records[t]["designs"][design]["levels"] for t in eligible}
-            blocks = [[lvl[t][k]["by_score"][key]["mean_tau_b"] for k in levels] for t in eligible
-                      if all(not lvl[t][k]["missing"] for k in levels)]
-            res["h1b_pages_l"] = pages_l_test(blocks, descending=True)
+            # every model tied on the original prompt (eligible tasks have no missing level)
+            collapsed = {t: [len(set(lvl[t][k]["by_score"][key]["scores"][BASELINE_RELATION].values())) <= 1
+                             for k in levels] for t in eligible}
+            taus = {t: [lvl[t][k]["by_score"][key]["mean_tau_b"] for k in levels] for t in eligible
+                    if all(not lvl[t][k]["missing"] for k in levels)}
+            res["h1b_pages_l"] = pages_l_test(list(taus.values()), descending=True)
+            # Page's L needs tau_b at every level, so it sees only the tasks degradation did
+            # not break: a collapsed ranking has no tau_b. Counted, so the survivorship shows.
+            dropped = [t for t, v in taus.items() if None in v]
+            intact_undefined = {t for t in dropped if taus[t][0] is None}     # not degradation's doing
+            res["h1b_excluded"] = {
+                "no tau_b on the intact suite": len(intact_undefined),
+                "ranking collapsed at a degraded level": sum(any(collapsed[t]) for t in dropped
+                                                             if t not in intact_undefined),
+                "a paraphrase ranking tied otherwise": sum(not any(collapsed[t]) for t in dropped
+                                                           if t not in intact_undefined)}
             res["tau_b_by_level"] = {
                 k: {"llm": _mean_n([lvl[t][k]["by_score"][key]["mean_tau_b"] for t in eligible]),
                     "control": _mean_n([lvl[t][k]["by_score"][key]["tau_b_by_arm"]["control"] for t in eligible])}
                 for k in levels}
-            res["ranking_collapse"] = {
-                k: sum(len(set(lvl[t][k]["by_score"][key]["scores"][BASELINE_RELATION].values())) <= 1
-                       for t in eligible) for k in levels[1:]}
+            res["ranking_collapse"] = {k: sum(c[i] for c in collapsed.values())
+                                       for i, k in enumerate(levels) if i}
+            res["ranking_collapse_cochran_q"] = (
+                {**cochran_q([[int(x) for x in c] for c in collapsed.values()]),
+                 "note": "post hoc; 0/1 per task and level (the intact level included): "
+                         "every model tied on the original prompt"} if collapsed else None)
             res["monotonicity_violations"] = sum(records[t]["designs"][design]["monotonicity"]["n_violations"]
                                                  for t in eligible)
             # H1a's estimand: tasks where augmentation can change anything, i.e. that got
@@ -491,12 +553,22 @@ def analyze_tier2(cfg: Config, tasks) -> dict:
                               _rank_recovery, _mde, wilcoxon_test, only_ca=True)
             res["h1a_all_eligible"] = _h1a(eligible, lvl, augments, design, key, levels, models,
                                            _rank_recovery, _mde, wilcoxon_test, only_ca=False)
+            if key == "mean_primary":
+                res["h1a_block_weighted"] = _h1a(
+                    eligible, lvl, augments, design, key, levels, models, _rank_recovery, _mde,
+                    wilcoxon_test, only_ca=True,
+                    aug_scores=lambda t, k: _block_weighted(records[t], augments[t], design, k))
             summary["designs"][design][key] = res
     return summary
 
 
 def _h1a(eligible, lvl, augments, design, key, levels, models, rank_recovery, mde, wilcoxon,
-         only_ca: bool = False) -> dict:
+         only_ca: bool = False, aug_scores=None) -> dict:
+    """Rank recovery against the intact ranking. ``aug_scores(task, level)`` gives the
+    augmented original-prompt scores (default: the level summary's); None drops the pair."""
+    if aug_scores is None:
+        aug_scores = (lambda t, k: augments[t]["designs"][design]["levels"][k]
+                      ["by_score"][key]["scores"][BASELINE_RELATION])
     with_aug = [t for t in eligible if t in augments and design in augments[t].get("designs", {})]
     n_aug = len(with_aug)
     if only_ca:
@@ -520,8 +592,9 @@ def _h1a(eligible, lvl, augments, design, key, levels, models, rank_recovery, md
             a = augments[t]["designs"][design]["levels"][k]
             if lvl[t][k]["missing"] or a["missing"]:
                 continue
+            sa = aug_scores(t, k)
             rd = rank_recovery(intact, lvl[t][k]["by_score"][key]["scores"][BASELINE_RELATION], models)
-            ra = rank_recovery(intact, a["by_score"][key]["scores"][BASELINE_RELATION], models)
+            ra = None if sa is None else rank_recovery(intact, sa, models)
             if rd is not None and ra is not None:
                 deg_r.append(rd)
                 aug_r.append(ra)
@@ -546,9 +619,11 @@ def report(summary: dict) -> str:
     bc = summary["baseline_check"]
     lines.append(f"level-0.0 baseline check: {bc['n_checked']} task(s), {bc['n_completions']} completions, "
                  f"failed {bc['n_failed']} {bc['failed_tasks'][:10]}, re-run alone {bc['n_rerun_alone']}")
+    pr = summary["primary"]
+    lines.append(f"primary: H1b {pr['h1b']}, H1a {pr['h1a']} ({pr['note']})")
     for design, by_score in summary["designs"].items():
         for key, r in by_score.items():
-            tag = "PRIMARY" if (design, key) == (UNITS, "mean_primary") else "secondary"
+            tag = {pr["h1b"]: "PRIMARY for H1b", pr["h1a"]: "PRIMARY for H1a"}.get(f"{design}/{key}", "secondary")
             lines.append(f"\n== design={design} score={key} [{tag}]  eligible={r['n_eligible']}  "
                          f"ineligible={r['ineligible_reasons']}")
             lines.append(f"   monotonicity violations: {r['monotonicity_violations']}")
@@ -557,11 +632,20 @@ def report(summary: dict) -> str:
                 fmt = lambda x: "  n/a" if x["mean"] is None else f"{x['mean']:.3f}"
                 lines.append(f"   level {k}: tau_b llm={fmt(llm)} (n={llm['n']})  control={fmt(ctl)} "
                              f"(n={ctl['n']})  collapsed={r['ranking_collapse'].get(k, '-')}")
+            q = r["ranking_collapse_cochran_q"]
+            if q and q["q"] is not None:
+                lines.append(f"   ranking collapse across levels, Cochran's Q (post hoc): Q={q['q']:.2f} "
+                             f"p={q['p_value']:.3g} n={q['n_blocks']}")
             p = r["h1b_pages_l"]
             lines.append("   H1b Page's L: " + (f"L={p['L']} z={p['z']} p={p['p_value']} n={p['n_blocks']}"
-                                               if p.get("L") is not None else f"n/a ({p.get('note')})"))
+                                               if p.get("L") is not None else f"n/a ({p.get('note')})")
+                         + f"  excluded: {r['h1b_excluded']}")
             _report_h1a(lines, "H1a (tasks with assertions)", r["h1a"])
+            if key == "mean_primary":
+                lines.append("     (graded: the assertions enter the denominator and dominate it)")
             _report_h1a(lines, "H1a, secondary (all eligible tasks)", r["h1a_all_eligible"])
+            if "h1a_block_weighted" in r:
+                _report_h1a(lines, "H1a, post hoc (the assertions counted as one test)", r["h1a_block_weighted"])
     return "\n".join(lines)
 
 

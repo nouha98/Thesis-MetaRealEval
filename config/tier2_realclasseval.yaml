@@ -110,9 +110,12 @@ rq3:
   # The SBC reverse generator is an instrument: fixed legacy request, never a
   # model's own sampling, pinned so the model order cannot change it.
   sbc_model: gemma4-31b-it
-  # Calibrated on Tier 2's own calibration half in M5 and frozen before the
-  # headline AUC (review #14). The Tier 1 threshold is never reused.
-  divergence_threshold: null
+  # Calibrated on Tier 2's own calibration half (187 tasks, the 24 development-exposed
+  # pilot tasks forced into it) and frozen before the headline AUC (review #14):
+  # scripts/calibrate_tau_div_tier2.py, 2026-11-06, record data/realclasseval/
+  # tau_div_calibration.json. Held-out half (188 tasks): AUC 0.733, sensitivity 0.83,
+  # specificity 0.55 (29 negatives). The Tier 1 threshold is never reused.
+  divergence_threshold: 0.16666666666666666
 
 rq4:
   degradation_levels: [0.0, 0.2, 0.5, 0.8]

@@ -590,3 +590,21 @@ def run_analyze_tier2(cfg: Config, tasks) -> dict:
     (out / "tier2_rq4.txt").write_text(text + "\n", encoding="utf-8")
     print(text)
     return summary
+
+
+# ---------------------------------------------------------------------------
+# Audit: do the consensus assertions agree with the ground truth?
+# ---------------------------------------------------------------------------
+
+def reference_on_assertions(task, cfg: Config, bench, ca_code: str, n_ca: int) -> dict:
+    """The task's REFERENCE implementation under the intact suite plus the consensus
+    assertions. An assertion the reference fails demands behaviour the benchmark's own
+    solution does not have, so it counts against the consensus, not the model.
+    Level-0 augmented rankings move exactly where such assertions fail someone."""
+    suite = bench.augmented_suite(task, DegradedSuite(level=0.0), ca_code, n_ca)
+    r = bench.run_suite(task, task.reference_code, cfg.execution.timeout_s, suite=suite)
+    outcomes = {n: r.outcomes[n].outcome for n in (f"test_ca_{i}" for i in range(n_ca)) if n in r.outcomes}
+    passed = sum(o == "ordinary_pass" for o in outcomes.values())
+    return {"n_assertions": n_ca, "n_run": len(outcomes), "reference_passes": passed,
+            "reference_fails": len(outcomes) - passed, "reference_primary": r.primary,
+            "outcomes": outcomes}

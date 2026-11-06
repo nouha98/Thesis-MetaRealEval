@@ -366,3 +366,12 @@ def test_h1a_is_estimated_on_tasks_that_got_assertions_and_pooled_beside_it(cfg)
             json.dumps(aug(False, degraded)))
     r = tier2.analyze_tier2(cfg, [SimpleNamespace(label=n) for n in ("A1", "A2", "B")])["designs"]["units"]["mean_primary"]
     assert not r["h1a"]["available"] and "no eligible task received" in r["h1a"]["note"]
+
+
+def test_the_reference_is_run_against_the_consensus_assertions(cfg, bench, task):
+    ca = ("def test_ca_0():\n    counter_0 = module_0.Counter(1)\n    assert counter_0.add(3) == 4\n\n\n"
+          "def test_ca_1():\n    counter_0 = module_0.Counter(1)\n    assert counter_0.add(3) == 99\n")
+    r = tier2.reference_on_assertions(task, cfg, bench, ca, 2)
+    assert r["n_assertions"] == 2 and r["reference_passes"] == 1 and r["reference_fails"] == 1
+    assert r["outcomes"] == {"test_ca_0": "ordinary_pass", "test_ca_1": "ordinary_fail"}
+    assert r["reference_primary"] < 1.0                      # a wrong assertion costs the reference too

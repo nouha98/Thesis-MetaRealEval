@@ -483,17 +483,31 @@ def analyze_tier2(cfg: Config, tasks) -> dict:
                        for t in eligible) for k in levels[1:]}
             res["monotonicity_violations"] = sum(records[t]["designs"][design]["monotonicity"]["n_violations"]
                                                  for t in eligible)
+            # H1a's estimand: tasks where augmentation can change anything, i.e. that got
+            # >= 1 consistency assertion (a task without one reuses its degraded results,
+            # so its recovery is exactly 0 by construction). Fixed before any augmented
+            # result existed; the pooled population is reported beside it.
             res["h1a"] = _h1a(eligible, lvl, augments, design, key, levels, models,
-                              _rank_recovery, _mde, wilcoxon_test)
+                              _rank_recovery, _mde, wilcoxon_test, only_ca=True)
+            res["h1a_all_eligible"] = _h1a(eligible, lvl, augments, design, key, levels, models,
+                                           _rank_recovery, _mde, wilcoxon_test, only_ca=False)
             summary["designs"][design][key] = res
     return summary
 
 
-def _h1a(eligible, lvl, augments, design, key, levels, models, rank_recovery, mde, wilcoxon) -> dict:
+def _h1a(eligible, lvl, augments, design, key, levels, models, rank_recovery, mde, wilcoxon,
+         only_ca: bool = False) -> dict:
     with_aug = [t for t in eligible if t in augments and design in augments[t].get("designs", {})]
+    n_aug = len(with_aug)
+    if only_ca:
+        with_aug = [t for t in with_aug if augments[t].get("has_consistency_assertions")]
     if not with_aug:
-        return {"available": False, "note": "no augment results (run rq4 augment after RQ3 calibration)"}
-    out = {"available": True, "n_tasks": len(with_aug),
+        return {"available": False, "n_augmented_tasks": n_aug,
+                "note": ("no eligible task received a consistency assertion" if n_aug else
+                         "no augment results (run rq4 augment after RQ3 calibration)")}
+    out = {"available": True, "population": "tasks with >= 1 consistency assertion" if only_ca
+           else "all eligible tasks (those without assertions contribute recovery 0)",
+           "n_tasks": len(with_aug),
            "n_with_consistency_assertions": sum(bool(augments[t].get("has_consistency_assertions"))
                                                 for t in with_aug),
            "monotonicity_violations": sum(augments[t]["designs"][design]["monotonicity_vs_degraded"]["n_violations"]
@@ -546,22 +560,25 @@ def report(summary: dict) -> str:
             p = r["h1b_pages_l"]
             lines.append("   H1b Page's L: " + (f"L={p['L']} z={p['z']} p={p['p_value']} n={p['n_blocks']}"
                                                if p.get("L") is not None else f"n/a ({p.get('note')})"))
-            h = r["h1a"]
-            if not h.get("available"):
-                lines.append(f"   H1a: {h.get('note')}")
-                continue
-            lines.append(f"   H1a: {h['n_tasks']} task(s), {h['n_with_consistency_assertions']} with assertions, "
-                         f"monotonicity violations {h['monotonicity_violations']}")
-            for k, e in h["by_level"].items():
-                if not e["n_pairs"]:
-                    lines.append(f"     level {k}: no defined pair")
-                    continue
-                w = e.get("wilcoxon_augmented_vs_degraded", {})
-                lines.append(f"     level {k}: rho degraded={e['mean_rho_degraded']:+.3f} augmented="
-                             f"{e['mean_rho_augmented']:+.3f} recovery={e['mean_recovery']:+.3f} "
-                             f"n={e['n_pairs']}" + (f" p={w['p_value']:.4g}" if w else
-                                                    f" moved={e.get('n_moved')}"))
+            _report_h1a(lines, "H1a (tasks with assertions)", r["h1a"])
+            _report_h1a(lines, "H1a, secondary (all eligible tasks)", r["h1a_all_eligible"])
     return "\n".join(lines)
+
+
+def _report_h1a(lines: list, title: str, h: dict) -> None:
+    if not h.get("available"):
+        lines.append(f"   {title}: {h.get('note')}")
+        return
+    lines.append(f"   {title}: {h['n_tasks']} task(s), {h['n_with_consistency_assertions']} with assertions, "
+                 f"monotonicity violations {h['monotonicity_violations']}")
+    for k, e in h["by_level"].items():
+        if not e["n_pairs"]:
+            lines.append(f"     level {k}: no defined pair")
+            continue
+        w = e.get("wilcoxon_augmented_vs_degraded", {})
+        lines.append(f"     level {k}: rho degraded={e['mean_rho_degraded']:+.3f} augmented="
+                     f"{e['mean_rho_augmented']:+.3f} recovery={e['mean_recovery']:+.3f} "
+                     f"n={e['n_pairs']}" + (f" p={w['p_value']:.4g}" if w else f" moved={e.get('n_moved')}"))
 
 
 def run_analyze_tier2(cfg: Config, tasks) -> dict:

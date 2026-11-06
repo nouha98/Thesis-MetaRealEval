@@ -326,3 +326,43 @@ def test_augment_needs_the_calibrated_threshold_builds_on_the_degraded_suite_and
     lv = rec["designs"]["units"]["levels"]
     assert not rec["has_consistency_assertions"] and all(v["reused_degraded"] for v in lv.values())
     assert lv["0.5"]["cells"] == deg["designs"]["units"]["levels"]["0.5"]["cells"]
+
+
+def test_h1a_is_estimated_on_tasks_that_got_assertions_and_pooled_beside_it(cfg):
+    """A task without assertions reuses its degraded results (recovery exactly 0), so it
+    can only dilute H1a: the primary population is the tasks with >= 1 assertion."""
+    from types import SimpleNamespace
+    intact, wrecked = {"m_a": 1, "m_b": .5, "m_c": 0}, {"m_a": 0, "m_b": .5, "m_c": 1}
+
+    def level(scores):
+        return {"missing": False, "by_score": {k: {"mean_tau_b": 1.0, "tau_b_by_arm": {"control": 1.0},
+                                                   "scores": {"original": scores}} for k in tier2.SCORES},
+                "cells": {}}
+    levels = ("0.0", "0.2", "0.5", "0.8")
+    elig = {"designs": {d: {k: {"eligible": True, "reasons": []} for k in tier2.SCORES} for d in ("units", "tests")}}
+    degraded = {k: level(intact if k == "0.0" else wrecked) for k in levels}
+    deg_rec = {"executed": True, "eligibility": elig, "baseline_check": {"ok": True, "n_completions": 1, "rerun_alone": []},
+               "designs": {"units": {"levels": degraded, "monotonicity": {"n_violations": 0}}}}
+    restored = {k: level(intact) for k in levels}                      # the assertions restore the ranking
+    mono = {"n_violations": 0}
+    aug = lambda ca, lv: {"has_consistency_assertions": ca,
+                          "designs": {"units": {"levels": lv, "monotonicity_vs_degraded": mono}}}
+    for label, a in (("A1", aug(True, restored)), ("A2", aug(True, restored)), ("B", aug(False, degraded))):
+        for ph, fn, rec in (("degrade", tier2.DEGRADE_FILE, deg_rec), ("augment", tier2.AUGMENT_FILE, a)):
+            d = task_dir(cfg, "rq4", label, phase=ph)
+            d.mkdir(parents=True)
+            (d / fn).write_text(json.dumps(rec))
+    s = tier2.analyze_tier2(cfg, [SimpleNamespace(label=n) for n in ("A1", "A2", "B")])
+    r = s["designs"]["units"]["mean_primary"]
+    assert r["h1a"]["n_tasks"] == 2 and r["h1a"]["n_with_consistency_assertions"] == 2
+    assert r["h1a"]["by_level"]["0.2"]["mean_recovery"] == pytest.approx(2.0)      # rho -1 -> +1
+    assert r["h1a_all_eligible"]["n_tasks"] == 3
+    assert r["h1a_all_eligible"]["by_level"]["0.2"]["mean_recovery"] == pytest.approx(4 / 3)
+    text = tier2.report(s)
+    assert "H1a (tasks with assertions): 2 task(s)" in text and "all eligible tasks): 3 task(s)" in text
+    # nobody got an assertion: the primary population is empty, and says so
+    for label in ("A1", "A2"):
+        (task_dir(cfg, "rq4", label, phase="augment") / tier2.AUGMENT_FILE).write_text(
+            json.dumps(aug(False, degraded)))
+    r = tier2.analyze_tier2(cfg, [SimpleNamespace(label=n) for n in ("A1", "A2", "B")])["designs"]["units"]["mean_primary"]
+    assert not r["h1a"]["available"] and "no eligible task received" in r["h1a"]["note"]

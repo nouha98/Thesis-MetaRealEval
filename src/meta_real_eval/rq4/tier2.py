@@ -463,7 +463,7 @@ def analyze_tier2(cfg: Config, tasks) -> dict:
             for t, r in records.items():
                 e = r["eligibility"]["designs"][design][key]
                 if not e["eligible"]:
-                    reasons.update(e["reasons"])
+                    reasons.update(x.split(" (")[0] for x in e["reasons"])   # drop the per-task count
                 elif t in failed:
                     reasons["baseline check failed"] += 1
                 elif r.get("executed") and design in r.get("designs", {}):

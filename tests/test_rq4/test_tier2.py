@@ -264,8 +264,9 @@ def test_analysis_counts_only_eligible_checked_tasks(cfg, bench, task):
         return {"missing": False, "by_score": {k: {"mean_tau_b": tau, "tau_b_by_arm": {"control": 1.0},
                                                    "scores": {"original": scores}} for k in tier2.SCORES},
                 "cells": {}}
-    elig = lambda ok: {"designs": {d: {k: {"eligible": ok, "reasons": [] if ok else ["fewer than 5"]}
-                                       for k in tier2.SCORES} for d in ("units", "tests")}}
+    elig = lambda ok, n=2: {"designs": {d: {k: {"eligible": ok, "reasons": [] if ok else
+                                                [f"fewer than 5 oracle units ({n})"]}
+                                            for k in tier2.SCORES} for d in ("units", "tests")}}
     good = {"executed": True, "eligibility": elig(True),
             "baseline_check": {"ok": True, "n_completions": 12, "rerun_alone": []},
             "designs": {"units": {"levels": {"0.0": level(1.0, {"m_a": 1, "m_b": .5, "m_c": 0}),
@@ -274,17 +275,18 @@ def test_analysis_counts_only_eligible_checked_tasks(cfg, bench, task):
                                              "0.8": level(-1.0, {"m_a": 0, "m_b": .5, "m_c": 1})},
                                   "monotonicity": {"n_violations": 0}}}}
     failed = {**good, "baseline_check": {"ok": False, "n_completions": 12, "rerun_alone": [["o", "m", 0]]}}
-    for label, rec in (("RCE_csn_snippet_3", good), ("T_failed", failed), ("T_small", {"eligibility": elig(False)})):
+    for label, rec in (("RCE_csn_snippet_3", good), ("T_failed", failed),
+                       ("T_small", {"eligibility": elig(False, 2)}),
+                       ("T_small2", {"eligibility": elig(False, 4)})):     # different counts, one reason
         d = task_dir(cfg, "rq4", label, phase="degrade")
         d.mkdir(parents=True)
         (d / tier2.DEGRADE_FILE).write_text(json.dumps(rec))
-    tasks = [task, type(task)(**{**task.__dict__, "label": "T_failed"}),
-             type(task)(**{**task.__dict__, "label": "T_small"})]
+    tasks = [task] + [type(task)(**{**task.__dict__, "label": n}) for n in ("T_failed", "T_small", "T_small2")]
     s = tier2.analyze_tier2(cfg, tasks)
     r = s["designs"]["units"]["mean_primary"]
     assert s["baseline_check"]["n_failed"] == 1 and s["baseline_check"]["failed_tasks"] == ["T_failed"]
     assert r["n_eligible"] == 1 and r["eligible_tasks"] == ["RCE_csn_snippet_3"]
-    assert r["ineligible_reasons"] == {"baseline check failed": 1, "fewer than 5": 1}
+    assert r["ineligible_reasons"] == {"baseline check failed": 1, "fewer than 5 oracle units": 2}
     assert r["h1b_pages_l"]["n_blocks"] == 1
     assert r["ranking_collapse"] == {"0.2": 0, "0.5": 1, "0.8": 0}
     assert not r["h1a"]["available"]

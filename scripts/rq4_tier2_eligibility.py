@@ -85,9 +85,10 @@ def main() -> int:
     for d in (tier2.UNITS, tier2.TESTS):
         for k in tier2.SCORES:
             ok = sum(r["designs"][d][k]["eligible"] for r in per_task.values())
-            why = Counter(x for r in per_task.values() for x in r["designs"][d][k]["reasons"]
-                          if not r["designs"][d][k]["eligible"])
-            why = Counter({w.split(" (")[0]: n for w, n in why.items()})
+            # A reason carries the task's own count ("fewer than 5 oracle units (3)"):
+            # strip it BEFORE counting, or each distinct count is its own key.
+            why = Counter(x.split(" (")[0] for r in per_task.values()
+                          for x in r["designs"][d][k]["reasons"] if not r["designs"][d][k]["eligible"])
             print(f"  design={d:5s} score={k:12s} eligible={ok:4d}  ineligible because: {dict(why)}")
     runs = sum(r["expected_completion_runs"] for r in per_task.values())
     print(f"expected completion runs for rq4 degrade: {runs} "

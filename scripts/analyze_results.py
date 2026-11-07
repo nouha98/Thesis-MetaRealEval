@@ -1131,7 +1131,12 @@ def analyze_rq4() -> dict:
     if not degrade_root.exists():
         return {"available": False, "note": "results/rq4/degrade not found"}
     if any(degrade_root.glob("*/degradation_tier2.json")):
-        return {"available": False,
+        # Tier 2's own analysis (rq4.tier2) owns the RQ4 statistics; only its per-task
+        # rows (primary design: oracle units, graded) are handed on, for the cross-RQ join.
+        summary = RESULTS / "rq4" / "summary" / "tier2_rq4.json"
+        per_task = (load(summary)["designs"]["units"]["mean_primary"].get("per_task", {})
+                    if summary.exists() else {})
+        return {"available": False, "per_task": per_task,
                 "note": "Tier 2 RQ4 degrades oracle units; its analysis is "
                         "rq4/summary/tier2_rq4.txt (python -m meta_real_eval.rq4.runner --phase analyze)"}
 
@@ -1265,6 +1270,33 @@ def _same_pass_rates(a: dict | None, b: dict | None) -> bool:
 # Cross-RQ join — does a weak oracle predict an unstable ranking?
 # ---------------------------------------------------------------------------
 
+def _collapse_vs_oracle(adequacy: dict, per_task: dict) -> dict | None:
+    """Post hoc, Tier 2 only: does a weak oracle (deficit > 0) go with the ranking
+    collapsing into ties at the top degradation level?
+
+    tau_b_drop is undefined exactly where the ranking collapsed, so the join above sees only
+    the tasks degradation did not break; this counts the broken ones. Rows without a
+    ``collapsed_at_top`` key (Tier 1) give None.
+    """
+    from scipy.stats import fisher_exact
+
+    rows = [(adequacy[t]["deficit"] > 0, bool(per_task[t]["collapsed_at_top"]))
+            for t in sorted(set(adequacy) & set(per_task))
+            if per_task[t].get("collapsed_at_top") is not None]
+    if not rows:
+        return None
+    weak = [c for w, c in rows if w]
+    strong = [c for w, c in rows if not w]
+    table = [[sum(weak), len(weak) - sum(weak)], [sum(strong), len(strong) - sum(strong)]]
+    p = float(fisher_exact(table)[1]) if weak and strong else None
+    return {"n_weak": len(weak), "n_strong": len(strong),
+            "collapsed_weak": sum(weak), "collapsed_strong": sum(strong),
+            "share_collapsed_weak": sum(weak) / len(weak) if weak else None,
+            "share_collapsed_strong": sum(strong) / len(strong) if strong else None,
+            "fisher_exact_p": p,
+            "note": "post hoc; collapsed = every model tied on the original prompt at the top level"}
+
+
 def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
     """Join RQ1b's oracle-adequacy deficit onto RQ4's ranking instability.
 
@@ -1280,7 +1312,8 @@ def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
         would silently assume a task-to-task matching that does not exist.
     """
     adequacy = rq1.get("per_task_adequacy", {})
-    per_task = rq4.get("per_task", {}) if rq4.get("available") else {}
+    per_task = rq4.get("per_task", {})      # Tier 2 hands its rows on although `available` is False
+    collapse = _collapse_vs_oracle(adequacy, per_task)
     joined = [
         {"task": label,
          "deficit": adequacy[label]["deficit"],
@@ -1289,7 +1322,7 @@ def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
         if per_task[label].get("tau_b_drop") is not None
     ]
     if len(joined) < 3:
-        return {"available": False, "n_joined_tasks": len(joined),
+        return {"available": False, "n_joined_tasks": len(joined), "collapse_vs_oracle": collapse,
                 "note": "need >=3 tasks with both an RQ1 deficit and an RQ4 tau_b drop"}
 
     deficits = [r["deficit"] for r in joined]
@@ -1330,6 +1363,7 @@ def analyze_cross_rq(rq1: dict, rq4: dict) -> dict:
             "mean_tau_b_drop_strong": sum(strong) / len(strong) if strong else None,
             "mannwhitney": mannwhitney_test(weak, strong) if weak and strong else None,
         },
+        "collapse_vs_oracle": collapse,
         "joined_rows": joined,
         "note": (
             "deficit = traditional kill rate (excluding trivially-killed statement "
@@ -1793,7 +1827,7 @@ def main(argv=None) -> None:
     if not cross_rq.get("available"):
         print(f"  UNAVAILABLE: {cross_rq.get('note')} "
               f"(joined {cross_rq.get('n_joined_tasks', 0)} task(s))")
-    else:
+    if cross_rq.get("available"):
         print(f"Tasks joined on label (RQ1 deficit x RQ4 tau_b drop): {cross_rq['n_joined_tasks']}")
         c = cross_rq["spearman_deficit_vs_tau_b_drop"]
         if c.get("rho") is None:
@@ -1809,6 +1843,12 @@ def main(argv=None) -> None:
         if mw and mw.get("p_value") is not None:
             print(f"  Mann-Whitney U={mw['statistic']:.1f}  p={mw['p_value']:.4g}  "
                   f"cliffs_delta={mw['cliffs_delta']:+.3f}")
+    cv = cross_rq.get("collapse_vs_oracle")
+    if cv:
+        print(f"  Ranking collapsed at the top level (post hoc): weak-oracle "
+              f"{cv['collapsed_weak']}/{cv['n_weak']}, strong-oracle "
+              f"{cv['collapsed_strong']}/{cv['n_strong']}"
+              + ("" if cv["fisher_exact_p"] is None else f"  Fisher exact p={cv['fisher_exact_p']:.4g}"))
 
     print(f"\nWrote {out_path}")
 

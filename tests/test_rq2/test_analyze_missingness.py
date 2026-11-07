@@ -28,6 +28,30 @@ def _pass_rates(root: Path, label: str, cells: dict) -> None:
     (d / "pass_rates.json").write_text(json.dumps(cells))
 
 
+def test_the_cross_rq_join_reads_tier2_rows_and_counts_collapse_separately(ar):
+    """Tier 2 hands per-task rows on although its RQ4 summary is 'unavailable' to the Tier 1
+    reader. tau_b_drop is None where the ranking collapsed, so those tasks leave the join and
+    are counted by the post-hoc collapse split instead."""
+    def adequacy(deficit):
+        return {"deficit": deficit}
+    rq1 = {"per_task_adequacy": {f"T{i}": adequacy(d) for i, d in
+                                 enumerate([0.5, 0.4, 0.3, 0.0, 0.0, 0.0, 0.2])}}
+    row = lambda drop, collapsed: {"tau_b_drop": drop, "collapsed_at_top": collapsed}
+    rq4 = {"available": False, "per_task": {
+        "T0": row(0.9, False), "T1": row(0.7, False), "T2": row(None, True), "T3": row(0.1, False),
+        "T4": row(0.0, False), "T5": row(None, True), "T6": row(None, True)}}
+    out = ar.analyze_cross_rq(rq1, rq4)
+    assert out["available"] and out["n_joined_tasks"] == 4                  # T2, T5, T6 have no drop
+    g = out["weak_vs_strong_oracle"]
+    assert (g["n_weak"], g["n_strong"]) == (2, 2)
+    c = out["collapse_vs_oracle"]
+    assert (c["collapsed_weak"], c["n_weak"], c["collapsed_strong"], c["n_strong"]) == (2, 4, 1, 3)
+    assert 0 <= c["fisher_exact_p"] <= 1
+    # Tier 1 rows carry no collapse flag: no split
+    assert ar.analyze_cross_rq(rq1, {"available": True, "per_task": {"T0": {"tau_b_drop": 0.1}}}
+                               )["collapse_vs_oracle"] is None
+
+
 def test_missing_and_incomplete_cells_are_counted_and_flag_complete_case(ar, tmp_path):
     ok = {"n": 10, "pass@1": 0.5}
     _pass_rates(tmp_path, "T_0", {"original": {"a": ok, "b": ok}})

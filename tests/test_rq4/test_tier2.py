@@ -306,6 +306,11 @@ def test_analysis_counts_only_eligible_checked_tasks(cfg, bench, task):
     assert r["ranking_collapse"] == {"0.2": 0, "0.5": 1, "0.8": 0}
     assert r["ranking_collapse_cochran_q"]["q"] == 3.0                         # rows 0010 and 0000
     assert not r["h1a"]["available"]
+    pt = r["per_task"]                                                         # rows for the cross-RQ join
+    assert set(pt) == {"RCE_csn_snippet_3", "T_good2"}
+    assert pt["RCE_csn_snippet_3"]["tau_b"] == [1.0, 1.0, None, 1.0]           # collapsed at 0.5: no tau_b
+    assert pt["RCE_csn_snippet_3"]["tau_b_drop"] == 0.0 and pt["T_good2"]["tau_b_drop"] == 2.0
+    assert pt["T_good2"]["collapsed_at_top"] is False
     text = tier2.report(s)
     assert "PRIMARY for H1b" in text and "PRIMARY for H1a" in text and "Cochran's Q" in text
 

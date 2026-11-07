@@ -539,6 +539,17 @@ def analyze_tier2(cfg: Config, tasks) -> dict:
                 for k in levels}
             res["ranking_collapse"] = {k: sum(c[i] for c in collapsed.values())
                                        for i, k in enumerate(levels) if i}
+            # One row per eligible task for the cross-RQ join (scripts/analyze_results.py):
+            # tau_b at each level, its drop from intact to the top level (None when either
+            # end is undefined), and whether the ranking collapsed at the top level.
+            res["per_task"] = {}
+            for t in eligible:
+                v = [None if lvl[t][k]["missing"] else lvl[t][k]["by_score"][key]["mean_tau_b"]
+                     for k in levels]
+                res["per_task"][t] = {
+                    "tau_b": v,
+                    "tau_b_drop": v[0] - v[-1] if v[0] is not None and v[-1] is not None else None,
+                    "collapsed_at_top": None if lvl[t][levels[-1]]["missing"] else collapsed[t][-1]}
             res["ranking_collapse_cochran_q"] = (
                 {**cochran_q([[int(x) for x in c] for c in collapsed.values()]),
                  "note": "post hoc; 0/1 per task and level (the intact level included): "

@@ -1,0 +1,116 @@
+{
+ "attributes": [],
+ "class_name": "PDE",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PDE": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "lhs",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type 'findiff object'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type 'findiff object'"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "rhs",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type 'numpy.ndarray'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type 'numpy.ndarray'"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "bcs",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type 'BoundaryConditions'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type 'BoundaryConditions'"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "solve": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_117",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "43ffecedb445087ca49a29bd3f430947a1368fd8ff8e0014ffb5bb982fc06c78",
+  "skeleton_sha256": "d24e2b44a46d22a6354634db1047c0d8600b3ea2f451817474db830b8ca83328",
+  "tests_sha256": "bae6b000c2f0713cd0e635794e581a34d64f9bac3f693370b3e8e3c3ebc1bf03"
+ },
+ "support": {
+  "generatable_methods": [
+   "solve"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_117",
+ "task_id": "RealClassEval/csn/snippet_117"
+}

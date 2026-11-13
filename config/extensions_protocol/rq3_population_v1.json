@@ -1,0 +1,6089 @@
+{
+ "development_in_calibration": true,
+ "format": 1,
+ "held_out_labels": [
+  "RCE_csn_snippet_105",
+  "RCE_csn_snippet_120",
+  "RCE_csn_snippet_66",
+  "RCE_csn_snippet_9",
+  "RCE_csn_snippet_82",
+  "RCE_csn_snippet_269",
+  "RCE_csn_snippet_17",
+  "RCE_csn_snippet_211",
+  "RCE_csn_snippet_213",
+  "RCE_csn_snippet_51",
+  "RCE_csn_snippet_257",
+  "RCE_csn_snippet_133",
+  "RCE_csn_snippet_135",
+  "RCE_csn_snippet_132",
+  "RCE_csn_snippet_216",
+  "RCE_csn_snippet_139",
+  "RCE_csn_snippet_151",
+  "RCE_csn_snippet_168",
+  "RCE_csn_snippet_162",
+  "RCE_csn_snippet_56",
+  "RCE_csn_snippet_249",
+  "RCE_csn_snippet_137",
+  "RCE_csn_snippet_227",
+  "RCE_csn_snippet_6",
+  "RCE_csn_snippet_229",
+  "RCE_csn_snippet_23",
+  "RCE_csn_snippet_147",
+  "RCE_csn_snippet_272",
+  "RCE_csn_snippet_75",
+  "RCE_csn_snippet_245",
+  "RCE_csn_snippet_222",
+  "RCE_csn_snippet_217",
+  "RCE_csn_snippet_141",
+  "RCE_csn_snippet_208",
+  "RCE_csn_snippet_55",
+  "RCE_csn_snippet_104",
+  "RCE_csn_snippet_232",
+  "RCE_csn_snippet_172",
+  "RCE_csn_snippet_111",
+  "RCE_csn_snippet_113",
+  "RCE_csn_snippet_210",
+  "RCE_csn_snippet_145",
+  "RCE_csn_snippet_271",
+  "RCE_csn_snippet_84",
+  "RCE_csn_snippet_251",
+  "RCE_csn_snippet_8",
+  "RCE_csn_snippet_274",
+  "RCE_csn_snippet_261",
+  "RCE_csn_snippet_140",
+  "RCE_csn_snippet_180",
+  "RCE_csn_snippet_92",
+  "RCE_csn_snippet_128",
+  "RCE_csn_snippet_262",
+  "RCE_csn_snippet_53",
+  "RCE_csn_snippet_160",
+  "RCE_csn_snippet_248",
+  "RCE_csn_snippet_156",
+  "RCE_csn_snippet_264",
+  "RCE_csn_snippet_288",
+  "RCE_csn_snippet_305",
+  "RCE_csn_snippet_161",
+  "RCE_csn_snippet_284",
+  "RCE_csn_snippet_205",
+  "RCE_csn_snippet_7",
+  "RCE_csn_snippet_241",
+  "RCE_csn_snippet_218",
+  "RCE_csn_snippet_187",
+  "RCE_csn_snippet_163",
+  "RCE_csn_snippet_115",
+  "RCE_csn_snippet_258",
+  "RCE_csn_snippet_131",
+  "RCE_csn_snippet_275",
+  "RCE_csn_snippet_279",
+  "RCE_csn_snippet_150",
+  "RCE_csn_snippet_201",
+  "RCE_csn_snippet_250",
+  "RCE_csn_snippet_283",
+  "RCE_csn_snippet_29",
+  "RCE_csn_snippet_144",
+  "RCE_csn_snippet_203",
+  "RCE_csn_snippet_173",
+  "RCE_csn_snippet_171",
+  "RCE_csn_snippet_2",
+  "RCE_csn_snippet_276",
+  "RCE_csn_snippet_233",
+  "RCE_csn_snippet_36",
+  "RCE_csn_snippet_285",
+  "RCE_csn_snippet_50",
+  "RCE_csn_snippet_175",
+  "RCE_csn_snippet_154",
+  "RCE_csn_snippet_58",
+  "RCE_csn_snippet_103",
+  "RCE_csn_snippet_292",
+  "RCE_post_snippet_346",
+  "RCE_post_snippet_289",
+  "RCE_post_snippet_182",
+  "RCE_post_snippet_364",
+  "RCE_post_snippet_136",
+  "RCE_post_snippet_112",
+  "RCE_post_snippet_302",
+  "RCE_post_snippet_294",
+  "RCE_post_snippet_46",
+  "RCE_post_snippet_241",
+  "RCE_post_snippet_212",
+  "RCE_post_snippet_371",
+  "RCE_post_snippet_50",
+  "RCE_post_snippet_345",
+  "RCE_post_snippet_57",
+  "RCE_post_snippet_249",
+  "RCE_post_snippet_245",
+  "RCE_post_snippet_230",
+  "RCE_post_snippet_153",
+  "RCE_post_snippet_14",
+  "RCE_post_snippet_84",
+  "RCE_post_snippet_185",
+  "RCE_post_snippet_21",
+  "RCE_post_snippet_296",
+  "RCE_post_snippet_156",
+  "RCE_post_snippet_68",
+  "RCE_post_snippet_307",
+  "RCE_post_snippet_216",
+  "RCE_post_snippet_374",
+  "RCE_post_snippet_319",
+  "RCE_post_snippet_152",
+  "RCE_post_snippet_190",
+  "RCE_post_snippet_120",
+  "RCE_post_snippet_347",
+  "RCE_post_snippet_305",
+  "RCE_post_snippet_253",
+  "RCE_post_snippet_361",
+  "RCE_post_snippet_97",
+  "RCE_post_snippet_246",
+  "RCE_post_snippet_54",
+  "RCE_post_snippet_130",
+  "RCE_post_snippet_59",
+  "RCE_post_snippet_119",
+  "RCE_post_snippet_268",
+  "RCE_post_snippet_340",
+  "RCE_post_snippet_342",
+  "RCE_post_snippet_318",
+  "RCE_post_snippet_83",
+  "RCE_post_snippet_343",
+  "RCE_post_snippet_134",
+  "RCE_post_snippet_373",
+  "RCE_post_snippet_62",
+  "RCE_post_snippet_286",
+  "RCE_post_snippet_338",
+  "RCE_post_snippet_281",
+  "RCE_post_snippet_254",
+  "RCE_post_snippet_360",
+  "RCE_post_snippet_41",
+  "RCE_post_snippet_213",
+  "RCE_post_snippet_201",
+  "RCE_post_snippet_324",
+  "RCE_post_snippet_149",
+  "RCE_post_snippet_101",
+  "RCE_post_snippet_67",
+  "RCE_post_snippet_53",
+  "RCE_post_snippet_308",
+  "RCE_post_snippet_23",
+  "RCE_post_snippet_221",
+  "RCE_post_snippet_256",
+  "RCE_post_snippet_298",
+  "RCE_post_snippet_234",
+  "RCE_post_snippet_209",
+  "RCE_post_snippet_262",
+  "RCE_post_snippet_363",
+  "RCE_post_snippet_39",
+  "RCE_post_snippet_155",
+  "RCE_post_snippet_72",
+  "RCE_post_snippet_312",
+  "RCE_post_snippet_107",
+  "RCE_post_snippet_16",
+  "RCE_post_snippet_150",
+  "RCE_post_snippet_208",
+  "RCE_post_snippet_174",
+  "RCE_post_snippet_210",
+  "RCE_post_snippet_22",
+  "RCE_post_snippet_60",
+  "RCE_post_snippet_183",
+  "RCE_post_snippet_287",
+  "RCE_post_snippet_71",
+  "RCE_post_snippet_189",
+  "RCE_post_snippet_154",
+  "RCE_post_snippet_111",
+  "RCE_post_snippet_280",
+  "RCE_post_snippet_159",
+  "RCE_post_snippet_223"
+ ],
+ "sensitivity": "label-independent representative (first completion of each relation x model)",
+ "solution_level": {
+  "label": "1 if it fails canonical H",
+  "metrics": "AUC with task-cluster bootstrap; the task-level tau_div is never applied",
+  "score": "that solution's disagreement rate with the other scored solutions of its task on the RQ3 shared pool (recomputed in Stage 5 from re-executed traces, same pool seed and size)",
+  "unit": "an RQ3-scored representative solution (relation x model) that passes P",
+  "units": {
+   "RCE_csn_snippet_103": [],
+   "RCE_csn_snippet_104": [],
+   "RCE_csn_snippet_105": [],
+   "RCE_csn_snippet_111": [],
+   "RCE_csn_snippet_113": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    }
+   ],
+   "RCE_csn_snippet_115": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_120": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_128": [],
+   "RCE_csn_snippet_131": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_132": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_133": [],
+   "RCE_csn_snippet_135": [],
+   "RCE_csn_snippet_137": [],
+   "RCE_csn_snippet_139": [],
+   "RCE_csn_snippet_140": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_141": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    }
+   ],
+   "RCE_csn_snippet_144": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_csn_snippet_145": [],
+   "RCE_csn_snippet_147": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_150": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_151": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_154": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_156": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_160": [],
+   "RCE_csn_snippet_161": [],
+   "RCE_csn_snippet_162": [],
+   "RCE_csn_snippet_163": [],
+   "RCE_csn_snippet_168": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_17": [],
+   "RCE_csn_snippet_171": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_172": [],
+   "RCE_csn_snippet_173": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_175": [],
+   "RCE_csn_snippet_180": [],
+   "RCE_csn_snippet_187": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_2": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_201": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_203": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_205": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_208": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_210": [],
+   "RCE_csn_snippet_211": [],
+   "RCE_csn_snippet_213": [],
+   "RCE_csn_snippet_216": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_217": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_218": [],
+   "RCE_csn_snippet_222": [],
+   "RCE_csn_snippet_227": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_229": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_23": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_232": [],
+   "RCE_csn_snippet_233": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_241": [],
+   "RCE_csn_snippet_245": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_248": [],
+   "RCE_csn_snippet_249": [],
+   "RCE_csn_snippet_250": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_251": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_257": [],
+   "RCE_csn_snippet_258": [],
+   "RCE_csn_snippet_261": [],
+   "RCE_csn_snippet_262": [],
+   "RCE_csn_snippet_264": [],
+   "RCE_csn_snippet_269": [],
+   "RCE_csn_snippet_271": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_272": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_274": [],
+   "RCE_csn_snippet_275": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_276": [],
+   "RCE_csn_snippet_279": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_283": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_284": [],
+   "RCE_csn_snippet_285": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_288": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_29": [],
+   "RCE_csn_snippet_292": [],
+   "RCE_csn_snippet_305": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_36": [],
+   "RCE_csn_snippet_50": [],
+   "RCE_csn_snippet_51": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_53": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_55": [],
+   "RCE_csn_snippet_56": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_csn_snippet_58": [],
+   "RCE_csn_snippet_6": [],
+   "RCE_csn_snippet_66": [],
+   "RCE_csn_snippet_7": [],
+   "RCE_csn_snippet_75": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_8": [],
+   "RCE_csn_snippet_82": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_csn_snippet_84": [],
+   "RCE_csn_snippet_9": [],
+   "RCE_csn_snippet_92": [],
+   "RCE_post_snippet_101": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_107": [],
+   "RCE_post_snippet_111": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_112": [],
+   "RCE_post_snippet_119": [],
+   "RCE_post_snippet_120": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_130": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_134": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_136": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_14": [],
+   "RCE_post_snippet_149": [],
+   "RCE_post_snippet_150": [],
+   "RCE_post_snippet_152": [],
+   "RCE_post_snippet_153": [],
+   "RCE_post_snippet_154": [],
+   "RCE_post_snippet_155": [],
+   "RCE_post_snippet_156": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_159": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_16": [],
+   "RCE_post_snippet_174": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_182": [],
+   "RCE_post_snippet_183": [],
+   "RCE_post_snippet_185": [],
+   "RCE_post_snippet_189": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_190": [],
+   "RCE_post_snippet_201": [],
+   "RCE_post_snippet_208": [],
+   "RCE_post_snippet_209": [],
+   "RCE_post_snippet_21": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_post_snippet_210": [],
+   "RCE_post_snippet_212": [],
+   "RCE_post_snippet_213": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_216": [],
+   "RCE_post_snippet_22": [],
+   "RCE_post_snippet_221": [],
+   "RCE_post_snippet_223": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_23": [],
+   "RCE_post_snippet_230": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_234": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    }
+   ],
+   "RCE_post_snippet_241": [],
+   "RCE_post_snippet_245": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_246": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_249": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_253": [],
+   "RCE_post_snippet_254": [],
+   "RCE_post_snippet_256": [],
+   "RCE_post_snippet_262": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_268": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_280": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_281": [],
+   "RCE_post_snippet_286": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    }
+   ],
+   "RCE_post_snippet_287": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_289": [],
+   "RCE_post_snippet_294": [],
+   "RCE_post_snippet_296": [],
+   "RCE_post_snippet_298": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_post_snippet_302": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    }
+   ],
+   "RCE_post_snippet_305": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_307": [],
+   "RCE_post_snippet_308": [],
+   "RCE_post_snippet_312": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_post_snippet_318": [],
+   "RCE_post_snippet_319": [],
+   "RCE_post_snippet_324": [],
+   "RCE_post_snippet_338": [],
+   "RCE_post_snippet_340": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_post_snippet_342": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_343": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_post_snippet_345": [],
+   "RCE_post_snippet_346": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_347": [],
+   "RCE_post_snippet_360": [],
+   "RCE_post_snippet_361": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_363": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_post_snippet_364": [],
+   "RCE_post_snippet_371": [],
+   "RCE_post_snippet_373": [],
+   "RCE_post_snippet_374": [],
+   "RCE_post_snippet_39": [],
+   "RCE_post_snippet_41": [],
+   "RCE_post_snippet_46": [],
+   "RCE_post_snippet_50": [],
+   "RCE_post_snippet_53": [],
+   "RCE_post_snippet_54": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_57": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ],
+   "RCE_post_snippet_59": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_60": [
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    }
+   ],
+   "RCE_post_snippet_62": [],
+   "RCE_post_snippet_67": [],
+   "RCE_post_snippet_68": [
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_71": [],
+   "RCE_post_snippet_72": [],
+   "RCE_post_snippet_83": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_84": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_terse_01"
+    }
+   ],
+   "RCE_post_snippet_97": [
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "original"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_formal_01"
+    },
+    {
+     "model": "gemma4-31b-it",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen38-27b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    },
+    {
+     "model": "qwen36-35b",
+     "passes_P": true,
+     "relation": "llm_lexical_01"
+    }
+   ]
+  }
+ },
+ "split": {
+  "calibration_record_check": {
+   "note": "verify with --check on freia",
+   "record_found": false
+  },
+  "forced_calibration": [
+   "RealClassEval/csn/snippet_3",
+   "RealClassEval/csn/snippet_11",
+   "RealClassEval/csn/snippet_12",
+   "RealClassEval/csn/snippet_13",
+   "RealClassEval/csn/snippet_28",
+   "RealClassEval/csn/snippet_52",
+   "RealClassEval/csn/snippet_54",
+   "RealClassEval/csn/snippet_62",
+   "RealClassEval/csn/snippet_110",
+   "RealClassEval/csn/snippet_117",
+   "RealClassEval/csn/snippet_129",
+   "RealClassEval/csn/snippet_277",
+   "RealClassEval/post_cut-off/snippet_3",
+   "RealClassEval/post_cut-off/snippet_4",
+   "RealClassEval/post_cut-off/snippet_5",
+   "RealClassEval/post_cut-off/snippet_18",
+   "RealClassEval/post_cut-off/snippet_24",
+   "RealClassEval/post_cut-off/snippet_25",
+   "RealClassEval/post_cut-off/snippet_52",
+   "RealClassEval/post_cut-off/snippet_64",
+   "RealClassEval/post_cut-off/snippet_228",
+   "RealClassEval/post_cut-off/snippet_293",
+   "RealClassEval/post_cut-off/snippet_309",
+   "RealClassEval/post_cut-off/snippet_359"
+  ],
+  "n_calibration": 187,
+  "n_held_out": 188,
+  "recomputed_with": "analysis.calibration.stratified_calibration_split",
+  "seed": 42
+ },
+ "task_level": {
+  "label_primary": "1 if >=1 RQ3-scored solution passes P and fails canonical H (operational disagreement with the validated hidden oracle), else 0",
+  "label_secondary": "1 if >=1 RQ3-scored solution fails P-and-H combined",
+  "metrics": "AUC on the continuous score; sensitivity/specificity/J only at the frozen tau_div",
+  "population_rule": "held-out split tasks, minus audit-reserved tasks, H-ready only (applied at G4); development tasks are all in the calibration half",
+  "score": "RQ3 pairwise_disagreement_rate (stored divergence.json, full_v4)",
+  "tasks": {
+   "RCE_csn_snippet_103": {
+    "n_comparable_pairs": 1848,
+    "n_inputs": 28,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9090909090909091,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_104": {
+    "n_comparable_pairs": 110,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.34545454545454546,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_105": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7424242424242424,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_111": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.16666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_113": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7121212121212122,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_115": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.30303030303030304,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_120": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_128": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.30303030303030304,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_131": {
+    "n_comparable_pairs": 330,
+    "n_inputs": 5,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.30303030303030304,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_132": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_133": {
+    "n_comparable_pairs": 55,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.18181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_135": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.803030303030303,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_137": {
+    "n_comparable_pairs": 4554,
+    "n_inputs": 69,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9997804128238911,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_139": {
+    "n_comparable_pairs": 165,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5818181818181818,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_140": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5909090909090909,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_141": {
+    "n_comparable_pairs": 1122,
+    "n_inputs": 17,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7727272727272727,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_144": {
+    "n_comparable_pairs": 2904,
+    "n_inputs": 44,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9965564738292011,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_145": {
+    "n_comparable_pairs": 8976,
+    "n_inputs": 136,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5303030303030303,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_147": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5404040404040404,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_150": {
+    "n_comparable_pairs": 55,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_151": {
+    "n_comparable_pairs": 5544,
+    "n_inputs": 84,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.48484848484848486,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_154": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_156": {
+    "n_comparable_pairs": 5082,
+    "n_inputs": 77,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_160": {
+    "n_comparable_pairs": 6732,
+    "n_inputs": 102,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5303030303030303,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_161": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7121212121212122,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_162": {
+    "n_comparable_pairs": 6006,
+    "n_inputs": 91,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_163": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_168": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.16666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_17": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_171": {
+    "n_comparable_pairs": 1914,
+    "n_inputs": 29,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.3181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_172": {
+    "n_comparable_pairs": 1200,
+    "n_inputs": 80,
+    "n_solutions": 6,
+    "pairwise_disagreement_rate": 0.7333333333333333,
+    "selected_relations": [
+     "original",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_173": {
+    "n_comparable_pairs": 1914,
+    "n_inputs": 29,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5877742946708464,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_175": {
+    "n_comparable_pairs": 90,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_180": {
+    "n_comparable_pairs": 3828,
+    "n_inputs": 58,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.45454545454545453,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_187": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_2": {
+    "n_comparable_pairs": 8910,
+    "n_inputs": 135,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9016835016835016,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_201": {
+    "n_comparable_pairs": 330,
+    "n_inputs": 5,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6060606060606061,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_203": {
+    "n_comparable_pairs": 330,
+    "n_inputs": 5,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5666666666666667,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_205": {
+    "n_comparable_pairs": 2046,
+    "n_inputs": 31,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_208": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9090909090909091,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_210": {
+    "n_comparable_pairs": 7194,
+    "n_inputs": 109,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.30303030303030304,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_211": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_213": {
+    "n_comparable_pairs": 2112,
+    "n_inputs": 32,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.32954545454545453,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_216": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5454545454545454,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_217": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8787878787878788,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_218": {
+    "n_comparable_pairs": 11022,
+    "n_inputs": 167,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.24496461622210125,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_222": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9393939393939394,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_227": {
+    "n_comparable_pairs": 4686,
+    "n_inputs": 71,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_229": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.30303030303030304,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_23": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_232": {
+    "n_comparable_pairs": 396,
+    "n_inputs": 6,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7070707070707071,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_233": {
+    "n_comparable_pairs": 4224,
+    "n_inputs": 64,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.4322916666666667,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_241": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.803030303030303,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_245": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5606060606060606,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_248": {
+    "n_comparable_pairs": 3762,
+    "n_inputs": 57,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.2113237639553429,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_249": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8333333333333334,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_250": {
+    "n_comparable_pairs": 440,
+    "n_inputs": 8,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5954545454545455,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_251": {
+    "n_comparable_pairs": 1914,
+    "n_inputs": 29,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6206896551724138,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_257": {
+    "n_comparable_pairs": 165,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7878787878787878,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_258": {
+    "n_comparable_pairs": 1122,
+    "n_inputs": 17,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.4358288770053476,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_261": {
+    "n_comparable_pairs": 594,
+    "n_inputs": 9,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7609427609427609,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_262": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.16666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_264": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_269": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.48484848484848486,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_271": {
+    "n_comparable_pairs": 144,
+    "n_inputs": 4,
+    "n_solutions": 9,
+    "pairwise_disagreement_rate": 0.1111111111111111,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_272": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_274": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_275": {
+    "n_comparable_pairs": 264,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5909090909090909,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_276": {
+    "n_comparable_pairs": 462,
+    "n_inputs": 7,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9242424242424242,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_279": {
+    "n_comparable_pairs": 1848,
+    "n_inputs": 28,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.30303030303030304,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_283": {
+    "n_comparable_pairs": 1782,
+    "n_inputs": 27,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_284": {
+    "n_comparable_pairs": 2310,
+    "n_inputs": 35,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.16666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_285": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6060606060606061,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_288": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_29": {
+    "n_comparable_pairs": 330,
+    "n_inputs": 5,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9030303030303031,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_292": {
+    "n_comparable_pairs": 7986,
+    "n_inputs": 121,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_305": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8636363636363636,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_36": {
+    "n_comparable_pairs": 6204,
+    "n_inputs": 94,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_50": {
+    "n_comparable_pairs": 6666,
+    "n_inputs": 101,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5757575757575758,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_51": {
+    "n_comparable_pairs": 6666,
+    "n_inputs": 101,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.009150915091509152,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_53": {
+    "n_comparable_pairs": 1914,
+    "n_inputs": 29,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.219435736677116,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_55": {
+    "n_comparable_pairs": 6468,
+    "n_inputs": 98,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.891156462585034,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_56": {
+    "n_comparable_pairs": 5478,
+    "n_inputs": 83,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.16666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_58": {
+    "n_comparable_pairs": 2178,
+    "n_inputs": 33,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.17860422405876952,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_6": {
+    "n_comparable_pairs": 7590,
+    "n_inputs": 115,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_66": {
+    "n_comparable_pairs": 2772,
+    "n_inputs": 77,
+    "n_solutions": 9,
+    "pairwise_disagreement_rate": 0.5833333333333334,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01"
+    ]
+   },
+   "RCE_csn_snippet_7": {
+    "n_comparable_pairs": 264,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_75": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5909090909090909,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_8": {
+    "n_comparable_pairs": 7590,
+    "n_inputs": 115,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_82": {
+    "n_comparable_pairs": 4752,
+    "n_inputs": 72,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5805976430976431,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_84": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6818181818181818,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_9": {
+    "n_comparable_pairs": 7590,
+    "n_inputs": 115,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_csn_snippet_92": {
+    "n_comparable_pairs": 4092,
+    "n_inputs": 62,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_101": {
+    "n_comparable_pairs": 396,
+    "n_inputs": 6,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9141414141414141,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_107": {
+    "n_comparable_pairs": 9000,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6027777777777777,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_111": {
+    "n_comparable_pairs": 528,
+    "n_inputs": 8,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.75,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_112": {
+    "n_comparable_pairs": 9372,
+    "n_inputs": 142,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9848484848484849,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_119": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_120": {
+    "n_comparable_pairs": 56,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_130": {
+    "n_comparable_pairs": 252,
+    "n_inputs": 7,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9444444444444444,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_134": {
+    "n_comparable_pairs": 2178,
+    "n_inputs": 33,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.16666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_136": {
+    "n_comparable_pairs": 6864,
+    "n_inputs": 104,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.3181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_14": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.4090909090909091,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_149": {
+    "n_comparable_pairs": 5214,
+    "n_inputs": 79,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6683927886459532,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_150": {
+    "n_comparable_pairs": 9966,
+    "n_inputs": 151,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.3160746538229982,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_152": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.45454545454545453,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_153": {
+    "n_comparable_pairs": 6006,
+    "n_inputs": 91,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.803030303030303,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_154": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_155": {
+    "n_comparable_pairs": 12738,
+    "n_inputs": 193,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_156": {
+    "n_comparable_pairs": 11550,
+    "n_inputs": 175,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7238095238095238,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_159": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8712121212121212,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_16": {
+    "n_comparable_pairs": 1914,
+    "n_inputs": 29,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9785788923719958,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_174": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5303030303030303,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_182": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5303030303030303,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_183": {
+    "n_comparable_pairs": 10164,
+    "n_inputs": 154,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.24822904368358914,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_185": {
+    "n_comparable_pairs": 11748,
+    "n_inputs": 178,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7979230507320395,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_189": {
+    "n_comparable_pairs": 9042,
+    "n_inputs": 137,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9960185799601858,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_190": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_201": {
+    "n_comparable_pairs": 45,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9555555555555556,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_208": {
+    "n_comparable_pairs": 3432,
+    "n_inputs": 52,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9883449883449883,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_209": {
+    "n_comparable_pairs": 8184,
+    "n_inputs": 124,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7580645161290323,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_21": {
+    "n_comparable_pairs": 3036,
+    "n_inputs": 46,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_210": {
+    "n_comparable_pairs": 9438,
+    "n_inputs": 143,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5811612629794448,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_212": {
+    "n_comparable_pairs": 1452,
+    "n_inputs": 22,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8856749311294766,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_213": {
+    "n_comparable_pairs": 9702,
+    "n_inputs": 147,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.26664605236033806,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_216": {
+    "n_comparable_pairs": 2574,
+    "n_inputs": 39,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.3181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_22": {
+    "n_comparable_pairs": 9240,
+    "n_inputs": 140,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_221": {
+    "n_comparable_pairs": 72,
+    "n_inputs": 2,
+    "n_solutions": 9,
+    "pairwise_disagreement_rate": 0.75,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01"
+    ]
+   },
+   "RCE_post_snippet_223": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_23": {
+    "n_comparable_pairs": 10890,
+    "n_inputs": 165,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5057851239669422,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_230": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.16666666666666666,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_234": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 1.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_241": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_245": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_246": {
+    "n_comparable_pairs": 594,
+    "n_inputs": 9,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.4898989898989899,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_249": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.30303030303030304,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_253": {
+    "n_comparable_pairs": 7128,
+    "n_inputs": 108,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.44276094276094274,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_254": {
+    "n_comparable_pairs": 8976,
+    "n_inputs": 136,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6805926916221033,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_256": {
+    "n_comparable_pairs": 4320,
+    "n_inputs": 96,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 1.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_262": {
+    "n_comparable_pairs": 6732,
+    "n_inputs": 102,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_268": {
+    "n_comparable_pairs": 2178,
+    "n_inputs": 33,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9660238751147842,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_280": {
+    "n_comparable_pairs": 6996,
+    "n_inputs": 106,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_281": {
+    "n_comparable_pairs": 5214,
+    "n_inputs": 79,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.4873417721518987,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_286": {
+    "n_comparable_pairs": 11022,
+    "n_inputs": 167,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.44456541462529486,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_287": {
+    "n_comparable_pairs": 528,
+    "n_inputs": 8,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.18181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_289": {
+    "n_comparable_pairs": 5544,
+    "n_inputs": 84,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.010822510822510822,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_294": {
+    "n_comparable_pairs": 330,
+    "n_inputs": 5,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8787878787878788,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_296": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.4494949494949495,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_298": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.4393939393939394,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_302": {
+    "n_comparable_pairs": 112,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.25,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_305": {
+    "n_comparable_pairs": 66,
+    "n_inputs": 1,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9242424242424242,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_307": {
+    "n_comparable_pairs": 4620,
+    "n_inputs": 70,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.17705627705627705,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_308": {
+    "n_comparable_pairs": 7524,
+    "n_inputs": 114,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9404572036150983,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_312": {
+    "n_comparable_pairs": 7200,
+    "n_inputs": 200,
+    "n_solutions": 9,
+    "pairwise_disagreement_rate": 0.1527777777777778,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01"
+    ]
+   },
+   "RCE_post_snippet_318": {
+    "n_comparable_pairs": 4565,
+    "n_inputs": 83,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8909090909090909,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_319": {
+    "n_comparable_pairs": 264,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9393939393939394,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_324": {
+    "n_comparable_pairs": 1152,
+    "n_inputs": 32,
+    "n_solutions": 9,
+    "pairwise_disagreement_rate": 0.9366319444444444,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_338": {
+    "n_comparable_pairs": 528,
+    "n_inputs": 8,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7840909090909091,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_340": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5303030303030303,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_342": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6212121212121212,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_343": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7121212121212122,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_345": {
+    "n_comparable_pairs": 9966,
+    "n_inputs": 151,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.2680112382099137,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_346": {
+    "n_comparable_pairs": 1656,
+    "n_inputs": 46,
+    "n_solutions": 9,
+    "pairwise_disagreement_rate": 0.021135265700483092,
+    "selected_relations": [
+     "original",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_347": {
+    "n_comparable_pairs": 4365,
+    "n_inputs": 97,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5814432989690722,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_360": {
+    "n_comparable_pairs": 10560,
+    "n_inputs": 192,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7272727272727273,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_361": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.08333333333333333,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_363": {
+    "n_comparable_pairs": 72,
+    "n_inputs": 2,
+    "n_solutions": 9,
+    "pairwise_disagreement_rate": 0.5972222222222222,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01"
+    ]
+   },
+   "RCE_post_snippet_364": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5865151515151515,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_371": {
+    "n_comparable_pairs": 132,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_373": {
+    "n_comparable_pairs": 7458,
+    "n_inputs": 113,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9393939393939394,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_374": {
+    "n_comparable_pairs": 4290,
+    "n_inputs": 65,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.9766899766899767,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_39": {
+    "n_comparable_pairs": 4565,
+    "n_inputs": 83,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_41": {
+    "n_comparable_pairs": 90,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5333333333333333,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_46": {
+    "n_comparable_pairs": 264,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7159090909090909,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_50": {
+    "n_comparable_pairs": 264,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.6818181818181818,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_53": {
+    "n_comparable_pairs": 264,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.7234848484848485,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_54": {
+    "n_comparable_pairs": 165,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.2909090909090909,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_57": {
+    "n_comparable_pairs": 165,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.696969696969697,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_59": {
+    "n_comparable_pairs": 264,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5492424242424242,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_60": {
+    "n_comparable_pairs": 198,
+    "n_inputs": 3,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.702020202020202,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_62": {
+    "n_comparable_pairs": 11550,
+    "n_inputs": 175,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.5953246753246754,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_67": {
+    "n_comparable_pairs": 13200,
+    "n_inputs": 200,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.3181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_68": {
+    "n_comparable_pairs": 7260,
+    "n_inputs": 110,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.17823691460055097,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_71": {
+    "n_comparable_pairs": 110,
+    "n_inputs": 2,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.8181818181818182,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_72": {
+    "n_comparable_pairs": 6666,
+    "n_inputs": 101,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_83": {
+    "n_comparable_pairs": 264,
+    "n_inputs": 4,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.3484848484848485,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_84": {
+    "n_comparable_pairs": 6666,
+    "n_inputs": 101,
+    "n_solutions": 12,
+    "pairwise_disagreement_rate": 0.4816981698169817,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01",
+     "llm_terse_01"
+    ]
+   },
+   "RCE_post_snippet_97": {
+    "n_comparable_pairs": 2344,
+    "n_inputs": 70,
+    "n_solutions": 9,
+    "pairwise_disagreement_rate": 1.0,
+    "selected_relations": [
+     "original",
+     "llm_formal_01",
+     "llm_lexical_01"
+    ]
+   }
+  },
+  "unit": "task"
+ },
+ "tau_div": 0.16666666666666666
+}

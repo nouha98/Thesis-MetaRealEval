@@ -1,0 +1,146 @@
+{
+ "attributes": [],
+ "class_name": "KNNModel",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "KNNModel": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "items",
+    "type": {
+     "items": {
+      "items": [
+       {
+        "t": "any"
+       },
+       {
+        "items": {
+         "t": "float"
+        },
+        "t": "list"
+       }
+      ],
+      "t": "tuple"
+     },
+     "t": "list"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     3
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     3
+    ],
+    "kind": "positional",
+    "name": "k",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "neighbors": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "target_emb",
+     "type": {
+      "items": {
+       "t": "float"
+      },
+      "t": "list"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "k",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_293",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "f697c3a4664389f79e2be0698a925fca786f7d674fc405a9fab05539d7f4f78b",
+  "skeleton_sha256": "65bb57b32a87b152dfd8cf15bdaf8f3d701359c8ece26791c2eb5d88238c2e60",
+  "tests_sha256": "e427bc370a3a615450332510216327381b97a8a0e043d3a5e980df6213012668"
+ },
+ "support": {
+  "generatable_methods": [
+   "neighbors"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_293",
+ "task_id": "RealClassEval/post_cut-off/snippet_293"
+}

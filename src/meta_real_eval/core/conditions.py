@@ -60,6 +60,8 @@ def protocol_settings(cfg: Config) -> dict[str, Any]:
         ("control_marker_models", r.control_marker_models, None),
         ("ranking_score", r.ranking_score, "pass@1"),
     ) if v != default}
+    if cfg.extensions is not None:          # absent from every historical config
+        later["extensions"] = cfg.extensions.protocol_identity()
     return {
         **later,
         "project_seed": cfg.project.seed,

@@ -1,0 +1,113 @@
+{
+ "attributes": [],
+ "class_name": "BitField",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BitField": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     594
+    ],
+    "kind": "varargs",
+    "name": "names",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      [
+       594,
+       594,
+       594
+      ],
+      594,
+      2
+     ],
+     "kind": "positional",
+     "name": "val",
+     "type": {
+      "options": [
+       {
+        "items": {
+         "t": "int"
+        },
+        "t": "list"
+       },
+       {
+        "t": "int"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_52",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "009a6c1e09a4b1a2aa13f7991c1786e406e96ae73e1927c85c1afc6eb92defda",
+  "skeleton_sha256": "509676768b3001b6c831e4952719152f801d2df3d0e2750f569c449ba85881aa",
+  "tests_sha256": "9103f8ae8fe3fd9f75b94fd44e8aa70684747f1484a62661f6b6f44abf4e4a64"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_52",
+ "task_id": "RealClassEval/csn/snippet_52"
+}

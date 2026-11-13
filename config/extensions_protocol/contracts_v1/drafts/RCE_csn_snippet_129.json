@@ -1,0 +1,116 @@
+{
+ "attributes": [],
+ "class_name": "FenwickNode",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "FenwickNode": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "parent",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type 'FenwickNode'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type 'FenwickNode'"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "children",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type 'list(FenwickNode)'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type 'list(FenwickNode)'"
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "index",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_ancestors": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_129",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "fdef019349ecb9672b861e1cb686c89683472657e9a491f51f43d27f70202e60",
+  "skeleton_sha256": "cb5df1ccf8aa45286583648c3f561c17d78708f5fd5b5d296bf1c3eb862bfdcf",
+  "tests_sha256": "ff6dee19f50e06e93678c1a5390dcbd3af45057bc6ce78084a0aca1431e24bf7"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_ancestors"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_129",
+ "task_id": "RealClassEval/csn/snippet_129"
+}

@@ -258,6 +258,56 @@ class RQ4Config(BaseModel):
     degradation_levels: list[float] = [0.0, 0.2, 0.5, 0.8]
 
 
+# ---------------------------------------------------------------------------
+# Thesis extensions (plan rev. 8). Absent from every historical config: when
+# the section is missing, ``Config.extensions`` is None and nothing changes.
+# ---------------------------------------------------------------------------
+
+class ExecPolicyConfig(BaseModel):
+    """Opt-in execution policy for generated code (see core/exec_policy.py)."""
+    model_config = ConfigDict(extra="forbid")
+
+    scrub_credentials: bool = True
+    memory_limit_mb: Optional[int] = None
+    cpu_limit_s: Optional[int] = None
+    file_size_limit_mb: Optional[int] = None
+    kill_process_tree: bool = True
+    isolate_home: bool = False     # runners on generated inputs switch it on themselves
+
+    def to_policy(self):
+        from .exec_policy import ExecPolicy
+        return ExecPolicy(**self.model_dump())
+
+
+class ExtensionsConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    protocol_version: str = "rev8"
+    output_root: Path = Path("./results_tier2_ext")
+    # the frozen Tier 2 results the extensions read (never written)
+    baseline_scores: Optional[Path] = None      # full_v4/combined: per-completion scores, stage0, rq1, rq3, rq4
+    baseline_post: Optional[Path] = None        # full_v5: final rankings and analyses
+    # development tasks: all tuning happens on these; confirmatory numbers use the rest
+    development_tasks: list[str] = Field(default_factory=list)
+    development_task_indices: list[int] = Field(default_factory=list)
+    seed: int = 20261112
+    exec_policy: ExecPolicyConfig = Field(default_factory=ExecPolicyConfig)
+    # path -> expected sha256 of a pinned input (checked by core.provenance.verify_pins)
+    pins: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _indices_match_labels(self) -> "ExtensionsConfig":
+        if self.development_task_indices and len(self.development_task_indices) != len(self.development_tasks):
+            raise ValueError("extensions.development_task_indices must align with development_tasks")
+        return self
+
+    def protocol_identity(self) -> dict[str, Any]:
+        """What makes two extension runs comparable (paths excluded, as in protocol_settings)."""
+        return {"protocol_version": self.protocol_version, "seed": self.seed,
+                "development_tasks": sorted(self.development_tasks),
+                "exec_policy": self.exec_policy.model_dump(), "pins": dict(sorted(self.pins.items()))}
+
+
 class Config(BaseModel):
     project: ProjectConfig = Field(default_factory=ProjectConfig)
     benchmark: BenchmarkConfig = Field(default_factory=BenchmarkConfig)
@@ -268,6 +318,7 @@ class Config(BaseModel):
     rq2: RQ2Config = Field(default_factory=RQ2Config)
     rq3: RQ3Config = Field(default_factory=RQ3Config)
     rq4: RQ4Config = Field(default_factory=RQ4Config)
+    extensions: Optional[ExtensionsConfig] = None
 
     @model_validator(mode="after")
     def _strict_policy_needs_profiles(self) -> "Config":
@@ -288,12 +339,34 @@ class Config(BaseModel):
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "Config":
-        with open(path) as f:
-            data = yaml.safe_load(f)
-        return cls.model_validate(data or {})
+        return cls.model_validate(load_yaml_with_base(path))
 
     def model_ids(self) -> list[str]:
         return [m.id for m in self.llm.models]
+
+
+def _deep_merge(base: dict, overlay: dict) -> dict:
+    """``overlay`` wins; nested mappings merge, everything else (lists included) is replaced."""
+    out = dict(base)
+    for k, v in overlay.items():
+        out[k] = _deep_merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+    return out
+
+
+def load_yaml_with_base(path: str | Path) -> dict:
+    """The config mapping at ``path``. A top-level ``base_config`` key (resolved relative to the
+    including file) names a config this one overlays, so an extension config cannot drift from
+    the Tier 2 config it builds on. No historical config uses the key, so they load as before."""
+    path = Path(path)
+    with open(path) as f:
+        data = yaml.safe_load(f) or {}
+    base = data.pop("base_config", None)
+    if base is None:
+        return data
+    base_path = (path.parent / base) if not Path(base).is_absolute() else Path(base)
+    if base_path.resolve() == path.resolve():
+        raise ValueError(f"{path}: base_config points to itself")
+    return _deep_merge(load_yaml_with_base(base_path), data)
 
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,70 @@
+{
+ "attributes": [],
+ "class_name": "Enum",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Enum": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "iteritems": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_110",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "9a80e88acb24390e7d5a0fb939da99209ea49b7c976edfb6c1b49473d82ba175",
+  "skeleton_sha256": "50ee326efa20c4158cc51b56e8b3feb1b98e2ea8cbabe2e85bed02e3ba6542dd",
+  "tests_sha256": "1cc1190bcd4724c8254e6f781ec1e21bf949c65b92152addf6bd3c38c7921304"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__",
+   "iteritems"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_110",
+ "task_id": "RealClassEval/csn/snippet_110"
+}

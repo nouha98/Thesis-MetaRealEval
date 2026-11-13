@@ -30,7 +30,7 @@ import ast
 from pathlib import Path
 
 PKG = Path(__file__).resolve().parents[1] / "src" / "meta_real_eval"
-GUARDED_DIRS = ("stage0", "rq1", "rq2", "rq3", "rq4", "analysis")
+GUARDED_DIRS = ("stage0", "rq1", "rq2", "rq3", "rq4", "analysis", "oracles")
 CONCRETE_MODULES = ("core.data_loader", "benchmarks.humaneval", "benchmarks.realclasseval")
 BENCHMARK_NAMES = ("humaneval", "realclasseval")
 

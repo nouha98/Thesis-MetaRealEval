@@ -18,6 +18,9 @@ dependencies = [
     "matplotlib",
     "pandas",
     "cosmic-ray>=8.3",
+    # extensions (plan rev. 8): bounded witness search and generated scenarios.
+    # Pinned exactly: generated examples depend on the Hypothesis version.
+    "hypothesis==6.170.15",
 ]
 
 [project.optional-dependencies]

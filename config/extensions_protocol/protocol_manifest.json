@@ -1,0 +1,80 @@
+{
+ "format": 1,
+ "created_utc": "2026-11-12T19:39:24+00:00",
+ "gated": false,
+ "git": {
+  "commit": "30aa8e76b6fbfd636ee18474619f50b33e4ffd26-dirty",
+  "head": "30aa8e76b6fbfd636ee18474619f50b33e4ffd26",
+  "dirty_tracked_files": [
+   "M pyproject.toml",
+   " M requirements-tier2.lock.txt",
+   " M src/meta_real_eval/analysis/statistics.py",
+   " M src/meta_real_eval/benchmarks/forkserver.py",
+   " M src/meta_real_eval/benchmarks/observe.py",
+   " M src/meta_real_eval/core/conditions.py",
+   " M src/meta_real_eval/core/config.py",
+   " M src/meta_real_eval/core/sandbox.py",
+   " M tests/test_architecture.py"
+  ],
+  "untracked_code_files": [
+   "config/default.final.yaml",
+   "config/extensions_protocol/cohorts_v1.json",
+   "config/extensions_protocol/fault_split_v1.json",
+   "config/extensions_protocol/protocol_manifest.json",
+   "config/extensions_protocol/rq3_population_v1.json",
+   "config/tier2_extensions.yaml",
+   "scripts/audit_llm_mutants.py",
+   "scripts/ext_common.py",
+   "scripts/freeze_protocol.py",
+   "scripts/saturation_reporting_checks.py",
+   "scripts/temperature_pilot.py",
+   "src/meta_real_eval/benchmarks/contracts.py",
+   "src/meta_real_eval/benchmarks/strategies.py",
+   "src/meta_real_eval/benchmarks/witness.py",
+   "src/meta_real_eval/core/artifacts.py",
+   "src/meta_real_eval/core/canary.py",
+   "src/meta_real_eval/core/exec_policy.py",
+   "src/meta_real_eval/core/provenance.py",
+   "src/meta_real_eval/oracles/__init__.py",
+   "src/meta_real_eval/oracles/fault_groups.py"
+  ]
+ },
+ "pins": {
+  "config/tier2_realclasseval.yaml": "ok",
+  "data/HumanEval.jsonl.gz": "ok",
+  "data/realclasseval/realclasseval_v1.jsonl.gz": "ok"
+ },
+ "config": "config\\tier2_extensions.yaml",
+ "artifacts": {
+  "cohorts_v1.json": {
+   "sha256_canonical": "21f7b9a56830193d5364446155c3ec54c932cbc101e5e4348b78f57910ffe7d0",
+   "file_sha256": "bbb5a797cdc1e8a3f74114e7759ca1f9e8a2cef92114dfa3683a026103efe437"
+  },
+  "rq3_population_v1.json": {
+   "sha256_canonical": "ba653f0d6348754f4410cd32598b9c3f2cbc6a5cfd4451d62602f35fee2af2b9",
+   "file_sha256": "7800d3890e9e72acfa8c2a6ceb157e8e1b73bc0c8a99a9c70bc158ae13863fb6"
+  },
+  "fault_split_v1.json": {
+   "sha256_canonical": "bdabf3cb6851e1eaa94a42bfa33b0054c24d8b8ecb8a3f176318ee3b9bad8713",
+   "file_sha256": "c485f2a429d5b830fddae04779b981ebb840fed13c4c5891bc99a24bb46d2904"
+  }
+ },
+ "inputs": {
+  "stage0": {
+   "n_files": 1125,
+   "digest": "83a712bee6cf9d974ddd9f09662a295e568fd7d382e81f99d9642e22c81142c7",
+   "missing": []
+  },
+  "rq1/generate": {
+   "n_files": 1125,
+   "digest": "c2bcfec7dd1058b825c67a19d06a39daacf2a4fb5b53a3e913a49f3406a594d5",
+   "missing": []
+  },
+  "rq3/execute": {
+   "n_files": 750,
+   "digest": "d44ca357785f7c32add47846ffb21627a49c140caf65ae5b2c078169b8077bb7",
+   "missing": []
+  }
+ },
+ "note": "frozen without the gate manifest (local); confirm with --check on freia before Stage 2 results are reported"
+}

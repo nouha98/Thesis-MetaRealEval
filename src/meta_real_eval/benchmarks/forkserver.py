@@ -45,7 +45,8 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Optional
 
-from .observe import exc_token, token
+from ..core import exec_policy
+from .observe import api_token, exc_api_token, exc_token, token
 
 PYTHONHASHSEED = "0"
 _TIMEOUT_EXIT_CODE = 124
@@ -65,7 +66,7 @@ def _resolve(expr: Optional[str], ns: dict):
         return None
 
 
-def _run_scenario(steps: list[dict], ns: dict) -> dict[str, str]:
+def _run_scenario(steps: list[dict], ns: dict, api: Optional[dict] = None) -> dict:
     """Execute a scenario's steps in ``ns``; return its trace ``{key: token}``.
 
     Keys ``s<i>`` hold step observations; ``end:<var>`` hold the bounded
@@ -73,15 +74,28 @@ def _run_scenario(steps: list[dict], ns: dict) -> dict[str, str]:
     Mirrors pytest semantics: the scenario stops at the first exception
     unless it is a ``raises`` step whose exception matches the expected type
     (pytest.raises would have caught it and the test would continue).
+
+    ``api`` (extensions only) is ``{"flags": [bool per step], "rules": {...}}``:
+    for every flagged step an additional ``api:s<i>`` key holds the API-mode
+    token (``observe.api_token`` / ``exc_api_token``). Without it the trace is
+    exactly the historical one.
     """
-    tokens: dict[str, str] = {}
+    tokens: dict = {}
     bound: list[str] = []
+    flags = (api or {}).get("flags") or []
+    rules = (api or {}).get("rules")
+
+    def api_mark(i: int, value=None, exc: Optional[BaseException] = None) -> None:
+        if i < len(flags) and flags[i]:
+            tokens[f"api:s{i}"] = exc_api_token(exc) if exc is not None else api_token(value, rules)
+
     for i, step in enumerate(steps):
         key = f"s{i}"
         try:
             value = eval(compile(step["src"], f"<scenario {key}>", "eval"), ns)
         except BaseException as e:
             tokens[key] = exc_token(e)
+            api_mark(i, exc=e)
             if step["kind"] == "raises":
                 expected = _resolve(step.get("expected_exc"), ns)
                 if isinstance(expected, type) and isinstance(e, expected):
@@ -90,8 +104,10 @@ def _run_scenario(steps: list[dict], ns: dict) -> dict[str, str]:
         if step["kind"] == "raises":
             # pytest.raises would fail the test here: no exception happened.
             tokens[key] = "NO_EXC:" + token(value)
+            api_mark(i, value=value)
             break
         tokens[key] = token(value)
+        api_mark(i, value=value)
         target = step.get("target")
         if target:
             ns[target] = value
@@ -119,7 +135,7 @@ def _silence_stdio() -> None:
     os.dup2(devnull, 2)
 
 
-def _fork_one(steps: list[dict], base_ns: dict, timeout_s: float) -> dict:
+def _fork_one(steps: list[dict], base_ns: dict, timeout_s: float, api: Optional[dict] = None) -> dict:
     import select
     import signal
 
@@ -129,7 +145,7 @@ def _fork_one(steps: list[dict], base_ns: dict, timeout_s: float) -> dict:
         os.close(r)
         try:
             _silence_stdio()
-            payload = {"status": "ok", "tokens": _run_scenario(steps, dict(base_ns))}
+            payload = {"status": "ok", "tokens": _run_scenario(steps, dict(base_ns), api)}
         except BaseException as e:
             payload = {"status": "crashed", "tokens": {"crash": exc_token(e)}}
         data = memoryview(json.dumps(payload).encode("utf-8"))
@@ -178,6 +194,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     spec = json.loads((args.dir / "scenarios.json").read_text(encoding="utf-8"))
     scenarios = spec["scenarios"]
 
+    def api_of(s: dict) -> Optional[dict]:
+        if spec.get("api_rules") is None or not s.get("api_flags"):
+            return None
+        return {"flags": s["api_flags"], "rules": spec["api_rules"]}
+
     if args.mode == "single":
         base_ns, import_exc = _load_header(spec["header"], args.dir)
         out = args.dir / f"trace_{args.index}.json"
@@ -191,7 +212,8 @@ def main(argv: Optional[list[str]] = None) -> int:
             watchdog.daemon = True
             watchdog.start()
             try:
-                trace = {"status": "ok", "tokens": _run_scenario(scenarios[args.index]["steps"], base_ns)}
+                trace = {"status": "ok", "tokens": _run_scenario(scenarios[args.index]["steps"], base_ns,
+                                                                 api_of(scenarios[args.index]))}
             except BaseException as e:
                 trace = {"status": "crashed", "tokens": {"crash": exc_token(e)}}
             watchdog.cancel()
@@ -205,7 +227,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     else:
         threads_at_fork = threading.active_count()
         for s in scenarios:
-            trace = _fork_one(s["steps"], base_ns, args.timeout)
+            trace = _fork_one(s["steps"], base_ns, args.timeout, api_of(s))
             trace["threads_at_fork"] = threads_at_fork
             traces.append(trace)
     (args.dir / "traces.json").write_text(json.dumps(traces), encoding="utf-8")
@@ -236,6 +258,7 @@ def run_scenarios(
     timeout_s: float = 10.0,
     mode: Optional[str] = None,
     import_allowance_s: float = 60.0,
+    api_rules: Optional[dict] = None,
 ) -> list[dict]:
     """Run every scenario against ``solution_code``; one trace per scenario.
 
@@ -244,6 +267,10 @@ def run_scenarios(
     :class:`~.scenarios.Scenario` objects (or plain dicts with a ``steps``
     list). ``import_allowance_s`` bounds the header import, which is excluded
     from ``timeout_s`` in both modes.
+
+    ``api_rules`` (extensions only): contract comparison rules; scenarios given
+    as dicts may then carry ``api_flags`` (one bool per step) and their traces
+    gain ``api:s<i>`` keys. Omitted, the spec and traces are the historical ones.
     """
     mode = mode or default_mode()
     if mode == "fork" and not hasattr(os, "fork"):
@@ -257,19 +284,26 @@ def run_scenarios(
             for s in scenarios
         ],
     }
+    if api_rules is not None:
+        spec["api_rules"] = api_rules
     base = [sys.executable, "-m", "meta_real_eval.benchmarks.forkserver",
             "--timeout", str(timeout_s)]
 
-    with tempfile.TemporaryDirectory() as tmp:
+    policy = exec_policy.active_policy()
+    # under a policy (extensions only) a descendant that outlived its tree (Windows) must not
+    # crash the run by locking the temp dir; historical calls keep the default behaviour
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=policy is not None) as tmp:
         tmp_path = Path(tmp)
         (tmp_path / f"{module_name}.py").write_text(solution_code, encoding="utf-8")
         (tmp_path / "scenarios.json").write_text(json.dumps(spec), encoding="utf-8")
-        env = _env()
+        # an activated ExecPolicy (extensions only) scrubs credentials and sets limits;
+        # without one, env and preexec are exactly the historical ones
+        env, preexec = exec_policy.apply(_env(), policy, workdir=tmp_path)
 
         if mode == "fork":
             overall = import_allowance_s + (timeout_s + 1.0) * max(1, len(spec["scenarios"]))
-            proc = subprocess.run(base + ["--dir", tmp, "--mode", "fork"], cwd=tmp,
-                                  capture_output=True, timeout=overall, env=env)
+            proc = exec_policy.run(base + ["--dir", tmp, "--mode", "fork"], policy=policy, cwd=tmp,
+                                   capture_output=True, timeout=overall, env=env, preexec_fn=preexec)
             out = tmp_path / "traces.json"
             if not out.exists():
                 raise RuntimeError(f"fork runner produced no traces:\n"
@@ -279,9 +313,9 @@ def run_scenarios(
         traces: list[dict] = []
         for i in range(len(spec["scenarios"])):
             try:
-                proc = subprocess.run(base + ["--dir", tmp, "--mode", "single", "--index", str(i)],
-                                      cwd=tmp, capture_output=True, env=env,
-                                      timeout=import_allowance_s + timeout_s)
+                proc = exec_policy.run(base + ["--dir", tmp, "--mode", "single", "--index", str(i)],
+                                       policy=policy, cwd=tmp, capture_output=True, env=env,
+                                       preexec_fn=preexec, timeout=import_allowance_s + timeout_s)
                 timed_out = proc.returncode == _TIMEOUT_EXIT_CODE
             except subprocess.TimeoutExpired:
                 timed_out = True

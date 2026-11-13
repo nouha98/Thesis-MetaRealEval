@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+from . import exec_policy
+
 
 @dataclass
 class ExecutionResult:
@@ -20,7 +22,8 @@ class ExecutionResult:
     timed_out: bool = False
 
 
-def execute(solution_code: str, test_code: str, timeout_s: float = 10.0) -> ExecutionResult:
+def execute(solution_code: str, test_code: str, timeout_s: float = 10.0,
+            policy: Optional[exec_policy.ExecPolicy] = None) -> ExecutionResult:
     """Run solution_code followed by test_code in an isolated subprocess.
 
     The test is expected to raise an exception on failure (e.g. AssertionError).
@@ -28,16 +31,21 @@ def execute(solution_code: str, test_code: str, timeout_s: float = 10.0) -> Exec
 
     We pass the full os.environ so the subprocess can find the Python stdlib and
     any installed packages, but add PYTHONDONTWRITEBYTECODE to keep things clean.
+    An :class:`~.exec_policy.ExecPolicy` (explicit or activated) scrubs
+    credentials and sets resource limits; with none, nothing changes.
     """
     combined = solution_code + "\n" + test_code
-    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+    policy = exec_policy.active_policy(policy)
+    env, preexec = exec_policy.apply({**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, policy)
 
     try:
-        proc = subprocess.run(
+        proc = exec_policy.run(
             [sys.executable, "-c", combined],
+            policy=policy,
             capture_output=True,
             timeout=timeout_s,
             env=env,
+            preexec_fn=preexec,
         )
         return ExecutionResult(
             passed=proc.returncode == 0,
@@ -143,6 +151,7 @@ def execute_pytest(
     test_code: str,
     timeout_s: float = 30.0,
     select: Optional[list[str]] = None,
+    policy: Optional[exec_policy.ExecPolicy] = None,
 ) -> PytestRunResult:
     """Run ``test_code`` against ``solution_code`` under pytest, in a fresh dir.
 
@@ -159,8 +168,15 @@ def execute_pytest(
     If an early test hangs, every test after it never runs and is *also*
     reported as timed out here -- callers that need one hang to only affect
     one test must call this with ``select=[that_one_name]``.
+
+    ``policy`` (or an activated :class:`~.exec_policy.ExecPolicy`) scrubs
+    credentials from the child's environment and sets resource limits; with
+    none the child gets the full environment, as always.
     """
-    with tempfile.TemporaryDirectory() as tmp:
+    policy = exec_policy.active_policy(policy)
+    # under a policy (extensions only) a descendant that outlived its tree (Windows) must not
+    # crash the run by locking the temp dir; historical calls keep the default behaviour
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=policy is not None) as tmp:
         tmp_path = Path(tmp)
         (tmp_path / f"{module_name}.py").write_text(solution_code, encoding="utf-8")
         test_filename = f"test_{module_name}.py"
@@ -168,7 +184,9 @@ def execute_pytest(
         (tmp_path / "conftest.py").write_text(_CONFTEST_SOURCE, encoding="utf-8")
         log_path = tmp_path / "outcomes.jsonl"
 
-        env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "MRE_OUTCOME_LOG": str(log_path)}
+        env, preexec = exec_policy.apply(
+            {**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "MRE_OUTCOME_LOG": str(log_path)}, policy,
+            workdir=tmp_path)
         args = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"]
         if select:
             args += [f"{test_filename}::{name}" for name in select]
@@ -178,8 +196,8 @@ def execute_pytest(
         stdout = stderr = ""
         process_timed_out = False
         try:
-            proc = subprocess.run(args, cwd=tmp_path, capture_output=True,
-                                  timeout=timeout_s, env=env)
+            proc = exec_policy.run(args, policy=policy, cwd=tmp_path, capture_output=True,
+                                   timeout=timeout_s, env=env, preexec_fn=preexec)
             stdout = proc.stdout.decode(errors="replace")
             stderr = proc.stderr.decode(errors="replace")
         except subprocess.TimeoutExpired as e:

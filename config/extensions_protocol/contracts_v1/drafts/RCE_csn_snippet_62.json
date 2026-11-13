@@ -1,0 +1,121 @@
+{
+ "attributes": [],
+ "class_name": "ReadWriteLock",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ReadWriteLock": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "acquire_read": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "keyword_only",
+     "name": "timeout",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "acquire_write": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "keyword_only",
+     "name": "timeout",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "release": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_62",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "473012ac13bcb728d0f670fd8ae85ad0099cdb91451e9a2bcfeee4f7b2b7b483",
+  "skeleton_sha256": "25fb747e866505da99fcb9d58720706dd7175e5dbdc6d43a8a237b967ffaf85d",
+  "tests_sha256": "8ffbc654427e09afe3dfc8321fd6c5f6d9e2b9e38de357f3a62d1831e9e64934"
+ },
+ "support": {
+  "generatable_methods": [
+   "acquire_read",
+   "acquire_write",
+   "release"
+  ],
+  "n_p_scenarios": 13,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['threading']"
+  ],
+  "side_effect_imports": [
+   "threading"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_62",
+ "task_id": "RealClassEval/csn/snippet_62"
+}

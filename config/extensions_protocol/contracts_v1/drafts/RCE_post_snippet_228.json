@@ -1,0 +1,105 @@
+{
+ "attributes": [],
+ "class_name": "ClipboardService",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ClipboardService": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "cleanup_temp_files": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "read": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "read_and_process_paste": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "write_text": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "content",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_228",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "f90a78b2b09f3ac1e923248b7caa2fdb3ee15374b874ec917418c074ed0c68f3",
+  "skeleton_sha256": "8b4bd62f5af3a8ffa1c22e3e9c494500b7e079b875b7ab523ecc1919bce153e3",
+  "tests_sha256": "005f8c4d1ac9df6d0b5396dccee48d56d9fae16586bdbdb18421dd32957ebc71"
+ },
+ "support": {
+  "generatable_methods": [
+   "write_text",
+   "read",
+   "read_and_process_paste",
+   "cleanup_temp_files"
+  ],
+  "n_p_scenarios": 6,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_228",
+ "task_id": "RealClassEval/post_cut-off/snippet_228"
+}

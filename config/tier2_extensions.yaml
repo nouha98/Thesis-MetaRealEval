@@ -1,0 +1,74 @@
+# Thesis extensions (plan rev. 8): witnesses (E13), location-based mutation
+# (E03), hidden suite H (A2/A3), RQ2 re-grading and RQ5 repair.
+#
+# This file OVERLAYS the frozen Tier 2 protocol config; it never copies it, so
+# the two cannot drift. Everything not set here (benchmark, models and their
+# model-card sampling, rq1/rq2/rq3/rq4 settings, frozen tau_div) comes from
+# tier2_realclasseval.yaml, whose sha256 is pinned below: if it changes, the
+# extension runs refuse to start (core.provenance.verify_pins).
+base_config: tier2_realclasseval.yaml
+
+project:
+  # extension outputs never share a directory with the historical results
+  output_dir: ./results_tier2_ext
+
+extensions:
+  protocol_version: rev8
+  output_root: ./results_tier2_ext
+  # Frozen Tier 2 results (read-only inputs). Scores, Stage 0, RQ1, RQ3 and RQ4
+  # per-task files are in full_v4/combined; final rankings and analyses in full_v5.
+  baseline_scores: ./results/results_tier2_runs/full_v4/combined
+  baseline_post: ./results/results_tier2_runs/full_v5
+  # Development tasks = the 24 pilot2 tasks (already exposed to calibration):
+  # all tuning (prompts, contracts, admission rules) happens here; confirmatory
+  # numbers come from the other 351 tasks. Labels were derived from the pilot2
+  # manifest indices by the accepted-task order (corpus order, csn then
+  # post_cut-off) and checked against known tasks (66 -> csn_117, 211 -> post_52,
+  # 363 -> post_359, 187 -> post_5); runs that load the manifest re-check the
+  # index -> label mapping.
+  development_task_indices: [1, 7, 8, 9, 14, 30, 32, 39, 61, 66, 74, 167, 185, 186, 187, 190, 196, 197, 211, 222, 298, 329, 341, 363]
+  development_tasks:
+    - RCE_csn_snippet_3
+    - RCE_csn_snippet_11
+    - RCE_csn_snippet_12
+    - RCE_csn_snippet_13
+    - RCE_csn_snippet_28
+    - RCE_csn_snippet_52
+    - RCE_csn_snippet_54
+    - RCE_csn_snippet_62
+    - RCE_csn_snippet_110
+    - RCE_csn_snippet_117
+    - RCE_csn_snippet_129
+    - RCE_csn_snippet_277
+    - RCE_post_snippet_3
+    - RCE_post_snippet_4
+    - RCE_post_snippet_5
+    - RCE_post_snippet_18
+    - RCE_post_snippet_24
+    - RCE_post_snippet_25
+    - RCE_post_snippet_52
+    - RCE_post_snippet_64
+    - RCE_post_snippet_228
+    - RCE_post_snippet_293
+    - RCE_post_snippet_309
+    - RCE_post_snippet_359
+  seed: 20261112
+  # Generated code runs without credentials in its environment, and its whole
+  # process tree is killed on timeout (and, on POSIX, after it exits). Resource
+  # limits stay off until measured on the reference (heavy imports such as torch
+  # map a lot of address space); any limit set later applies to every arm and to
+  # grading. Every run first executes the canary (core/canary.py) and aborts if a
+  # path leaks a credential or (on POSIX) leaves a descendant alive.
+  exec_policy:
+    scrub_credentials: true
+    memory_limit_mb: null
+    cpu_limit_s: null
+    file_size_limit_mb: null
+    kill_process_tree: true
+    # runs on generated inputs (witness search, A2 construction) switch this on
+    # themselves: HOME/temp/XDG -> the scenario's working directory. Grading keeps it off.
+    isolate_home: false
+  pins:
+    config/tier2_realclasseval.yaml: 4b75b27072361e960b23697c42a82294bf3d39d9a734ffeb91034416a784655a
+    data/realclasseval/realclasseval_v1.jsonl.gz: 8480cdbbacd034df4207cf2f374f560eb6f9086a33c7b5827c2aa6ec13bde177
+    data/HumanEval.jsonl.gz: 31cb7949a21d1e70f7297494feb1eebe2899af20288f26cf1784675a3c570cca

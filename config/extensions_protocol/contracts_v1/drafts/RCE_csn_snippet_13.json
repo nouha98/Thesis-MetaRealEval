@@ -1,0 +1,225 @@
+{
+ "attributes": [],
+ "class_name": "velocity",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "velocity": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     3.8
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     3.8
+    ],
+    "kind": "positional",
+    "name": "tau",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.3
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     0.3
+    ],
+    "kind": "positional",
+    "name": "kappa_3",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     1950.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     1950.0
+    ],
+    "kind": "positional",
+    "name": "Q",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.0003
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     0.0003
+    ],
+    "kind": "positional",
+    "name": "R",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.05
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     0.05
+    ],
+    "kind": "positional",
+    "name": "delta_t",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "seed",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": false,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "v",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "simulate": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "N",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": true,
+     "hints": [],
+     "kind": "positional",
+     "name": "v0",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'ndarray'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'ndarray'"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_13",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "418ed51ad231b5652f2377fa07278701b2af8aa528bc23a289fd35ddc8e156c6",
+  "skeleton_sha256": "d230d43cf7322eec43c9cc30d0c69d28626eae60eedb36cd08f61e86c8214ffe",
+  "tests_sha256": "162c2074737927af646505cf69c974cb2d5123cf2d68b332329f228b7175fa65"
+ },
+ "support": {
+  "generatable_methods": [
+   "simulate"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_13",
+ "task_id": "RealClassEval/csn/snippet_13"
+}

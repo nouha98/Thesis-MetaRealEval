@@ -48,10 +48,13 @@ def bootstrap_ci(
 ) -> tuple[float, float]:
     """Percentile bootstrap confidence interval.
 
-    Returns (lower, upper) at the (alpha/2, 1-alpha/2) percentiles.
+    Returns (lower, upper) at the (alpha/2, 1-alpha/2) percentiles; (None, None)
+    for an empty input (which used to raise inside numpy).
     """
     rng = np.random.default_rng(seed)
     arr = np.array(values, dtype=float)
+    if arr.size == 0:
+        return None, None
     boots = [statistic_fn(rng.choice(arr, size=len(arr), replace=True)) for _ in range(n_boot)]
     boots_sorted = sorted(boots)
     lo = boots_sorted[int(alpha / 2 * n_boot)]
@@ -113,10 +116,13 @@ def cochran_q(table: list[list[int]]) -> dict:
     """Cochran's Q for k related binary outcomes (RQ4 ranking collapse).
 
     ``table`` has one row per block (task) and one 0/1 per condition (level).
-    Q is undefined (None) when every row is constant -- no block varies.
+    Q is undefined (None) when every row is constant -- no block varies -- and
+    when the table is empty (which used to raise IndexError).
     """
     from scipy.stats import chi2
 
+    if not table:
+        return {"q": None, "p_value": None, "n_blocks": 0, "k": 0}
     k = len(table[0])
     col = [sum(r[j] for r in table) for j in range(k)]
     row_sums = [sum(r) for r in table]
@@ -210,3 +216,103 @@ def mannwhitney_test(a: list[float], b: list[float]) -> dict:
     stat, p = mannwhitneyu(a, b, alternative="two-sided")
     return {"statistic": float(stat), "p_value": float(p),
             "cliffs_delta": cliffs_delta(a, b), "n_a": len(a), "n_b": len(b)}
+
+
+# ---------------------------------------------------------------------------
+# Helpers for the thesis extensions (plan rev. 8). New functions only: the
+# historical analyses above keep their exact behaviour. Every helper returns
+# None (never 0, 0.5 or NaN) when its quantity is undefined.
+# ---------------------------------------------------------------------------
+
+def safe_ratio(num: float, den: float):
+    """num / den, or None when the denominator is zero."""
+    return None if not den else num / den
+
+
+def wilson_ci(k: int, n: int, alpha: float = 0.05) -> dict:
+    """Wilson score interval for a binomial proportion k / n (None when n == 0)."""
+    if n <= 0:
+        return {"p": None, "lo": None, "hi": None, "k": k, "n": n}
+    z = float(norm.ppf(1 - alpha / 2))
+    p = k / n
+    den = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / den
+    half = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
+    return {"p": p, "lo": float(max(0.0, centre - half)), "hi": float(min(1.0, centre + half)), "k": k, "n": n}
+
+
+def mcnemar_exact(b: int, c: int) -> dict:
+    """Exact (binomial) McNemar test on the discordant counts of a paired binary outcome:
+    ``b`` = only the first condition succeeded, ``c`` = only the second. Undefined with no
+    discordant pair."""
+    from scipy.stats import binomtest
+    n = b + c
+    if n == 0:
+        return {"b": b, "c": c, "p_value": None, "note": "no discordant pairs"}
+    return {"b": b, "c": c, "p_value": float(binomtest(b, n, 0.5).pvalue)}
+
+
+def sign_test(diffs: list[float]) -> dict:
+    """Exact two-sided sign test on paired differences (zeros dropped)."""
+    pos = sum(1 for d in diffs if d > 0)
+    neg = sum(1 for d in diffs if d < 0)
+    res = mcnemar_exact(pos, neg)
+    return {"n_positive": pos, "n_negative": neg, "n_zero": len(diffs) - pos - neg, "p_value": res["p_value"]}
+
+
+def chi2_2x2_defined(table: list[list[int]]) -> dict:
+    """Chi-square test of a 2x2 table, explicitly undefined when a row or column total is zero
+    (e.g. ``[[4, 0], [2, 0]]``) instead of raising or returning NaN."""
+    from scipy.stats import chi2_contingency
+    arr = np.asarray(table, dtype=float)
+    if arr.shape != (2, 2):
+        raise ValueError("expected a 2x2 table")
+    if (arr.sum(0) == 0).any() or (arr.sum(1) == 0).any():
+        return {"chi2": None, "p_value": None, "note": "undefined: a row or column total is zero"}
+    chi2, p, _, _ = chi2_contingency(arr)
+    return {"chi2": float(chi2), "p_value": float(p)}
+
+
+def spearman_rho_defined(a: list[float], b: list[float]) -> dict:
+    """Spearman's rho, None when either input is constant or fewer than 3 pairs exist
+    (``spearman_rho`` returns NaN there and is kept as is for the historical analyses)."""
+    if len(a) != len(b):
+        raise ValueError("a and b must have the same length")
+    if len(a) < 3 or len(set(a)) < 2 or len(set(b)) < 2:
+        return {"rho": None, "p_value": None, "n": len(a), "note": "undefined: constant input or n < 3"}
+    return {**spearman_rho(a, b), "n": len(a)}
+
+
+def paired_cluster_bootstrap(values_by_cluster: dict, n_boot: int = 2000, alpha: float = 0.05,
+                             seed: int = 42) -> dict:
+    """Bootstrap CI for the mean of paired differences that are grouped in clusters (e.g. several
+    models or runs per task): clusters are resampled with replacement, and the statistic is the
+    mean over every value in the resampled clusters. None when there is no value."""
+    clusters = [np.asarray(v, dtype=float) for v in values_by_cluster.values() if len(v)]
+    n_values = int(sum(len(c) for c in clusters))
+    if not clusters:
+        return {"mean": None, "lo": None, "hi": None, "n_clusters": 0, "n_values": 0}
+    sums = np.array([c.sum() for c in clusters])
+    sizes = np.array([len(c) for c in clusters], dtype=float)
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(clusters), size=(n_boot, len(clusters)))
+    boots = sums[idx].sum(1) / sizes[idx].sum(1)
+    return {"mean": float(sums.sum() / sizes.sum()),
+            "lo": float(np.percentile(boots, 100 * alpha / 2)),
+            "hi": float(np.percentile(boots, 100 * (1 - alpha / 2))),
+            "n_clusters": len(clusters), "n_values": n_values}
+
+
+def holm(pvalues: dict, alpha: float = 0.05) -> dict:
+    """Holm-Bonferroni over a named family. Undefined p-values (None) stay undefined and are
+    not counted in the family size."""
+    defined = sorted(((p, name) for name, p in pvalues.items() if p is not None))
+    m = len(defined)
+    out = {name: {"p_value": None, "p_adjusted": None, "reject": None} for name, p in pvalues.items() if p is None}
+    running, still_rejecting = 0.0, True
+    for i, (p, name) in enumerate(defined):
+        adj = min(1.0, max(running, (m - i) * p))
+        running = adj
+        still_rejecting = still_rejecting and adj <= alpha
+        out[name] = {"p_value": p, "p_adjusted": adj, "reject": still_rejecting}
+    return out

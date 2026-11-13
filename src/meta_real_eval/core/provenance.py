@@ -47,6 +47,20 @@ def file_sha256(path: Union[Path, str]) -> str:
     return h.hexdigest()
 
 
+# Text files are checked out with CRLF on Windows (core.autocrlf) and LF on the cluster, so a pin
+# on raw bytes would differ between machines for identical content. Pins and config records use
+# this line-ending-normalised content hash for text files; binary files keep their raw hash.
+TEXT_SUFFIXES = (".yaml", ".yml", ".json", ".md", ".txt", ".py", ".csv", ".cfg", ".toml", ".in", ".sh")
+
+
+def content_sha256(path: Union[Path, str]) -> str:
+    """sha256 of the file's content: CRLF -> LF for text files, raw bytes otherwise."""
+    p = Path(path)
+    if p.suffix.lower() in TEXT_SUFFIXES:
+        return hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    return file_sha256(p)
+
+
 def _rel(path: Path) -> str:
     try:
         return path.resolve().relative_to(REPO_ROOT).as_posix()
@@ -106,7 +120,8 @@ class PinMismatch(SystemExit):
 
 def verify_pins(pins: Mapping[str, str], *, require_all: bool = False,
                 root: Path = REPO_ROOT) -> dict[str, str]:
-    """Check pinned files (path relative to the repo root -> sha256).
+    """Check pinned files (path relative to the repo root -> content sha256, see
+    :func:`content_sha256`: line endings do not matter for text files).
 
     Returns path -> "ok" | "missing". A present file with another hash raises
     :class:`PinMismatch`; a missing one raises only with ``require_all`` (the gate
@@ -119,7 +134,7 @@ def verify_pins(pins: Mapping[str, str], *, require_all: bool = False,
                 raise PinMismatch(f"ERROR: pinned input {rel} is missing")
             status[rel] = "missing"
             continue
-        got = file_sha256(p)
+        got = content_sha256(p)
         if got != expected:
             raise PinMismatch(f"ERROR: pinned input {rel} changed: sha256 {got} != pinned {expected}")
         status[rel] = "ok"
@@ -130,7 +145,7 @@ def _config_record(config_path: Union[Path, str]) -> dict:
     """Path + sha256 of the config, and of its ``base_config`` chain if it overlays one."""
     import yaml
     p = Path(config_path)
-    rec = {"path": _rel(p), "sha256": file_sha256(p)}
+    rec = {"path": _rel(p), "sha256": content_sha256(p), "file_sha256": file_sha256(p)}
     data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
     base = data.get("base_config") if isinstance(data, dict) else None
     if base:

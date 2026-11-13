@@ -33,6 +33,19 @@ def test_verify_pins(tmp_path):
         provenance.verify_pins({str(f): "0" * 64})
 
 
+def test_text_pins_ignore_line_endings_binary_pins_do_not(tmp_path):
+    lf, crlf = tmp_path / "a.yaml", tmp_path / "b.yaml"
+    lf.write_bytes(b"x: 1\ny: 2\n")
+    crlf.write_bytes(b"x: 1\r\ny: 2\r\n")
+    assert provenance.content_sha256(lf) == provenance.content_sha256(crlf)
+    assert provenance.file_sha256(lf) != provenance.file_sha256(crlf)
+    assert provenance.verify_pins({str(crlf): provenance.content_sha256(lf)}) == {str(crlf): "ok"}
+    gz1, gz2 = tmp_path / "a.gz", tmp_path / "b.gz"
+    gz1.write_bytes(b"\x1f\x8b\r\n")
+    gz2.write_bytes(b"\x1f\x8b\n")
+    assert provenance.content_sha256(gz1) != provenance.content_sha256(gz2)
+
+
 def test_run_manifest_records_inputs_and_the_base_config(tmp_path):
     base = tmp_path / "base.yaml"
     base.write_text("project:\n  seed: 1\n")
@@ -44,7 +57,8 @@ def test_run_manifest_records_inputs_and_the_base_config(tmp_path):
                                          inputs={"x": inp}, seeds={"s": 3}, argv=["prog"])
     m = json.loads(path.read_text())
     assert m["stage"] == "test" and m["seeds"] == {"s": 3} and m["inputs"]["x"]["n_files"] == 1
-    assert m["config"]["base"]["sha256"] == provenance.file_sha256(base)
+    assert m["config"]["base"]["sha256"] == provenance.content_sha256(base)
+    assert m["config"]["base"]["file_sha256"] == provenance.file_sha256(base)
     assert "commit" in m["git"] and "untracked_code_files" in m["git"]
     hashes = json.loads((tmp_path / "out" / provenance.INPUT_HASHES_NAME).read_text())
     assert list(hashes["x"].values()) == [provenance.file_sha256(inp)]

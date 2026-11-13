@@ -68,7 +68,9 @@ extensions:
     # runs on generated inputs (witness search, A2 construction) switch this on
     # themselves: HOME/temp/XDG -> the scenario's working directory. Grading keeps it off.
     isolate_home: false
+  # content sha256 (core.provenance.content_sha256): line endings are normalised for
+  # text files, so the same pin holds on Windows (CRLF checkout) and on freia (LF)
   pins:
-    config/tier2_realclasseval.yaml: 4b75b27072361e960b23697c42a82294bf3d39d9a734ffeb91034416a784655a
+    config/tier2_realclasseval.yaml: 713134076944cbafb259393a31a03920f048045b1cba9ef1a6379649aa48496e
     data/realclasseval/realclasseval_v1.jsonl.gz: 8480cdbbacd034df4207cf2f374f560eb6f9086a33c7b5827c2aa6ec13bde177
     data/HumanEval.jsonl.gz: 31cb7949a21d1e70f7297494feb1eebe2899af20288f26cf1784675a3c570cca

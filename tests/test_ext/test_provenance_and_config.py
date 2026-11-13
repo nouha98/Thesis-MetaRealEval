@@ -40,10 +40,27 @@ def test_text_pins_ignore_line_endings_binary_pins_do_not(tmp_path):
     assert provenance.content_sha256(lf) == provenance.content_sha256(crlf)
     assert provenance.file_sha256(lf) != provenance.file_sha256(crlf)
     assert provenance.verify_pins({str(crlf): provenance.content_sha256(lf)}) == {str(crlf): "ok"}
-    gz1, gz2 = tmp_path / "a.gz", tmp_path / "b.gz"
-    gz1.write_bytes(b"\x1f\x8b\r\n")
-    gz2.write_bytes(b"\x1f\x8b\n")
-    assert provenance.content_sha256(gz1) != provenance.content_sha256(gz2)
+    # .gz: the decompressed content, so differently packaged copies of the same data agree
+    import gzip
+    a, b = tmp_path / "a.jsonl.gz", tmp_path / "b.jsonl.gz"
+    same, other = b'{"x": 1}' + bytes([10]), b'{"x": 2}' + bytes([10])
+    a.write_bytes(gzip.compress(same, compresslevel=1, mtime=1))
+    b.write_bytes(gzip.compress(same, compresslevel=9, mtime=2))
+    assert provenance.file_sha256(a) != provenance.file_sha256(b)
+    assert provenance.content_sha256(a) == provenance.content_sha256(b)
+    b.write_bytes(gzip.compress(other))
+    assert provenance.content_sha256(a) != provenance.content_sha256(b)
+    bad = tmp_path / "bad.gz"
+    bad.write_bytes(b"not gzip")
+    assert provenance.content_sha256(bad) == provenance.file_sha256(bad)
+
+
+def test_verify_pins_reports_every_mismatch(tmp_path):
+    f1, f2 = tmp_path / "a.bin", tmp_path / "b.bin"
+    f1.write_bytes(b"1"), f2.write_bytes(b"2")
+    with pytest.raises(provenance.PinMismatch) as e:
+        provenance.verify_pins({str(f1): "0" * 64, str(f2): "1" * 64})
+    assert str(f1) in str(e.value) and str(f2) in str(e.value)
 
 
 def test_run_manifest_records_inputs_and_the_base_config(tmp_path):
@@ -99,3 +116,7 @@ def test_extension_pins_hold():
     ext = Config.from_yaml(REPO / "config" / "tier2_extensions.yaml")
     status = provenance.verify_pins(ext.extensions.pins)
     assert status["config/tier2_realclasseval.yaml"] == "ok"
+    # the HumanEval pin belongs to the Tier 1 pilot, not to Tier 2 runs
+    assert "data/HumanEval.jsonl.gz" not in ext.extensions.pins
+    assert "data/HumanEval.jsonl.gz" in ext.extensions.pins_tier1
+    provenance.verify_pins(ext.extensions.pins_tier1)

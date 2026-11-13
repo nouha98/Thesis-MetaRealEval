@@ -294,6 +294,8 @@ class ExtensionsConfig(BaseModel):
     exec_policy: ExecPolicyConfig = Field(default_factory=ExecPolicyConfig)
     # path -> expected sha256 of a pinned input (checked by core.provenance.verify_pins)
     pins: dict[str, str] = Field(default_factory=dict)
+    # inputs only the Tier 1 (HumanEval+) pilot needs; checked by that runner, never by Tier 2 runs
+    pins_tier1: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _indices_match_labels(self) -> "ExtensionsConfig":

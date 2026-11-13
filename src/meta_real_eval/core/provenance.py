@@ -54,10 +54,18 @@ TEXT_SUFFIXES = (".yaml", ".yml", ".json", ".md", ".txt", ".py", ".csv", ".cfg",
 
 
 def content_sha256(path: Union[Path, str]) -> str:
-    """sha256 of the file's content: CRLF -> LF for text files, raw bytes otherwise."""
+    """sha256 of the file's content: CRLF -> LF for text files, the DECOMPRESSED bytes for .gz
+    (gzip headers and compression levels differ between machines that staged the same data),
+    raw bytes otherwise. A .gz that is not valid gzip falls back to its raw hash."""
+    import gzip
     p = Path(path)
+    if p.suffix.lower() == ".gz":
+        try:
+            return hashlib.sha256(gzip.decompress(p.read_bytes())).hexdigest()
+        except (OSError, EOFError):
+            return file_sha256(p)
     if p.suffix.lower() in TEXT_SUFFIXES:
-        return hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+        return hashlib.sha256(p.read_bytes().replace(bytes([13, 10]), bytes([10]))).hexdigest()
     return file_sha256(p)
 
 
@@ -127,17 +135,21 @@ def verify_pins(pins: Mapping[str, str], *, require_all: bool = False,
     :class:`PinMismatch`; a missing one raises only with ``require_all`` (the gate
     manifest, for example, exists on the cluster but not on every machine)."""
     status: dict[str, str] = {}
+    bad: list[str] = []
     for rel, expected in sorted(pins.items()):
         p = Path(rel) if Path(rel).is_absolute() else root / rel
         if not p.is_file():
             if require_all:
-                raise PinMismatch(f"ERROR: pinned input {rel} is missing")
+                bad.append(f"{rel}: missing")
             status[rel] = "missing"
             continue
         got = content_sha256(p)
         if got != expected:
-            raise PinMismatch(f"ERROR: pinned input {rel} changed: sha256 {got} != pinned {expected}")
+            bad.append(f"{rel}: content sha256 {got} != pinned {expected}")
+            continue
         status[rel] = "ok"
+    if bad:      # every mismatch at once, not just the first
+        raise PinMismatch("ERROR: pinned inputs differ:" + "".join(chr(10) + "  " + line for line in bad))
     return status
 
 

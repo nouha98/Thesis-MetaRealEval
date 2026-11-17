@@ -1,0 +1,108 @@
+{
+ "attributes": [],
+ "class_name": "Enum",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Enum": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varargs",
+    "name": "args",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "review",
+    "why": "no type and no valid literal hints"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varkw",
+    "name": "kwargs",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "review",
+    "why": "**kwargs are not generated (keyword names are not specified)"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "val",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_54",
+ "properties": [],
+ "review": {
+  "date": "2026-11-17",
+  "notes": "'Map values to specific strings' / 'Map an integer': args are names (str), kwargs map name->int, val an int. The 'Unknown (val)' fallback text is undocumented and reference-specific (D7).",
+  "reviewer": "Claude (proposal; user spot-check)",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "3564c69673a9f57e20e489a9df0a67577d00d55c258596b30627477936756868",
+  "skeleton_sha256": "2818d975972f3d085815cda9b502e144f2a28efd58427318610715a8049a1e8c",
+  "tests_sha256": "6f66cbd63495d40708fe5bb74031b409c893c2699f71e1f06749ee81066f6616"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_54",
+ "task_id": "RealClassEval/csn/snippet_54"
+}

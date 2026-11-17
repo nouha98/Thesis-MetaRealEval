@@ -1,0 +1,109 @@
+{
+ "attributes": [],
+ "class_name": "LocalPathExtractor",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LocalPathExtractor": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "extract_local_paths": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "VIUP6o^Ygo3f97.4a m",
+      "p~\\'k'(4~\"",
+      "kZzr%3 DTlykU[J-97z"
+     ],
+     "kind": "positional",
+     "name": "text",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_local_path": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "tqlFHixd'k Sig\t",
+      "kZzr%3 DTlykU[J-97z",
+      "."
+     ],
+     "kind": "positional",
+     "name": "path",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_24",
+ "properties": [],
+ "review": {
+  "date": "2026-11-17",
+  "notes": "Types from annotations. Reference regexes treat e.g. 'x.4a' as a file path; detections are disagreement with the reference (D7).",
+  "reviewer": "Claude (proposal; user spot-check)",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "a8a4edaef1231f2e6368c201df7faf2bfe3aa0c4d12a0eebad80f24c778a4b53",
+  "skeleton_sha256": "58303bb412151f8d41a3152fc1e23c48a79000800facc3612883389a85f4303d",
+  "tests_sha256": "a9f0e6270e7ea298db5d7ea8e5538fd62447887f86a03d24607227021957fea8"
+ },
+ "support": {
+  "generatable_methods": [
+   "is_local_path",
+   "extract_local_paths"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_24",
+ "task_id": "RealClassEval/post_cut-off/snippet_24"
+}

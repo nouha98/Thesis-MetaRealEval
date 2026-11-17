@@ -68,7 +68,9 @@ def mutant_programs(label, task, bench, groups, baseline):
     for gid, g in sorted(groups.get(label, {}).items()):
         rep = next((m for m in g["members"] if records.get(m["record_id"], {}).get("runnable")), g["members"][0])
         rec = records.get(rep["record_id"])
-        if rec is None or hashlib.sha256(rec["code"].encode()).hexdigest() != rep["code_sha256"]:
+        if rec is None:
+            raise SystemExit(f"ERROR: {label}/{rep['record_id']}: no stored record under {baseline} (wrong baseline path?)")
+        if hashlib.sha256(rec["code"].encode()).hexdigest() != rep["code_sha256"]:
             raise SystemExit(f"ERROR: {label}/{rep['record_id']}: code differs from the frozen split")
         models = sorted({m.get("model") for m in g["members"] if m.get("model")})
         out.append(({"kind": "mutant", "id": gid, "source": g["source"], "models": models,
@@ -154,6 +156,10 @@ def main(argv=None) -> int:
               else sorted(tasks) if args.tasks == ["all"] else args.tasks)[args.shard::args.shards]
     bench = get_benchmark(cfg)
     baseline = Path(cfg.extensions.baseline_scores)
+    missing = [d for d in ("stage0", "rq1/generate", "rq2/generate", "rq2/evaluate") if not (baseline / d).is_dir()]
+    if missing:
+        raise SystemExit(f"ERROR: baseline {baseline.resolve()} lacks {missing}; point extensions.baseline_scores "
+                         "(or a symlink at that path) at the frozen Tier 2 results")
     args.out.mkdir(parents=True, exist_ok=True)
     spec_sha = hashlib.sha256(json.dumps(SPEC, sort_keys=True).encode()).hexdigest()
     for lab in labels:

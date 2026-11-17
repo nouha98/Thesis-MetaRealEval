@@ -46,6 +46,30 @@ def sha_of(obj) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True).encode()).hexdigest()
 
 
+def diff_paths(a, b, path="", out=None, limit=25) -> list[str]:
+    """Where two JSON documents differ (first ``limit`` paths), for --check reports."""
+    out = [] if out is None else out
+    if len(out) >= limit:
+        return out
+    if isinstance(a, dict) and isinstance(b, dict):
+        for k in sorted(set(a) | set(b), key=str):
+            if k not in a or k not in b:
+                out.append(f"{path}/{k}: only in {'recomputed' if k in b else 'frozen'}")
+            elif a[k] != b[k]:
+                diff_paths(a[k], b[k], f"{path}/{k}", out, limit)
+            if len(out) >= limit:
+                break
+    elif isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
+        for i, (x, y) in enumerate(zip(a, b)):
+            if x != y:
+                diff_paths(x, y, f"{path}[{i}]", out, limit)
+            if len(out) >= limit:
+                break
+    else:
+        out.append(f"{path}: frozen {json.dumps(a, default=str)[:120]} | recomputed {json.dumps(b, default=str)[:120]}")
+    return out
+
+
 def audit_order(labels: list[str], split_of: dict, seed: int) -> list[str]:
     """Seeded order, stratified: each prefix keeps the csn / post_cut-off shares as closely as possible."""
     by: dict[str, list[str]] = {}
@@ -181,7 +205,9 @@ def main(argv=None) -> int:
             if frozen is None:
                 bad.append(f"{name}: not frozen yet")
             elif sha_of(frozen) != sha_of(doc):
-                bad.append(f"{name}: recomputation differs from the frozen file")
+                # round-trip the recomputation through JSON so tuples/ints compare like the frozen file
+                d = diff_paths(frozen, json.loads(json.dumps(doc, sort_keys=True)))
+                bad.append(f"{name}: recomputation differs from the frozen file; first differences: {d}")
         rc = docs["rq3_population_v1.json"]["split"]["calibration_record_check"]
         print(json.dumps({"gated": gated, "pins": pins, "calibration_record": rc, "problems": bad}, indent=1))
         return 1 if bad or (rc.get("record_found") and not rc.get("holdout_matches")) else 0

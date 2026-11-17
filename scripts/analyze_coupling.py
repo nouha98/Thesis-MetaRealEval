@@ -75,7 +75,7 @@ def inputs(det: dict, pool: str = "primary", gen_limit: int | None = None):
 # ---------------------------------------------------------------------------
 
 def technical(dets: list[dict]) -> dict:
-    rows, hist_m, hist_s, fd_num, fd_den, spot = [], [0, 0], [0, 0], 0, 0, []
+    rows, hist_m, hist_s, fd_num, fd_den, spot, hist_timeouts = [], [0, 0], [0, 0], 0, 0, [], 0
     for det in dets:
         tests, muts, sols, n_masked = inputs(det)
         n_cells = len(det["tests"]["primary"]) * len(det["programs"])
@@ -88,6 +88,10 @@ def technical(dets: list[dict]) -> dict:
                      "mutants": r["mutants"], "goals": r.get("goals"), "solution_categories": r["solution_categories"],
                      "excluded": r["excluded"]})
         for p in det["programs"]:
+            outs = list((p.get("p_outcomes") or {}).values())
+            if outs and all(o == "timeout" for o in outs):  # whole-suite timeout: machine, not program
+                hist_timeouts += 1
+                continue
             if p.get("p_passed_all") is not None:          # history reproduction needs the per-test run
                 if p["kind"] == "mutant" and p.get("historical_killed") is not None:
                     hist_m[0] += (not p["p_passed_all"]) == p["historical_killed"]
@@ -113,6 +117,7 @@ def technical(dets: list[dict]) -> dict:
         "cell_agreement": 1 - (sum(shares) / len(shares)) if shares else None,
         "history_mutants_killed_reproduced": f"{hist_m[0]}/{hist_m[1]}",
         "history_solutions_p_pass_reproduced": f"{hist_s[0]}/{hist_s[1]}",
+        "p_whole_suite_timeouts_excluded": hist_timeouts,
         "perturbed_false_detection_on_p_passing": (fd_num / fd_den) if fd_den else None,
         "primary_p_scenario_detections_on_p_passing_solutions": len(spot),
         "spot_check_sample": spot[:10],

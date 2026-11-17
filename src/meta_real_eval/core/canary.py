@@ -104,8 +104,10 @@ def _planted_secret():
 
 
 def run_canary(paths: Iterable[str] = PATHS, policy: Optional[ExecPolicy] = None,
-               timeout_s: float = 4.0) -> dict:
-    """Run the canary through each path under ``policy`` (default: the activated one)."""
+               timeout_s: float = 4.0, warmup: bool = False) -> dict:
+    """Run the canary through each path under ``policy`` (default: the activated one).
+    ``warmup`` first runs a trivial program through each path, unmeasured: the first
+    ``python -m pytest`` on a cold cluster node can exceed any reasonable timeout."""
     policy = exec_policy.active_policy(policy)
     saved = os.environ.get(exec_policy.ENV_VAR)
     results: dict[str, dict] = {}
@@ -116,6 +118,8 @@ def run_canary(paths: Iterable[str] = PATHS, policy: Optional[ExecPolicy] = None
             exec_policy.deactivate()
         with _planted_secret(), tempfile.TemporaryDirectory() as tmp:
             for path in paths:
+                if warmup:
+                    _via(path, "pass", max(timeout_s, 120.0))
                 env_report = Path(tmp) / f"{path}_env.json"
                 t0 = time.monotonic()
                 env_diag = _via(path, _program(env_report, "env"), timeout_s)
@@ -168,11 +172,12 @@ def verdict(report: dict, require_tree_kill: Optional[bool] = None) -> dict:
 
 
 def require_canary(paths: Iterable[str] = PATHS, policy: Optional[ExecPolicy] = None,
-                   require_tree_kill: Optional[bool] = None, timeout_s: float = 4.0) -> dict:
+                   require_tree_kill: Optional[bool] = None, timeout_s: float = 4.0,
+                   warmup: bool = False) -> dict:
     """Run the canary and abort (CanaryFailed) unless every path passes. Returns report + verdict.
     ``timeout_s`` bounds each canary run; cluster runs pass their suite timeout, because a cold
     ``python -m pytest`` start on a shared file system can exceed the 4 s default."""
-    report = run_canary(paths, policy, timeout_s=timeout_s)
+    report = run_canary(paths, policy, timeout_s=timeout_s, warmup=warmup)
     report["verdict"] = verdict(report, require_tree_kill)
     if not report["verdict"]["ok"]:
         raise CanaryFailed(f"ERROR: execution canary failed: {json.dumps(report['verdict'])}")

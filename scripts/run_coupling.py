@@ -35,6 +35,7 @@ from meta_real_eval.core.provenance import write_run_manifest  # noqa: E402
 from meta_real_eval.oracles.coupling import SPEC  # noqa: E402
 from meta_real_eval.oracles.fault_groups import load_split  # noqa: E402
 from meta_real_eval.oracles.solution_groups import build_solution_groups, digest  # noqa: E402
+from meta_real_eval.rq2.evaluator import _warm_up  # noqa: E402
 
 _W: dict = {}
 
@@ -111,6 +112,8 @@ def run_task(label, task, cfg, bench, groups, baseline, gated, workers, perturbe
     sols, sol_digest = solution_programs(label, task, bench, baseline)
     progs += sols
     p_timeout = cfg.execution.timeout_s if gated else None
+    if p_timeout:                                   # cold-cache imports otherwise time out the first batch
+        _warm_up(bench, task, p_timeout, label)
     codes = [c for _, c in progs]
     if workers > 1 and len(codes) > 1:
         with ProcessPoolExecutor(max_workers=workers, initializer=_init,
@@ -143,7 +146,7 @@ def main(argv=None) -> int:
     pins = ec.pins_ok(cfg)
     policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=True)
     policy.activate()
-    report = canary.require_canary(policy=policy, timeout_s=cfg.execution.timeout_s)
+    report = canary.require_canary(policy=policy, timeout_s=cfg.execution.timeout_s, warmup=True)
     tasks, gated = ec.load_tasks(cfg, args.ungated)
     ec.check_development_mapping(cfg, tasks, gated)
     groups, _ = load_split(ec.PROTOCOL_DIR / "fault_split_v1.json")

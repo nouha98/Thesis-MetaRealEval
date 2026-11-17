@@ -143,7 +143,7 @@ def main(argv=None) -> int:
     pins = ec.pins_ok(cfg)
     policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=True)
     policy.activate()
-    report = canary.require_canary(policy=policy)
+    report = canary.require_canary(policy=policy, timeout_s=cfg.execution.timeout_s)
     tasks, gated = ec.load_tasks(cfg, args.ungated)
     ec.check_development_mapping(cfg, tasks, gated)
     groups, _ = load_split(ec.PROTOCOL_DIR / "fault_split_v1.json")

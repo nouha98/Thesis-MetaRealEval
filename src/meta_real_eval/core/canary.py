@@ -67,21 +67,25 @@ if {mode!r} == "tree":
 '''
 
 
-def _via(path: str, program: str, timeout_s: float) -> None:
+def _via(path: str, program: str, timeout_s: float) -> str:
+    """Run the canary program through ``path``; returns a short diagnostic (stderr tail / status)."""
     from .sandbox import execute, execute_pytest
     if path == "execute":
-        execute(program, "", timeout_s=timeout_s)
+        r = execute(program, "", timeout_s=timeout_s)
+        return f"timed_out={r.timed_out} stderr={r.stderr[-400:]}"
     elif path == "execute_pytest":
         body = "".join("    " + line + "\n" for line in program.splitlines())
-        execute_pytest("canary_mod", "X = 1\n", "import canary_mod\n\ndef test_canary():\n" + body,
-                       timeout_s=timeout_s)
+        r = execute_pytest("canary_mod", "X = 1\n", "import canary_mod\n\ndef test_canary():\n" + body,
+                           timeout_s=timeout_s)
+        return f"timed_out={sorted(r.timed_out_nodeids)} stdout={r.stdout[-400:]} stderr={r.stderr[-400:]}"
     elif path == "forkserver":
         from ..benchmarks.forkserver import run_scenarios
         body = "".join("    " + line + "\n" for line in program.splitlines())
-        run_scenarios("canary_mod", "def canary():\n" + body, "import canary_mod as module_0\n",
-                      [{"scenario_id": "canary", "steps": [{"kind": "exec", "src": "module_0.canary()",
-                                                           "target": None, "expected_exc": None}]}],
-                      timeout_s=timeout_s, import_allowance_s=timeout_s)
+        r = run_scenarios("canary_mod", "def canary():\n" + body, "import canary_mod as module_0\n",
+                          [{"scenario_id": "canary", "steps": [{"kind": "exec", "src": "module_0.canary()",
+                                                               "target": None, "expected_exc": None}]}],
+                          timeout_s=timeout_s, import_allowance_s=timeout_s)
+        return f"status={r[0].get('status') if r else None}"
     else:
         raise ValueError(f"unknown execution path {path!r}")
 
@@ -113,9 +117,11 @@ def run_canary(paths: Iterable[str] = PATHS, policy: Optional[ExecPolicy] = None
         with _planted_secret(), tempfile.TemporaryDirectory() as tmp:
             for path in paths:
                 env_report = Path(tmp) / f"{path}_env.json"
-                _via(path, _program(env_report, "env"), timeout_s)
+                t0 = time.monotonic()
+                env_diag = _via(path, _program(env_report, "env"), timeout_s)
+                env_s = round(time.monotonic() - t0, 2)
                 tree_report = Path(tmp) / f"{path}_tree.json"
-                _via(path, _program(tree_report, "tree"), timeout_s)
+                tree_diag = _via(path, _program(tree_report, "tree"), timeout_s)
                 env = json.loads(env_report.read_text()) if env_report.exists() else None
                 tree = json.loads(tree_report.read_text()) if tree_report.exists() else None
                 survived = None
@@ -128,7 +134,11 @@ def run_canary(paths: Iterable[str] = PATHS, policy: Optional[ExecPolicy] = None
                 results[path] = {"ran": env is not None,
                                  "secrets_visible": env["secrets_visible"] if env else None,
                                  "rlimits": env["rlimits"] if env else None,
-                                 "grandchild_survived": survived}
+                                 "grandchild_survived": survived, "env_seconds": env_s}
+                if env is None:
+                    results[path]["diagnostic_env"] = env_diag
+                if tree is None:
+                    results[path]["diagnostic_tree"] = tree_diag
     finally:
         if saved is None:
             exec_policy.deactivate()
@@ -148,7 +158,7 @@ def verdict(report: dict, require_tree_kill: Optional[bool] = None) -> dict:
     for path, r in report["paths"].items():
         problems = []
         if not r["ran"]:
-            problems.append("canary did not run")
+            problems.append(f"canary did not run (after {r.get('env_seconds')} s; {r.get('diagnostic_env', '')[:500]})")
         if r["secrets_visible"]:
             problems.append(f"secrets visible: {r['secrets_visible']}")
         if require_tree_kill and r["grandchild_survived"] is not False:
@@ -158,9 +168,11 @@ def verdict(report: dict, require_tree_kill: Optional[bool] = None) -> dict:
 
 
 def require_canary(paths: Iterable[str] = PATHS, policy: Optional[ExecPolicy] = None,
-                   require_tree_kill: Optional[bool] = None) -> dict:
-    """Run the canary and abort (CanaryFailed) unless every path passes. Returns report + verdict."""
-    report = run_canary(paths, policy)
+                   require_tree_kill: Optional[bool] = None, timeout_s: float = 4.0) -> dict:
+    """Run the canary and abort (CanaryFailed) unless every path passes. Returns report + verdict.
+    ``timeout_s`` bounds each canary run; cluster runs pass their suite timeout, because a cold
+    ``python -m pytest`` start on a shared file system can exceed the 4 s default."""
+    report = run_canary(paths, policy, timeout_s=timeout_s)
     report["verdict"] = verdict(report, require_tree_kill)
     if not report["verdict"]["ok"]:
         raise CanaryFailed(f"ERROR: execution canary failed: {json.dumps(report['verdict'])}")

@@ -3795,8 +3795,9 @@
  },
  "split": {
   "calibration_record_check": {
-   "note": "verify with --check on freia",
-   "record_found": false
+   "holdout_matches": true,
+   "record_found": true,
+   "record_holdout_n": 188
   },
   "forced_calibration": [
    "RealClassEval/csn/snippet_3",

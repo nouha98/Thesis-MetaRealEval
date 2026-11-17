@@ -1,80 +1,77 @@
 {
  "format": 1,
- "created_utc": "2026-11-12T19:39:24+00:00",
- "gated": false,
+ "created_utc": "2026-11-17T22:39:25+00:00",
+ "gated": true,
  "git": {
-  "commit": "30aa8e76b6fbfd636ee18474619f50b33e4ffd26-dirty",
-  "head": "30aa8e76b6fbfd636ee18474619f50b33e4ffd26",
+  "commit": "6d026fd0017171d2ef81998917405c4313927c31-dirty",
+  "head": "6d026fd0017171d2ef81998917405c4313927c31",
   "dirty_tracked_files": [
-   "M pyproject.toml",
-   " M requirements-tier2.lock.txt",
-   " M src/meta_real_eval/analysis/statistics.py",
-   " M src/meta_real_eval/benchmarks/forkserver.py",
-   " M src/meta_real_eval/benchmarks/observe.py",
-   " M src/meta_real_eval/core/conditions.py",
-   " M src/meta_real_eval/core/config.py",
-   " M src/meta_real_eval/core/sandbox.py",
-   " M tests/test_architecture.py"
+   "M config/extensions_protocol/fault_split_v1.json",
+   " M config/extensions_protocol/rq3_population_v1.json"
   ],
   "untracked_code_files": [
-   "config/default.final.yaml",
-   "config/extensions_protocol/cohorts_v1.json",
-   "config/extensions_protocol/fault_split_v1.json",
-   "config/extensions_protocol/protocol_manifest.json",
-   "config/extensions_protocol/rq3_population_v1.json",
-   "config/tier2_extensions.yaml",
-   "scripts/audit_llm_mutants.py",
-   "scripts/ext_common.py",
-   "scripts/freeze_protocol.py",
-   "scripts/saturation_reporting_checks.py",
-   "scripts/temperature_pilot.py",
-   "src/meta_real_eval/benchmarks/contracts.py",
-   "src/meta_real_eval/benchmarks/strategies.py",
-   "src/meta_real_eval/benchmarks/witness.py",
-   "src/meta_real_eval/core/artifacts.py",
-   "src/meta_real_eval/core/canary.py",
-   "src/meta_real_eval/core/exec_policy.py",
-   "src/meta_real_eval/core/provenance.py",
-   "src/meta_real_eval/oracles/__init__.py",
-   "src/meta_real_eval/oracles/fault_groups.py"
+   "config/default.tier1_oldfull_3models.yaml",
+   "config/default.yaml.save",
+   "config/tier2_m1_pilot.yaml",
+   "config/tier2_runs/ceil49k_combined.yaml",
+   "config/tier2_runs/ceil49k_innkube.yaml",
+   "config/tier2_runs/ceil49k_vllm-qwen36.yaml",
+   "config/tier2_runs/ceil49k_vllm-qwen38.yaml",
+   "config/tier2_runs/ceil65k_combined.yaml",
+   "config/tier2_runs/ceil65k_innkube.yaml",
+   "config/tier2_runs/ceil65k_vllm-qwen36.yaml",
+   "config/tier2_runs/ceil65k_vllm-qwen38.yaml",
+   "config/tier2_runs/full_combined.yaml",
+   "config/tier2_runs/full_innkube.yaml",
+   "config/tier2_runs/full_vllm-qwen36.yaml",
+   "config/tier2_runs/full_vllm-qwen38.yaml",
+   "config/tier2_runs/pilot2_combined.yaml",
+   "config/tier2_runs/pilot2_innkube.yaml",
+   "config/tier2_runs/pilot2_vllm-qwen36.yaml",
+   "config/tier2_runs/pilot2_vllm-qwen38.yaml",
+   "config/tier2_runs/pilot_combined.yaml",
+   "config/tier2_runs/pilot_innkube.yaml",
+   "config/tier2_runs/pilot_three_models.yaml",
+   "config/tier2_runs/pilot_vllm-qwen3-next.yaml",
+   "config/tier2_runs/pilot_vllm-qwen36.yaml",
+   "config/tier2_runs/pilot_vllm-qwen38.yaml"
   ]
  },
  "pins": {
   "config/tier2_realclasseval.yaml": "ok",
-  "data/HumanEval.jsonl.gz": "ok",
   "data/realclasseval/realclasseval_v1.jsonl.gz": "ok"
  },
- "config": "config\\tier2_extensions.yaml",
+ "config": "config/tier2_extensions.yaml",
  "artifacts": {
   "cohorts_v1.json": {
    "sha256_canonical": "21f7b9a56830193d5364446155c3ec54c932cbc101e5e4348b78f57910ffe7d0",
-   "file_sha256": "bbb5a797cdc1e8a3f74114e7759ca1f9e8a2cef92114dfa3683a026103efe437"
+   "file_sha256": "136207f086068373bad03d0af22f06174868fecae0c6c90bed68fed3c00e5839"
   },
   "rq3_population_v1.json": {
-   "sha256_canonical": "ba653f0d6348754f4410cd32598b9c3f2cbc6a5cfd4451d62602f35fee2af2b9",
-   "file_sha256": "7800d3890e9e72acfa8c2a6ceb157e8e1b73bc0c8a99a9c70bc158ae13863fb6"
+   "sha256_canonical": "519d1ac91f2ab137b98b31950f815730441288a6a3f8dfabc9419e3efdbd3562",
+   "file_sha256": "5deecc1cc1de48483d56eadca86f3729e6fc580dbb65fce7a24472137d083ae0"
   },
   "fault_split_v1.json": {
-   "sha256_canonical": "bdabf3cb6851e1eaa94a42bfa33b0054c24d8b8ecb8a3f176318ee3b9bad8713",
-   "file_sha256": "c485f2a429d5b830fddae04779b981ebb840fed13c4c5891bc99a24bb46d2904"
+   "sha256_canonical": "248f52277150bb284216b6faf7b16beb107677433d0651d71dd679e24b5b2da7",
+   "file_sha256": "098a90a2e60abef19200702d2a8bf5efce8d3c0ee38d42abae65ed25e7074854"
   }
  },
  "inputs": {
   "stage0": {
    "n_files": 1125,
-   "digest": "83a712bee6cf9d974ddd9f09662a295e568fd7d382e81f99d9642e22c81142c7",
+   "digest": "72d8e7748aa1c9d42c5883d020bc797a0dd68fa9451264efb58ca10fb961c664",
    "missing": []
   },
   "rq1/generate": {
    "n_files": 1125,
-   "digest": "c2bcfec7dd1058b825c67a19d06a39daacf2a4fb5b53a3e913a49f3406a594d5",
+   "digest": "4611898cbab16c168ecd1b8892580dc6fb0d5dff3e86e3079d4e49d9c05bad7d",
    "missing": []
   },
   "rq3/execute": {
    "n_files": 750,
-   "digest": "d44ca357785f7c32add47846ffb21627a49c140caf65ae5b2c078169b8077bb7",
+   "digest": "64d81e482ef4fe76de6448147a52af1ec4a39d5ae57192253ffbbab669ad6f64",
    "missing": []
   }
  },
- "note": "frozen without the gate manifest (local); confirm with --check on freia before Stage 2 results are reported"
+ "note": "frozen with the gate manifest"
 }

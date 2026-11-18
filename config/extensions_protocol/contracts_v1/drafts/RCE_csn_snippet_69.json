@@ -1,0 +1,137 @@
+{
+ "attributes": [],
+ "class_name": "BaseStorage",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BaseStorage": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "exists": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      282.6
+     ],
+     "kind": "positional",
+     "name": "id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "max_file_idx": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "write": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "options": [
+       {
+        "t": "bytes"
+       },
+       {
+        "t": "str"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_69",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "7e1997a37b52233700ca2775f54fba54176c4e52541fb846645e27e37b76893a",
+  "skeleton_sha256": "e9adf3f196724aea442eb90bd7ea61513ed973a7cb63c3e51fecf286c2512272",
+  "tests_sha256": "c141f24bbdc250fbe32fef953ee6a75cf1406be1ea9ebdd766c2bd4e07d25f22"
+ },
+ "support": {
+  "generatable_methods": [
+   "write",
+   "exists",
+   "max_file_idx"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_69",
+ "task_id": "RealClassEval/csn/snippet_69"
+}

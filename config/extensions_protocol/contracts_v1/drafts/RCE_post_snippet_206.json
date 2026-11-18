@@ -1,0 +1,326 @@
+{
+ "attributes": [],
+ "class_name": "ConfigSpaceHexFormatter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ConfigSpaceHexFormatter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "convert_to_dword_list": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "config_space_data",
+     "type": {
+      "t": "bytes"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "format_config_space_to_hex": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "config_space_data",
+     "type": {
+      "t": "bytes"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "include_comments",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      1
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      1
+     ],
+     "kind": "positional",
+     "name": "words_per_line",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "vendor_id",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "device_id",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "class_code",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "board",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "ValueError"
+   ],
+   "why": null
+  },
+  "validate_hex_file": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "hex_file_path",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Path"
+     },
+     "type_source": "annotation",
+     "why": "annotation Path"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "write_hex_file": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "config_space_data",
+     "type": {
+      "t": "bytes"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "output_path",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Path"
+     },
+     "type_source": "annotation",
+     "why": "annotation Path"
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "include_comments",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "IOError"
+   ],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_206",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "4138556475c9af2f5e106eb03a7bb93f191c17ae38efb07a0f90ac5bc2f9671b",
+  "skeleton_sha256": "3164f33422c32c56f1a6987ffe71092763ffd8a4e48592b509e9ee43d9a3b77f",
+  "tests_sha256": "65f572d577ce48b464c9f02bb5df3991a2b75dae840848375ab8d75cb4d4e2f3"
+ },
+ "support": {
+  "generatable_methods": [
+   "format_config_space_to_hex",
+   "convert_to_dword_list"
+  ],
+  "n_p_scenarios": 10,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_206",
+ "task_id": "RealClassEval/post_cut-off/snippet_206"
+}

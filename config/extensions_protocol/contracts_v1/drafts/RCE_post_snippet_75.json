@@ -1,0 +1,246 @@
+{
+ "attributes": [],
+ "class_name": "GoogleCustomSearchAPI",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "GoogleCustomSearchAPI": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "api_key",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "search_engine_id",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     20
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false,
+     20
+    ],
+    "kind": "positional",
+    "name": "max_results",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     10
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false,
+     10
+    ],
+    "kind": "positional",
+    "name": "num_per_request",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_all_results": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false,
+      null
+     ],
+     "kind": "positional",
+     "name": "max_results",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "search": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "num_results",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      1
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      1
+     ],
+     "kind": "positional",
+     "name": "start_index",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_75",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "84f6af13a148b4a19e5a08c938c82df166283c14b0794c558abbffd5b5faec06",
+  "skeleton_sha256": "8b15168f96dde9974836ed418d3762ceb2cea14a2a5d8a2663ce637c5168099c",
+  "tests_sha256": "8e81fb8a4eb4e3b06c72eaeabc7184ccb9f62d1ed2d7ed6cad1f29fa4e9d4341"
+ },
+ "support": {
+  "generatable_methods": [
+   "search",
+   "get_all_results"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_75",
+ "task_id": "RealClassEval/post_cut-off/snippet_75"
+}

@@ -1,0 +1,100 @@
+{
+ "attributes": [],
+ "class_name": "MaltegoOauth",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "MaltegoOauth": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "decrypt_secrets": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "private_key_path",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "encoded_ciphertext",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_150",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "6aede6140764c2770088a14c7ab3869cf6788d5e3c87781ac6fbb4f4ce37f2a1",
+  "skeleton_sha256": "2721073ce019c9cd6cbb3f0ff10e4acfc1045612b1f2d874cf50b9be095b27dc",
+  "tests_sha256": "065f6fe4903e00d18c33e00e2d1be845fdf85486b3f3f54a3761bc5217371564"
+ },
+ "support": {
+  "generatable_methods": [
+   "decrypt_secrets"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_150",
+ "task_id": "RealClassEval/csn/snippet_150"
+}

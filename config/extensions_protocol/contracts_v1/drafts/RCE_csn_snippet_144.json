@@ -1,0 +1,80 @@
+{
+ "attributes": [],
+ "class_name": "InGivenDirectory",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "InGivenDirectory": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "1(xop,nZV.9hzl`",
+     null
+    ],
+    "kind": "positional",
+    "name": "path",
+    "type": {
+     "options": [
+      {
+       "t": "none"
+      },
+      {
+       "t": "str"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_144",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "431af14f66b1275c5e992ecb9cb013522f8d2c16a62f0977402dbb98d3820259",
+  "skeleton_sha256": "6744d9989f872e3b7fb8cad131609d472910d7e04e340e286b7377f4795c02b1",
+  "tests_sha256": "950ebf08b6b1a676cca7c03a02a64a0bf70e40a085edec71eb0fe40983f3e041"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_144",
+ "task_id": "RealClassEval/csn/snippet_144"
+}

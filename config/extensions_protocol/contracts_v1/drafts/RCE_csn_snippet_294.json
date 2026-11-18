@@ -1,0 +1,161 @@
+{
+ "attributes": [],
+ "class_name": "ListenerContainer",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ListenerContainer": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "topics",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "addresses",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     "localhost"
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "localhost"
+    ],
+    "kind": "positional",
+    "name": "nameserver",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     ""
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     ""
+    ],
+    "kind": "positional",
+    "name": "services",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "restart_listener": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "topics",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "stop": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_294",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "4798817cdd42693a7253977e3cf32d9aa0d30ae78e54fc4946d05039247e09c3",
+  "skeleton_sha256": "30bccf427532415cfc976c6366291eb6e034e6be0eae3509c4b5d9d6d4cdd61f",
+  "tests_sha256": "067d5d1e5475baf5a73d10b6798c940c0b40cefd7633062ee5ca878f384c1604"
+ },
+ "support": {
+  "generatable_methods": [
+   "stop"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['threading']"
+  ],
+  "side_effect_imports": [
+   "threading"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_294",
+ "task_id": "RealClassEval/csn/snippet_294"
+}

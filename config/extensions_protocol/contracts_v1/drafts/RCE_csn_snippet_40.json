@@ -1,0 +1,72 @@
+{
+ "attributes": [],
+ "class_name": "interactive_backend",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "interactive_backend": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     ""
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     ""
+    ],
+    "kind": "positional",
+    "name": "backend",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_40",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "a18b52e25065b4dd53e4e87fabb04cd7f1dfb2d1a99d367585a76032286c9b26",
+  "skeleton_sha256": "018215f5b77ce904763d3d1a1389f2c646b4a440c73fe5da985c03bcc9063ef6",
+  "tests_sha256": "30b7dca4bb11fc241c6967b91c574c8660207cebf2c74857b65fb432ead8b9fb"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_40",
+ "task_id": "RealClassEval/csn/snippet_40"
+}

@@ -1,0 +1,189 @@
+{
+ "attributes": [
+  "board",
+  "logger",
+  "output_dir",
+  "vivado_path"
+ ],
+ "class_name": "VivadoRunner",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "VivadoRunner": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "Ql"
+    ],
+    "kind": "positional",
+    "name": "board",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "Ql"
+    ],
+    "kind": "positional",
+    "name": "output_dir",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "Ql"
+    ],
+    "kind": "positional",
+    "name": "vivado_path",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "Ql",
+     null
+    ],
+    "kind": "positional",
+    "name": "logger",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "device_config",
+    "type": {
+     "options": [
+      {
+       "keys": {
+        "t": "str"
+       },
+       "t": "dict",
+       "values": {
+        "t": "any"
+       }
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_vivado_info": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "run": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [
+    "VivadoIntegrationError"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_212",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "a4df7e1aa719d83606a1ed6fdcdec1d9f89c35a8cbfdf806582aa60f17457d85",
+  "skeleton_sha256": "ad878d6986dc90136b14782adc78efd3dd2f80cc5df1d5f9a3f378eba555e9c2",
+  "tests_sha256": "b5347cc92bad1fa77b4b43a9a8786645d7a675bc081c6d0aea4e3ddfdde76e0a"
+ },
+ "support": {
+  "generatable_methods": [
+   "run",
+   "get_vivado_info"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['subprocess']"
+  ],
+  "side_effect_imports": [
+   "subprocess"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_212",
+ "task_id": "RealClassEval/post_cut-off/snippet_212"
+}

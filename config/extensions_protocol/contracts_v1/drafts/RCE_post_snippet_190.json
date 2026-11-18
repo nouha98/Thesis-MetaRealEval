@@ -1,0 +1,106 @@
+{
+ "attributes": [],
+ "class_name": "ClassWithInitArgs",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ClassWithInitArgs": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "cls",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "no type and no valid literal hints"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varargs",
+    "name": "args",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "no type and no valid literal hints"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varkw",
+    "name": "kwargs",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "**kwargs are not generated (keyword names are not specified)"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_190",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "f05002bd33edae91465ef57644c73fc99ddb5d6daba48512977e08efe7f906ba",
+  "skeleton_sha256": "8bec61edb23ad8f2ce22fbdf01816b9b5581432f1cd063851f63e930cfac6194",
+  "tests_sha256": "7353f1193bea68ea5497c78e500d9fef515aab06869265080d25887dc2e80a09"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_190",
+ "task_id": "RealClassEval/post_cut-off/snippet_190"
+}

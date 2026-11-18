@@ -1,0 +1,134 @@
+{
+ "attributes": [],
+ "class_name": "NodeFinder",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "NodeFinder": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     1953.566
+    ],
+    "kind": "positional",
+    "name": "matcher",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     1953.566,
+     0
+    ],
+    "kind": "positional",
+    "name": "limit",
+    "type": {
+     "options": [
+      {
+       "t": "float"
+      },
+      {
+       "t": "int"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "find": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "node",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "list",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_187",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "e6faa3052d4e99ef78be6af58faf8507fab24ef7c5797078983cab47f865a39a",
+  "skeleton_sha256": "106db29e0e7c5dc43b3c9767fb49d06473f31c166adf4a25a5e3b4d7629e528f",
+  "tests_sha256": "580a388dce297f3ecad79a74284d5a5045957c5e92d69b3ef2109de8e4941be4"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_187",
+ "task_id": "RealClassEval/csn/snippet_187"
+}

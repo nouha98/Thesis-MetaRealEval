@@ -1,0 +1,70 @@
+{
+ "attributes": [],
+ "class_name": "Geometry",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Geometry": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "geojson": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_75",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "2559e62ebab2545a3aa71386af280ae508aec45c49d229a28eaa718aa894fee2",
+  "skeleton_sha256": "d6969e246112d1c138e3da07ec81f6205a9119715a24c756576e0d3a15a93b2d",
+  "tests_sha256": "870021b2a55cb91595da42902523fa15265809e9e6f4128d304c8d5258df33aa"
+ },
+ "support": {
+  "generatable_methods": [
+   "geojson",
+   "to_dict"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_75",
+ "task_id": "RealClassEval/csn/snippet_75"
+}

@@ -1,0 +1,101 @@
+{
+ "attributes": [],
+ "class_name": "Scheme",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Scheme": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "title",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "add_argument": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "arg",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "to_xml": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_84",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "37fd0cef40c400468cdeced15dfd3313e7bc348c9ea8f125f472275b2b8d714f",
+  "skeleton_sha256": "a7eaa826874ae34fa82689b115ec52ed177ef39432756d1b1e0287981e28aedd",
+  "tests_sha256": "2cc02dc16d45444bfae08281216dd8897b8ca17b13a83f0d41760855b4d74f82"
+ },
+ "support": {
+  "generatable_methods": [
+   "to_xml"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_84",
+ "task_id": "RealClassEval/csn/snippet_84"
+}

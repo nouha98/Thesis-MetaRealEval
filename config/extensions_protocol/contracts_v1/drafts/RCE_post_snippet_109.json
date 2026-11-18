@@ -1,0 +1,115 @@
+{
+ "attributes": [
+  "end_index",
+  "start_index",
+  "text",
+  "token_count"
+ ],
+ "class_name": "Sentence",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Sentence": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "from_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "options": [
+        {
+         "t": "str"
+        },
+        {
+         "t": "int"
+        }
+       ],
+       "t": "union"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_109",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "032d749aea15cce168a38cb32c2e1fa27ee4412b11ff4699d3bc72e37334a782",
+  "skeleton_sha256": "768c5098cc661dca0315a0507c34b4d96825920000d69ef0ce8270b407a06d88",
+  "tests_sha256": "36cd3fbea4d85ebad189266455e27a2d9381d0bca85d57ef40982666a37ed90b"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__",
+   "to_dict",
+   "from_dict"
+  ],
+  "n_p_scenarios": 10,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_109",
+ "task_id": "RealClassEval/post_cut-off/snippet_109"
+}

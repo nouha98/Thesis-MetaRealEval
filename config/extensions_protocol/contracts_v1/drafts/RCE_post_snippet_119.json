@@ -1,0 +1,123 @@
+{
+ "attributes": [],
+ "class_name": "MediaPart",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "MediaPart": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "from_json": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "json_part",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_audio": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_config": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_image": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_mic_off": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_reset_command": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_119",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "5c5ba379ee342c4551675bf3d3358dcfbf2ddeb2d99507b5e707b237b19160eb",
+  "skeleton_sha256": "e24493fb302c44cada7857d714876b931dac50ef13b3a4ea80c3b5f8755841fd",
+  "tests_sha256": "cfa89d641d1c524c484a7914a5365392fa720d58d2e19c7204268cb711096a80"
+ },
+ "support": {
+  "generatable_methods": [
+   "from_json",
+   "is_image",
+   "is_audio",
+   "is_reset_command",
+   "is_config",
+   "is_mic_off"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_119",
+ "task_id": "RealClassEval/post_cut-off/snippet_119"
+}

@@ -1,0 +1,215 @@
+{
+ "attributes": [],
+ "class_name": "XinyuSearchAPI",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "XinyuSearchAPI": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "e3B?<]SV j\"\\"
+    ],
+    "kind": "positional",
+    "name": "access_key",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "e3B?<]SV j\"\\"
+    ],
+    "kind": "positional",
+    "name": "search_engine_id",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     20
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     20
+    ],
+    "kind": "positional",
+    "name": "max_results",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "query_detail": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "body",
+     "type": {
+      "options": [
+       {
+        "keys": {
+         "t": "any"
+        },
+        "t": "dict",
+        "values": {
+         "t": "any"
+        }
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "detail",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "search": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "max_results",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_77",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "05b1a90874c5e6e04bbf4de1f30df9ccfb7a8c9255e325a9e0301ce57c88c599",
+  "skeleton_sha256": "194091e8decdcfce94acea28d531a9e8ba2b6b84c9c8da3377266d8ed06e627f",
+  "tests_sha256": "c7aba973b9348bf60f39be76ae73c70d2f18d55060d23e5d5d7f6037d4b554b8"
+ },
+ "support": {
+  "generatable_methods": [
+   "query_detail",
+   "search"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_77",
+ "task_id": "RealClassEval/post_cut-off/snippet_77"
+}

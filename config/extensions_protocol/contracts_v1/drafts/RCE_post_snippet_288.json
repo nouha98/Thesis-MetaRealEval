@@ -1,0 +1,102 @@
+{
+ "attributes": [],
+ "class_name": "ParserExtensionConfig",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ParserExtensionConfig": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "encode_base64": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "text",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [
+    "ValueError"
+   ],
+   "why": null
+  },
+  "validate": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [
+    "ValueError"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_288",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "ea8fdc5e7418d0f3776d5f31197e4b5297b6eec126db0ff350df4854fdbfdf08",
+  "skeleton_sha256": "8996b2c8db058e67857d6f7dbec5230aa3cd731b42bd3554996c6f4e71685d50",
+  "tests_sha256": "db44c9b6580fba2705ca965a889c0de96a1e1c9a5a6508126105797cd4bf7e98"
+ },
+ "support": {
+  "generatable_methods": [
+   "encode_base64",
+   "validate",
+   "to_dict"
+  ],
+  "n_p_scenarios": 10,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_288",
+ "task_id": "RealClassEval/post_cut-off/snippet_288"
+}

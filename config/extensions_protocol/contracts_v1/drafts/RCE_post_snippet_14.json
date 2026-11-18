@@ -1,0 +1,195 @@
+{
+ "attributes": [],
+ "class_name": "templater",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "templater": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "q_dict",
+    "type": {
+     "keys": {
+      "t": "any"
+     },
+     "t": "dict",
+     "values": {
+      "t": "any"
+     }
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "a_dict",
+    "type": {
+     "keys": {
+      "t": "any"
+     },
+     "t": "dict",
+     "values": {
+      "t": "any"
+     }
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     ""
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     ""
+    ],
+    "kind": "positional",
+    "name": "user_name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     ""
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     ""
+    ],
+    "kind": "positional",
+    "name": "global_bio",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     true
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "is_cot",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_A_template": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "question_type",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_Q_template": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "question_type_prompt",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_14",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "0cf2d7bcc0dad7a09ffa3572c76841b0b14f75812ff208f62b09de86a5091279",
+  "skeleton_sha256": "c201b09ec0280d72977483ba2b5c3d7be8866887f64f8d0093862512fb6aba17",
+  "tests_sha256": "ef3639836e1b775f7e47fd7004a137fb4eee2537c9a859a9f27ca97efa76b3b2"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_A_template",
+   "get_Q_template"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_14",
+ "task_id": "RealClassEval/post_cut-off/snippet_14"
+}

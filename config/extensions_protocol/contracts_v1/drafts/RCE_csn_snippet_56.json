@@ -1,0 +1,61 @@
+{
+ "attributes": [],
+ "class_name": "Collection",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Collection": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__len__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_56",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "03110bcaadd0a8cbeac4fd98edafb74249fabd437232f01438eeb70602d391a6",
+  "skeleton_sha256": "caf90dcaa25dfa956a3774e134d6871acb53fcd859f8ec4a8260cb4db20b9682",
+  "tests_sha256": "ac1ba42ff9423873831041bb8758b46300440d98e711b0f38837479e1c777184"
+ },
+ "support": {
+  "generatable_methods": [
+   "__len__"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_56",
+ "task_id": "RealClassEval/csn/snippet_56"
+}

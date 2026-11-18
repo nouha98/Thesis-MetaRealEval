@@ -1,0 +1,173 @@
+{
+ "attributes": [],
+ "class_name": "Import_Data",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Import_Data": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "import_csv": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "*"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "*"
+     ],
+     "kind": "positional",
+     "name": "file_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "."
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "."
+     ],
+     "kind": "positional",
+     "name": "folder_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      0
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      0
+     ],
+     "kind": "positional",
+     "name": "head_row",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      0
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null,
+      0
+     ],
+     "kind": "positional",
+     "name": "index_col",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "convert_col",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "concat_files",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_263",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "abf094471fdf9066dba0be284053408e011b0aa78d78a8317e66f72dbf505aca",
+  "skeleton_sha256": "99d6dfb59f91a5ad2ec87bf5c25c8209ac09776867d61055280ec03c74f01c67",
+  "tests_sha256": "f1558516e86e0b6f73ffbaacb208b929f6745b6cd23dc45649cf4d4cf22e2e5a"
+ },
+ "support": {
+  "generatable_methods": [
+   "import_csv"
+  ],
+  "n_p_scenarios": 9,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_263",
+ "task_id": "RealClassEval/csn/snippet_263"
+}

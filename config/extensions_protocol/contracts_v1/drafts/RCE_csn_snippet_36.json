@@ -1,0 +1,88 @@
+{
+ "attributes": [],
+ "class_name": "Sentence",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Sentence": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "empty": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "text": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "doc",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Doc"
+     },
+     "type_source": "annotation",
+     "why": "annotation Doc"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_36",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "9c738e9d76a485ccf062c54c284154c8ffe26e4aa430f1de50dc4623b7456909",
+  "skeleton_sha256": "af23e25560d206bbd05f56e16ed9c7561b1a6c388b120ff96c7a73614c8c6d3f",
+  "tests_sha256": "26b21fd665eed9546c130729a377152dfb8c25b3e32f69a9a84f5350411afd46"
+ },
+ "support": {
+  "generatable_methods": [
+   "empty"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)",
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_36",
+ "task_id": "RealClassEval/csn/snippet_36"
+}

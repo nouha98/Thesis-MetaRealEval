@@ -1,0 +1,205 @@
+{
+ "attributes": [
+  "dim",
+  "expr",
+  "weld_type"
+ ],
+ "class_name": "LazyOpResult",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LazyOpResult": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     891
+    ],
+    "kind": "positional",
+    "name": "expr",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     891
+    ],
+    "kind": "positional",
+    "name": "weld_type",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     891
+    ],
+    "kind": "positional",
+    "name": "dim",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "evaluate": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "verbose",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "decode",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "passes",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      1
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      1
+     ],
+     "kind": "positional",
+     "name": "num_threads",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "apply_experimental_transforms",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_30",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "72cd46d6591324d6de4336cedc81a01b5b1318fd84ae537dd1a818fb9a813073",
+  "skeleton_sha256": "e10678661a6f96c3244a944cf082b0ce413cdc18444a3d72eb9faeb243b12647",
+  "tests_sha256": "634dd32a317a15c24de90bb78e4c51ee1c2ae7c023a8e22b78b30525720ea457"
+ },
+ "support": {
+  "generatable_methods": [
+   "evaluate"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_30",
+ "task_id": "RealClassEval/csn/snippet_30"
+}

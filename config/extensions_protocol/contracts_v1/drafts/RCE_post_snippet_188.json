@@ -1,0 +1,151 @@
+{
+ "attributes": [],
+ "class_name": "LogCleanupManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LogCleanupManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "",
+     "zF8d$2'J&gI(k",
+     "723M6t~tdw?\u000bdN,zhZ_\r",
+     "7(;8",
+     "Hb\"_\\E!9UOBX"
+    ],
+    "kind": "positional",
+    "name": "log_dir",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     30
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "723M6t~tdw?\u000bdN,zhZ_\r",
+     30
+    ],
+    "kind": "positional",
+    "name": "max_age_days",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     24
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "723M6t~tdw?\u000bdN,zhZ_\r",
+     24
+    ],
+    "kind": "positional",
+    "name": "cleanup_interval_hours",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "cleanup_old_logs": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_cleanup_stats": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "start_cleanup_scheduler": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "stop_cleanup_scheduler": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_188",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "86fe4938755b4dfba51c8129e8ccc00f504cf989dd2818b26f01d1877f57ad6f",
+  "skeleton_sha256": "d2377a493b6b726ca375e8e36a37eebd22f5a69e4a3d8970544a69e1536f82ca",
+  "tests_sha256": "39d791b0e86c704bf438211a0a7c653856a7db439b075a8c93fd5abc0e5423aa"
+ },
+ "support": {
+  "generatable_methods": [
+   "start_cleanup_scheduler",
+   "stop_cleanup_scheduler",
+   "cleanup_old_logs",
+   "get_cleanup_stats"
+  ],
+  "n_p_scenarios": 9,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['threading']"
+  ],
+  "side_effect_imports": [
+   "threading"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_188",
+ "task_id": "RealClassEval/post_cut-off/snippet_188"
+}

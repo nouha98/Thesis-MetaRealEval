@@ -1,0 +1,60 @@
+{
+ "attributes": [
+  "agent"
+ ],
+ "class_name": "HookEvent",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "HookEvent": {
+    "accessors": [],
+    "attributes": [
+     "should_reverse_callbacks"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_71",
+ "properties": [
+  "should_reverse_callbacks"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "dfd750ba72cc0b9d904a6f2464073cf07d274c4b3afdba3f76646b0f555dab67",
+  "skeleton_sha256": "3a38327f243dd98180ea60b6771a6b4347b808518df10521ea05f0f0a78af7fd",
+  "tests_sha256": "4d2f464c5d2bc7b86a2e0d5c36cecd34e55cd95ed4afc7a166dc6f5d1cc83ee4"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 2,
+  "properties": [
+   "should_reverse_callbacks"
+  ],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_71",
+ "task_id": "RealClassEval/post_cut-off/snippet_71"
+}

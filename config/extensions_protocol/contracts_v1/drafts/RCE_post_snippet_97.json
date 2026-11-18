@@ -1,0 +1,171 @@
+{
+ "attributes": [
+  "Methods",
+  "lowest_latency",
+  "regions",
+  "tier1",
+  "tier2"
+ ],
+ "class_name": "GCPRegions",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "GCPRegions": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "lowest_latency": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      1
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      1
+     ],
+     "kind": "positional",
+     "name": "top",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "verbose",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "tier",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      1
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      1
+     ],
+     "kind": "positional",
+     "name": "attempts",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "tier1": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "tier2": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_97",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "d01b1bb38fedf0527d2085f1c8f4f131a0ac2ac167737ff4c076ee80704df622",
+  "skeleton_sha256": "1276f4fd8ae7057b42ac926b9ed0d605a3b3204cf16938ce6b8c813747ddd8fe",
+  "tests_sha256": "c60074be5c1341cd4d30a0cc166e9e227d495f129101c3f38ec6ff1f33d9250e"
+ },
+ "support": {
+  "generatable_methods": [
+   "tier1",
+   "tier2",
+   "lowest_latency"
+  ],
+  "n_p_scenarios": 9,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "imports side-effect modules ['concurrent']"
+  ],
+  "side_effect_imports": [
+   "concurrent"
+  ],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_97",
+ "task_id": "RealClassEval/post_cut-off/snippet_97"
+}

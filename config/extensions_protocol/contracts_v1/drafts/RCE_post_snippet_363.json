@@ -1,0 +1,242 @@
+{
+ "attributes": [],
+ "class_name": "SimpleRegistryClient",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SimpleRegistryClient": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "registry_url",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "find_server_by_reference": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "reference",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "RequestException"
+   ],
+   "why": null
+  },
+  "get_server_by_name": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "RequestException"
+   ],
+   "why": null
+  },
+  "get_server_info": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "server_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "RequestException",
+    "ValueError"
+   ],
+   "why": null
+  },
+  "list_servers": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      100
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      100
+     ],
+     "kind": "positional",
+     "name": "limit",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "cursor",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "RequestException"
+   ],
+   "why": null
+  },
+  "search_servers": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "RequestException"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_363",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "440ff93cffa57562ed7d794afb5bed16d01a18e8205e650bb6af1907c6fc47e5",
+  "skeleton_sha256": "65c1acecb651307b49d3563ad018fe6a0c75666bc3982d3d80675d2d5a662f9f",
+  "tests_sha256": "14705f7047febb8e954ee49690a8ea38fda01979eb007461da88e0ccf196f8d9"
+ },
+ "support": {
+  "generatable_methods": [
+   "list_servers",
+   "search_servers",
+   "get_server_info",
+   "get_server_by_name",
+   "find_server_by_reference"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_363",
+ "task_id": "RealClassEval/post_cut-off/snippet_363"
+}

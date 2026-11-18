@@ -1,0 +1,88 @@
+{
+ "attributes": [],
+ "class_name": "ReferenceValidator",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ReferenceValidator": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "validate_step_references": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      false,
+      {
+       "NwF$W": 755,
+       "V@qf3V": "V@qf3V"
+      }
+     ],
+     "kind": "positional",
+     "name": "workflow",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_307",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "421d876f19437379ece992e38942b846433fa6f34b12e6c617808b28e4330e9f",
+  "skeleton_sha256": "0bdac1f13587d814dae41bbea85715f8a81c9f32588385d49bba8e5f83d20b7e",
+  "tests_sha256": "72cd223bf621788c21ea823ad27be8be867d7a37572b7f10387e8e72e818d3c1"
+ },
+ "support": {
+  "generatable_methods": [
+   "validate_step_references"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_307",
+ "task_id": "RealClassEval/post_cut-off/snippet_307"
+}

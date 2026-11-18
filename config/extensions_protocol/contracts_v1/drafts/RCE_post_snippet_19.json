@@ -1,0 +1,80 @@
+{
+ "attributes": [],
+ "class_name": "MarkdownCleaner",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "MarkdownCleaner": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "clean_markdown": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "X|\njs}dPppS\f(",
+      "|\njs}dPppS\f(",
+      "eY.2F'Uij<$p~7q\\_$$<"
+     ],
+     "kind": "positional",
+     "name": "text",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_19",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "fed28603b67025e5994d8284f43565e33759160ed04d56922bb916dd6aed5eba",
+  "skeleton_sha256": "adb02c676a5c8a0b9293c864f97c821c5e8a1638d08955961a7b82b711bc916e",
+  "tests_sha256": "57c92f0d9ba2f8475e0efd5257c051cbd4ec5a27477f4249c925bb85ff9fcc67"
+ },
+ "support": {
+  "generatable_methods": [
+   "clean_markdown"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_19",
+ "task_id": "RealClassEval/post_cut-off/snippet_19"
+}

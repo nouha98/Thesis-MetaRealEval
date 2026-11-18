@@ -1,0 +1,76 @@
+{
+ "attributes": [],
+ "class_name": "PrintingCallbackHandler",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PrintingCallbackHandler": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_70",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "b8d208a1526aefc40da87042e0428751c84d27362aa485bc94dd764e91f07857",
+  "skeleton_sha256": "d3cbb783b0f6e4ef052d47124018ef987521f3113b453d6dc548ec93e3ef2408",
+  "tests_sha256": "69fc7be5ef48cafbd667ef72a7f78b2a40a0c51e0bd78f41516de45ef1e75dd2"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_70",
+ "task_id": "RealClassEval/post_cut-off/snippet_70"
+}

@@ -1,0 +1,102 @@
+{
+ "attributes": [],
+ "class_name": "Exporter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Exporter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     {
+      "&NJ)BsXM\"\roVh": "&NJ)BsXM\"\roVh",
+      "_\u000bfIEI^l}3^N+j5": "_\u000bfIEI^l}3^N+j5"
+     }
+    ],
+    "kind": "positional",
+    "name": "globls",
+    "type": {
+     "keys": {
+      "t": "str"
+     },
+     "t": "dict",
+     "values": {
+      "t": "str"
+     }
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "export": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "defn",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_55",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "66fc109826f93d4a1f1c9c2b48f1732cbe61a282884fb89476572accc51b0915",
+  "skeleton_sha256": "25f632390c3ff32d94dcbbfea5e335d2a7eafe93c62f01efe669717fec3016d1",
+  "tests_sha256": "3432a0b262c13e87f3e6cee97329dba89bf0dde9f508f5a252af32c1d1e08f61"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_55",
+ "task_id": "RealClassEval/csn/snippet_55"
+}

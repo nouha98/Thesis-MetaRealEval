@@ -1,0 +1,113 @@
+{
+ "attributes": [],
+ "class_name": "TokenBucketRateLimiter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "TokenBucketRateLimiter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "tokens_per_second",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "bucket_capacity",
+    "type": {
+     "options": [
+      {
+       "t": "int"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_wait_time": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "try_consume_token": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_45",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "acc20de9ebda1fe708942ab3e34baca5757f3759c7731013f1332fda87c2a211",
+  "skeleton_sha256": "ace52c50b801f374d94ef2f72f1204fea1ef4f1eccf15e6620de7b4f3649ff0d",
+  "tests_sha256": "f5a154324f1c5abab0d3b91c80def700ded151ec6b98b0969983e9c43f3bc58a"
+ },
+ "support": {
+  "generatable_methods": [
+   "try_consume_token",
+   "get_wait_time"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_45",
+ "task_id": "RealClassEval/post_cut-off/snippet_45"
+}

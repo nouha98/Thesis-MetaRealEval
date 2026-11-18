@@ -1,0 +1,156 @@
+{
+ "attributes": [],
+ "class_name": "ProgressScope",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ProgressScope": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "context",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation MCPContext"
+    },
+    "type_source": "annotation",
+    "why": "annotation MCPContext"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "total",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "description",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "set_progress": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "current",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "update": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      1
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      1
+     ],
+     "kind": "positional",
+     "name": "step",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_291",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "7d0480d7eb3e31ee65bc903e0b3d07593094d66571899c96049a23a3f05259de",
+  "skeleton_sha256": "7c0a4d09ba06b54385ba35f4bf196c3a1e8e3f7abbd7b224047182ffee1f5497",
+  "tests_sha256": "ad0aac95bf4a0c1dd362204bcdff73d17b6ea1ca29b80ff584cbd8c53cb68469"
+ },
+ "support": {
+  "generatable_methods": [
+   "update",
+   "set_progress"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_291",
+ "task_id": "RealClassEval/post_cut-off/snippet_291"
+}

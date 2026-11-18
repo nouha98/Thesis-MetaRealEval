@@ -1,0 +1,85 @@
+{
+ "attributes": [],
+ "class_name": "Reservoir",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Reservoir": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     292.575,
+     0
+    ],
+    "kind": "positional",
+    "name": "traces_per_sec",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "take": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_137",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "c9ffac01021a11c23bbcb761a8ff6c1d3ae5b3a08ae29adbcb8c46d25baa7583",
+  "skeleton_sha256": "86df84baa654c22a6992887c1b0360ac7f4fe0da874a833402c523ac2aa505ff",
+  "tests_sha256": "ec1aa0a96f5a1bf6bb75a6f3a02e50b802c3264e77b9c21be534e1d114b78bbb"
+ },
+ "support": {
+  "generatable_methods": [
+   "take"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['threading']"
+  ],
+  "side_effect_imports": [
+   "threading"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_137",
+ "task_id": "RealClassEval/csn/snippet_137"
+}

@@ -1,0 +1,70 @@
+{
+ "attributes": [],
+ "class_name": "UserContextFormViewMixin",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "UserContextFormViewMixin": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_agnocomplete_context": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_form_kwargs": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_272",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "40089fd633e92d4edfc87090babf3a751357361051dcf42a29e2767dc2ff43f2",
+  "skeleton_sha256": "36525768f0d383d3f93966f2c542ff80000c2d2c4939a28b00a905f340a7f430",
+  "tests_sha256": "154e89c3c6a3ba91d048a760a425b88c60901eaf7d902c556304bc7fd35c5e89"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_agnocomplete_context",
+   "get_form_kwargs"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_272",
+ "task_id": "RealClassEval/csn/snippet_272"
+}

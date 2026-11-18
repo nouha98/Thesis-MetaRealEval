@@ -1,0 +1,385 @@
+{
+ "attributes": [],
+ "class_name": "Subplot",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Subplot": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "ax",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type 'matplotlib axis'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type 'matplotlib axis'"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "energies",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type '1D array-like'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type '1D array-like'"
+   },
+   {
+    "constraints": {},
+    "default": [
+     4
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     4
+    ],
+    "kind": "positional",
+    "name": "number_of_interactions",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     ""
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     ""
+    ],
+    "kind": "positional",
+    "name": "title",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     16
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     16
+    ],
+    "kind": "positional",
+    "name": "title_font_size",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "state_names",
+    "type": {
+     "items": {
+      "t": "unsupported",
+      "why": "docstring type 'str (optional)'"
+     },
+     "t": "list"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     [
+      null
+     ]
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     [
+      null
+     ]
+    ],
+    "kind": "positional",
+    "name": "virtual",
+    "type": {
+     "items": {
+      "t": "unsupported",
+      "why": "docstring type 'ints (optional)'"
+     },
+     "t": "list"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     14
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     14
+    ],
+    "kind": "positional",
+    "name": "state_font_size",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.5
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     0.5
+    ],
+    "kind": "positional",
+    "name": "state_text_buffer",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     "left"
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "left"
+    ],
+    "kind": "positional",
+    "name": "label_side",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "add_arrow": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "index",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "between",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type '2-element iterable of integers'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type '2-element iterable of integers'"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "kind",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type \"{'ket', 'bra', 'outbra', 'outket'}\""
+     },
+     "type_source": "docstring",
+     "why": "docstring type \"{'ket', 'bra', 'outbra', 'outket'}\""
+    },
+    {
+     "constraints": {},
+     "default": [
+      ""
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      ""
+     ],
+     "kind": "positional",
+     "name": "label",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      10
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      10
+     ],
+     "kind": "positional",
+     "name": "head_length",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      1
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      1
+     ],
+     "kind": "positional",
+     "name": "head_aspect",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      14
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      14
+     ],
+     "kind": "positional",
+     "name": "font_size",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "k"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "k"
+     ],
+     "kind": "positional",
+     "name": "color",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_271",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "dba4e7a64bb3d0d0df4da5b7d120dea4fbb25e6d9cfd48d6d98ce8f8ea28de67",
+  "skeleton_sha256": "30ac61bb3f051a8544ae1e1b556667a3624452ae1be17863313e185a1cd50f5c",
+  "tests_sha256": "eac347b8facd07f568ce3dbaf362adcd0b2f291705c85a7af00486fce585cb25"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "constructor parameters cannot be generated",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_271",
+ "task_id": "RealClassEval/csn/snippet_271"
+}

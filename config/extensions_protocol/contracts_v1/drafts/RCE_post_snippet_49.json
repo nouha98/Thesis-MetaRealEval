@@ -1,0 +1,114 @@
+{
+ "attributes": [],
+ "class_name": "FFTComplexScipyFFTpack",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "FFTComplexScipyFFTpack": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "is_solution": {
+   "async": false,
+   "generate": false,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "problem",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "solution",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "solve": {
+   "async": false,
+   "generate": false,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "problem",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_49",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "cbfce7acae5e50e0c54437f5a4b95a5b51b582958e14f76351868406e9e83ac5",
+  "skeleton_sha256": "70278d4544688467b60b963cf9d6e5c7d36353d83189ec56bd36f814af7e030c",
+  "tests_sha256": "21b9e2e0ca220e9e8013ee38a1dbe250b3bdaf8a9bcf64fdc86b4617829eeb2c"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_49",
+ "task_id": "RealClassEval/post_cut-off/snippet_49"
+}

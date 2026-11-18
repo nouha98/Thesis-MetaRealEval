@@ -1,0 +1,70 @@
+{
+ "attributes": [],
+ "class_name": "Sampleable",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Sampleable": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_default_sample": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_sample": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_245",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "cf6a8e9235f0e8320ef6f3dd868b2f0c44c7d4ecdaa2b3189011e7d3a106a051",
+  "skeleton_sha256": "e63c77450695f5cf0921b0e3742238188c0c7b165d69bc2aa399c25e7bdaab85",
+  "tests_sha256": "71ca66fd8a6e393ada49e54ebcad8f86c486c207c7c5c4cef850eccad0199503"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_sample",
+   "get_default_sample"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_245",
+ "task_id": "RealClassEval/csn/snippet_245"
+}

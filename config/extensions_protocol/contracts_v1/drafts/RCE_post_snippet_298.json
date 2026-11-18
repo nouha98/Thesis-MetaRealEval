@@ -1,0 +1,72 @@
+{
+ "attributes": [],
+ "class_name": "SessionManagerPort",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SessionManagerPort": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_session": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "remove_session": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_298",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "1fc1c4cf940f03175d66bc0ae0d79732c23e0e43475b90f9053ecc9dc56b104b",
+  "skeleton_sha256": "90b9a7c753319964798438eb634d381807fb014172570366e5c50bb6ddd49ff5",
+  "tests_sha256": "b2a2967888ac37f409d3b52dabd2d511146a673fde6cbe58c18a48321c0763c1"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_session",
+   "remove_session"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_298",
+ "task_id": "RealClassEval/post_cut-off/snippet_298"
+}

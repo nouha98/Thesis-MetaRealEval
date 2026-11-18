@@ -1,0 +1,197 @@
+{
+ "attributes": [],
+ "class_name": "Argument",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Argument": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "name",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "description",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "validation",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": true,
+    "hints": [],
+    "kind": "positional",
+    "name": "data_type",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "no type and no valid literal hints"
+   },
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "required_on_edit",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "required_on_create",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "title",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "add_to_document": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "parent",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_83",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "a2c82c74ced1ec01ea258188753344952b669130d3a7d71578affd18c5a6fd6a",
+  "skeleton_sha256": "dcecf7fb92c37e58d0cf2124ffe415cd17710c6e81bb201d0fc0cac004d1e80b",
+  "tests_sha256": "d8c7ee1dd32e2eac594a15d984a40bd45c173a6b57ec52571e99f2a68d635586"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_83",
+ "task_id": "RealClassEval/csn/snippet_83"
+}

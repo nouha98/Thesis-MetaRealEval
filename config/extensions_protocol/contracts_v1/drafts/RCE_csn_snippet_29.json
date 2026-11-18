@@ -1,0 +1,120 @@
+{
+ "attributes": [],
+ "class_name": "RectangleBin",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RectangleBin": {
+    "accessors": [],
+    "attributes": [
+     "extents"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "bounds",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type '(2, dimension *) float'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type '(2, dimension *) float'"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "insert": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "size",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type '(dimension,) float'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type '(dimension,) float'"
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "rotate",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_29",
+ "properties": [
+  "extents"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "48919e03fb00579ca5b75193340d2778e3e07f4f0388b131bd79eaf22eb8afe4",
+  "skeleton_sha256": "e575a0cf5decb55056f33bfef249808305e8d99d9d0ba8f271fdf8170753b832",
+  "tests_sha256": "c4439937df66e35e0f35749a8e4f53787caf989c26d0ecef1011207d1cd6bc69"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 5,
+  "properties": [
+   "extents"
+  ],
+  "reasons": [
+   "imports non-stdlib modules",
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_29",
+ "task_id": "RealClassEval/csn/snippet_29"
+}

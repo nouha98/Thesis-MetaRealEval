@@ -1,0 +1,80 @@
+{
+ "attributes": [],
+ "class_name": "Role",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Role": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "can_manage_role": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "Q\fYWQ!`(5\fL\r@ p)J\u000b"
+     ],
+     "kind": "positional",
+     "name": "role_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_287",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "78bb0c6a464dd13eba22d3b9570881a3cf084aa91f1691a92dba1982d77d3220",
+  "skeleton_sha256": "26af50c01a90a811a44412ccc7dce57a2a0b95cfbd25dbca2cd92ef5fe61d34b",
+  "tests_sha256": "ff5ca39aa99fc1e132f2ef049eacab2c9243d473e5bb69c71f24c4b7f9a2c390"
+ },
+ "support": {
+  "generatable_methods": [
+   "can_manage_role"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_287",
+ "task_id": "RealClassEval/csn/snippet_287"
+}

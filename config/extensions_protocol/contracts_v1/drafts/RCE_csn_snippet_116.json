@@ -1,0 +1,284 @@
+{
+ "attributes": [],
+ "class_name": "Solver",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Solver": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "getSolution": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "domains",
+     "type": {
+      "keys": {
+       "t": "any"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "constraints",
+     "type": {
+      "items": {
+       "items": {
+        "t": "any"
+       },
+       "t": "tuple",
+       "variadic": true
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "vconstraints",
+     "type": {
+      "keys": {
+       "t": "any"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "getSolutionIter": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "domains",
+     "type": {
+      "keys": {
+       "t": "any"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       [
+        ".:0:`m)@Oa!3XEF"
+       ],
+       [
+        ".:0:`m)@Oa!3XEF"
+       ],
+       [
+        ".:0:`m)@Oa!3XEF"
+       ],
+       [
+        ".:0:`m)@Oa!3XEF"
+       ]
+      ]
+     ],
+     "kind": "positional",
+     "name": "constraints",
+     "type": {
+      "items": {
+       "items": {
+        "t": "any"
+       },
+       "t": "tuple",
+       "variadic": true
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "vconstraints",
+     "type": {
+      "keys": {
+       "t": "any"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "getSolutions": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "domains",
+     "type": {
+      "keys": {
+       "t": "any"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "constraints",
+     "type": {
+      "items": {
+       "items": {
+        "t": "any"
+       },
+       "t": "tuple",
+       "variadic": true
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "vconstraints",
+     "type": {
+      "keys": {
+       "t": "any"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_116",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "ae97148cc4355e97f68dd43c29f45e2431154d6effe42123c034120d2ee985ea",
+  "skeleton_sha256": "d3dba57b0d490d4cb21148b23462ef910761004242cc0905af2b0d9c50a11c56",
+  "tests_sha256": "67fded71c97a0b96b1261ddcc7989124251a72b00c402314e3416ee31b36274f"
+ },
+ "support": {
+  "generatable_methods": [
+   "getSolution",
+   "getSolutions",
+   "getSolutionIter"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_116",
+ "task_id": "RealClassEval/csn/snippet_116"
+}

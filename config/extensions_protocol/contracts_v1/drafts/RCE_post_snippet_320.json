@@ -1,0 +1,139 @@
+{
+ "attributes": [],
+ "class_name": "WorkflowState",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "WorkflowState": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "add_response": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      "",
+      793
+     ],
+     "kind": "positional",
+     "name": "step_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "59 D</)\u000b\t;HJn:jKOsig",
+      {
+       "": ">M*z16tqqT<J",
+       ">M*z16tqqT<J": ""
+      },
+      {
+       ">M*z16tqqT<J": "",
+       "[GP`S\f@\t).p`4`5/nd": ">M*z16tqqT<J"
+      }
+     ],
+     "kind": "positional",
+     "name": "response_values",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "can_go_back": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_all_responses": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "go_back": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_320",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "477227b5d644d831173fe321ffe5238f9a6290fc2f8349e71323153845a58484",
+  "skeleton_sha256": "a88649b6927a5ec370b27b8f62ff088022eaf2124b32f25ea3d911c8f826563b",
+  "tests_sha256": "02714e07c2c41417aaf2e5d323326e86a44b05532fddf11443005a4a8eb92bac"
+ },
+ "support": {
+  "generatable_methods": [
+   "add_response",
+   "get_all_responses",
+   "can_go_back",
+   "go_back"
+  ],
+  "n_p_scenarios": 8,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_320",
+ "task_id": "RealClassEval/post_cut-off/snippet_320"
+}

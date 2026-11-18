@@ -1,0 +1,85 @@
+{
+ "attributes": [
+  "Methods",
+  "bs",
+  "im0",
+  "mode",
+  "paths"
+ ],
+ "class_name": "LoadPilAndNumpy",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LoadPilAndNumpy": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "im0",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "no type and no valid literal hints"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__len__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_90",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "70bc3350436958b8911f3ad8709bc7b9d35f22ced72cae0b19d859d1dc09a59c",
+  "skeleton_sha256": "858c5004b6a9639991f0383c0ac895217a4941bbfd147b4042350821b4373c1f",
+  "tests_sha256": "e13e684720e60c02df043c3b1c2c417bdf1b5441da1c9d17018b0910e977c6b9"
+ },
+ "support": {
+  "generatable_methods": [
+   "__len__"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_90",
+ "task_id": "RealClassEval/post_cut-off/snippet_90"
+}

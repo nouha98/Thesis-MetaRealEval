@@ -1,0 +1,156 @@
+{
+ "attributes": [],
+ "class_name": "LiveDisplayManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LiveDisplayManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "B64\nC>\"^",
+     null
+    ],
+    "kind": "positional",
+    "name": "console",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "create_live_display": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "auto_refresh",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "w-58%\\Nxz-4Y\f@\t3",
+      null
+     ],
+     "kind": "positional",
+     "name": "console",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      0.75
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      2558,
+      0.75
+     ],
+     "kind": "positional",
+     "name": "refresh_per_second",
+     "type": {
+      "t": "float"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_38",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "cf97bf3e10c8ecfd4e8a686a18c97c7b993779d49e37e31e274acc6492f90c93",
+  "skeleton_sha256": "dc54a4cd7c57d15cb7780ed897f196f220f98b80a063cb65b29ad463e0ff3313",
+  "tests_sha256": "7dd9d46bc64578a946e80169d8519b947d5eddd445a76e74d5be1fd02772198b"
+ },
+ "support": {
+  "generatable_methods": [
+   "create_live_display"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_38",
+ "task_id": "RealClassEval/post_cut-off/snippet_38"
+}

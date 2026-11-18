@@ -1,0 +1,69 @@
+{
+ "attributes": [],
+ "class_name": "BatchProcessingResult",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BatchProcessingResult": {
+    "accessors": [],
+    "attributes": [
+     "success_rate"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "summary": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_63",
+ "properties": [
+  "success_rate"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "8493d546ab87fed0778af71e1fcc3c83eec7bf1e31970fd6bda8ed56163fde18",
+  "skeleton_sha256": "afe9aa12a2e92e137aefb5bb4a81c6ee492223be125147c909d48eecda34843c",
+  "tests_sha256": "e98e394901875e25898c2de917fafbdc5acf7842ec735094bbed3af4f1e3c7a6"
+ },
+ "support": {
+  "generatable_methods": [
+   "summary"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [
+   "success_rate"
+  ],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_63",
+ "task_id": "RealClassEval/post_cut-off/snippet_63"
+}

@@ -1,0 +1,185 @@
+{
+ "attributes": [],
+ "class_name": "KafkaProducerPort",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "KafkaProducerPort": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "flush": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "timeout",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "NotImplementedError"
+   ],
+   "why": null
+  },
+  "list_topics": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "topic",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "timeout",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "NotImplementedError"
+   ],
+   "why": null
+  },
+  "produce": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "message",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "bytes"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "NotImplementedError"
+   ],
+   "why": null
+  },
+  "validate_healthiness": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [
+    "NotImplementedError"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_302",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "4824a77f7f8f041a23cce73523e8b480adb4370471154b237b3c7e432a0d5a50",
+  "skeleton_sha256": "e7af38d6c945f95bb58cb0a8dec1b9a1ce4ca564dc40fd25131fd1de16415805",
+  "tests_sha256": "70ea26decfbd3cc11a73a5b08627d9a86b4ee530997a078e90f2ef64f824e11f"
+ },
+ "support": {
+  "generatable_methods": [
+   "produce",
+   "flush",
+   "validate_healthiness",
+   "list_topics"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_302",
+ "task_id": "RealClassEval/post_cut-off/snippet_302"
+}

@@ -1,0 +1,227 @@
+{
+ "attributes": [],
+ "class_name": "RunDAO",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RunDAO": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "delete": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "run_id",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "run_id",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_runs": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "sort_by",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "sort_direction",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      0
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      0
+     ],
+     "kind": "positional",
+     "name": "start",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "limit",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      {
+       "filters": [],
+       "type": "and"
+      }
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      {
+       "filters": [],
+       "type": "and"
+      }
+     ],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "options": [
+        {
+         "t": "str"
+        },
+        {
+         "items": {
+          "t": "any"
+         },
+         "t": "list"
+        }
+       ],
+       "t": "union"
+      }
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_171",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "bfa491aec2035b03efc90b3eea30b59c245c1632e642298001c3d2ad9a739bca",
+  "skeleton_sha256": "1dac05d6eed90ce08fa2fdf7f03cc9d42fa8e8deba5d0741386e87a8a9dfc4b9",
+  "tests_sha256": "8ae5a063b8076a763e1a110391aa23963dd7c300ae852f6f5469680efa07307a"
+ },
+ "support": {
+  "generatable_methods": [
+   "get",
+   "get_runs",
+   "delete"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_171",
+ "task_id": "RealClassEval/csn/snippet_171"
+}

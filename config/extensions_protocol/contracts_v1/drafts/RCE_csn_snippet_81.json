@@ -1,0 +1,70 @@
+{
+ "attributes": [],
+ "class_name": "ChDir",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ChDir": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null,
+     true
+    ],
+    "kind": "positional",
+    "name": "dpath",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_81",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "1f3ff7a4cc3b84168a11baf9a20a63cfdcab5dd72150cca5a62131ae55ff87a2",
+  "skeleton_sha256": "f8c15a51c902b78fbf8d3c3d70e356c2822f38405915865e1c83dc1b7b1846d1",
+  "tests_sha256": "9c881862311aad40115bd5482fe45758f8703bfc284acfa89fdf09c6de909282"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_81",
+ "task_id": "RealClassEval/csn/snippet_81"
+}

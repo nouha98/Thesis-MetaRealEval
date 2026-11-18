@@ -1,0 +1,70 @@
+{
+ "attributes": [],
+ "class_name": "Aspect",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Aspect": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "clone": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "getId": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_288",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "dcb59f34bc819275eb6d4f235285b8f010255531e61b7f33ef458ba6c5c72c4c",
+  "skeleton_sha256": "9faa76e0f4f95b3e114ba0caeed145936b9e2f99f05a6535965d8e7a1a7a3ef9",
+  "tests_sha256": "dace9012791fb343ad9aadcf27beacd5ef373792aebdac2f3478b3dfcfcaa410"
+ },
+ "support": {
+  "generatable_methods": [
+   "getId",
+   "clone"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_288",
+ "task_id": "RealClassEval/csn/snippet_288"
+}

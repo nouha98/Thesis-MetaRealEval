@@ -1,0 +1,81 @@
+{
+ "attributes": [],
+ "class_name": "RegistryConfig",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RegistryConfig": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "__str__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_321",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "3eb3694912a085e40ad66b4d8873cc7dfcafb4bb958bd62eb092f3bada74f873",
+  "skeleton_sha256": "f42cbff949fb311d4e54268e864b9c3839120bd1e5387edd9318ea929418ea9a",
+  "tests_sha256": "19abced3252a1e00ad07657b314e816e54bddc6a30f5bffe838f98e28df5bd9e"
+ },
+ "support": {
+  "generatable_methods": [
+   "to_dict",
+   "__repr__",
+   "__str__"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_321",
+ "task_id": "RealClassEval/post_cut-off/snippet_321"
+}

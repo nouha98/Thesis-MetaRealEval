@@ -1,0 +1,106 @@
+{
+ "attributes": [],
+ "class_name": "MultiprocessingStringIO",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "MultiprocessingStringIO": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "getvalue": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "writelines": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "6R\f8e1Og\fE|\r!I?c",
+      {}
+     ],
+     "kind": "positional",
+     "name": "content_list",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "keys": {
+         "t": "any"
+        },
+        "t": "dict",
+        "values": {
+         "t": "any"
+        }
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_123",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "b3bbfc0654817f1d3105cf560e23c7e2064b59a25a1d6bf2880ad6f28050f170",
+  "skeleton_sha256": "8177f48cdd3b94c21254f9b2fc6b30738262d63643872fe0d60ce3b4b6cc6358",
+  "tests_sha256": "6487c70f46618e1eca7fdef52e8aa1f016cb63786ea8cf8fbf1bb42aa9da001a"
+ },
+ "support": {
+  "generatable_methods": [
+   "getvalue",
+   "writelines"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['multiprocessing']"
+  ],
+  "side_effect_imports": [
+   "multiprocessing"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_123",
+ "task_id": "RealClassEval/csn/snippet_123"
+}

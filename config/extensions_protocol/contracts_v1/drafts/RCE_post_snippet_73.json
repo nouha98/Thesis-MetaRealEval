@@ -1,0 +1,227 @@
+{
+ "attributes": [],
+ "class_name": "BochaAISearchAPI",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BochaAISearchAPI": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "VpBR"
+    ],
+    "kind": "positional",
+    "name": "api_key",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     20
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     20
+    ],
+    "kind": "positional",
+    "name": "max_results",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "search_ai": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "answer",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "stream",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "noLimit"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "noLimit"
+     ],
+     "kind": "positional",
+     "name": "freshness",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "search_web": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "summary",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "noLimit"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "noLimit"
+     ],
+     "kind": "positional",
+     "name": "freshness",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_73",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "6352ddf92c8da28bbe5f730d1afb02e60874c6604087c3084899a5799eeb63b7",
+  "skeleton_sha256": "f25b9d533ace501c423c72076ae0b172a07048606e77ccef1a4dcd6761844405",
+  "tests_sha256": "7be71487cd1d613d000b9fd44fa50d773eaef1243eca8126691d81cef42c2713"
+ },
+ "support": {
+  "generatable_methods": [
+   "search_web",
+   "search_ai"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_73",
+ "task_id": "RealClassEval/post_cut-off/snippet_73"
+}

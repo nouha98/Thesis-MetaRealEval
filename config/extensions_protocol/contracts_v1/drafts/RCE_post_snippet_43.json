@@ -1,0 +1,74 @@
+{
+ "attributes": [],
+ "class_name": "SystemTimeDetector",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SystemTimeDetector": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_time_format": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_timezone": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_43",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "d7ad64ea4c3b1fd75850602c5b16b0e06d4b64962eaa9832224f6e0b8670380c",
+  "skeleton_sha256": "f5c40da3a2783892b665c1f5621fef0cbe817f49deb995fd980b3d3bc584dd1d",
+  "tests_sha256": "6d13d42452506196e28126d1aa07cc88d312af09aa3f5d441e4752226dee0388"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_timezone",
+   "get_time_format"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['subprocess']"
+  ],
+  "side_effect_imports": [
+   "subprocess"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_43",
+ "task_id": "RealClassEval/post_cut-off/snippet_43"
+}

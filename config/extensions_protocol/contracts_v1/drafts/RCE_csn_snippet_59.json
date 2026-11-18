@@ -1,0 +1,98 @@
+{
+ "attributes": [],
+ "class_name": "_ErrorSummary",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "_ErrorSummary": {
+    "accessors": [],
+    "attributes": [
+     "num_failed"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "add_execution": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "index",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_59",
+ "properties": [
+  "num_failed"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "02e0a5bcc5e98ce6ad02bb0300370a533445ab77829be076628c4b41761de44b",
+  "skeleton_sha256": "0a9c8fb92871c34e111fd369958d44471dbf0b4ce951a2140848e89d18f750b5",
+  "tests_sha256": "86b8c09b61d5ba7cef8f0f9495a4a01d085e26dbda13bf0c3516a3cf09d095a0"
+ },
+ "support": {
+  "generatable_methods": [
+   "add_execution"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [
+   "num_failed"
+  ],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_59",
+ "task_id": "RealClassEval/csn/snippet_59"
+}

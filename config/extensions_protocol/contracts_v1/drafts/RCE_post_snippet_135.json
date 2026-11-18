@@ -1,0 +1,102 @@
+{
+ "attributes": [],
+ "class_name": "GPUManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "GPUManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "gpu_indices",
+    "type": {
+     "options": [
+      {
+       "items": {
+        "t": "int"
+       },
+       "t": "list"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_memory_usage": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "manage_resources": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_135",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "09bb33e3d421cbd3ef1a826a2b06f3019c3cadf7afd99fad0bc4eaa2e5573045",
+  "skeleton_sha256": "cbb562eaa34a6b568126158c41aaa95a686a224e4b22b9094f560c871a7316db",
+  "tests_sha256": "d54d91cdd19fd099956dbcf9ba207dad6297fd9484a8e2672e2daf1accbd5b41"
+ },
+ "support": {
+  "generatable_methods": [
+   "manage_resources",
+   "get_memory_usage"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_135",
+ "task_id": "RealClassEval/post_cut-off/snippet_135"
+}

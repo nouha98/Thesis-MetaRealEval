@@ -1,0 +1,63 @@
+{
+ "attributes": [],
+ "class_name": "UpdateRuleDeployment",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "UpdateRuleDeployment": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_289",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "23ced7103582f074df0a8282810b96121695c0a132cc7a5550aaaffa685b05b8",
+  "skeleton_sha256": "f4591fcd4dfed0f5a16f7a95bb1bd574b17694c7e28556182edde6515c66e0c0",
+  "tests_sha256": "41f31f6c8c45a2e902f5eea497aa800d8d9610de1206135125ffc5c2dfcb96fc"
+ },
+ "support": {
+  "generatable_methods": [
+   "to_dict"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_289",
+ "task_id": "RealClassEval/post_cut-off/snippet_289"
+}

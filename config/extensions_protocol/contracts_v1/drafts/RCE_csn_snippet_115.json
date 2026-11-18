@@ -1,0 +1,78 @@
+{
+ "attributes": [],
+ "class_name": "Variable",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Variable": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_115",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "64cac29ef03f30011742cfb3f1d7a45bc90f816e25d99981e99359d7ec7dc2fd",
+  "skeleton_sha256": "d653779582b2994ff14e7c20777a6e70ee4fbab26837c1f7d3ecf99a5be70b1a",
+  "tests_sha256": "b4d6b2ebbf4af0a87fe845db373c78999523e3a7429b4ab367f9438c18a45db2"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_115",
+ "task_id": "RealClassEval/csn/snippet_115"
+}

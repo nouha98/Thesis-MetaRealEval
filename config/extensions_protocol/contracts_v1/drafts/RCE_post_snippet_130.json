@@ -1,0 +1,100 @@
+{
+ "attributes": [],
+ "class_name": "BoundedASTCache",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BoundedASTCache": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     1000
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     1000
+    ],
+    "kind": "positional",
+    "name": "max_entries",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     500
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     500
+    ],
+    "kind": "positional",
+    "name": "max_memory_mb",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "items": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_130",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "28a10c849a5152244aa9ca8f8cc96f32c138a922323867a0220f3d014e542908",
+  "skeleton_sha256": "a8c6d119542d636b3a56b944a9e346ddc157e9da0965f06c800aa1e3610a660d",
+  "tests_sha256": "61283c8610590b8f23f01a3cde88348964e78efe5ab51e44d4110511f02492cd"
+ },
+ "support": {
+  "generatable_methods": [
+   "items"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_130",
+ "task_id": "RealClassEval/post_cut-off/snippet_130"
+}

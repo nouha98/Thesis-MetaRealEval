@@ -1,0 +1,169 @@
+{
+ "attributes": [
+  "data",
+  "extrapolate",
+  "parameter_bins",
+  "value_columns"
+ ],
+ "class_name": "Order0Interp",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Order0Interp": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "data",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation pd.DataFrame"
+    },
+    "type_source": "annotation",
+    "why": "annotation pd.DataFrame"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "continuous_parameters",
+    "type": {
+     "items": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "t": "list"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "value_columns",
+    "type": {
+     "items": {
+      "t": "str"
+     },
+     "t": "list"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "extrapolate",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "validate",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": false,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "interpolants",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation pd.DataFrame"
+     },
+     "type_source": "annotation",
+     "why": "annotation pd.DataFrame"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_232",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "a1f5789fc0b6b3d9b73c3580f53c45372af3bcc8bdedb994ddd90b26dcca8a7d",
+  "skeleton_sha256": "518c8ffb76c5ab1400531b220caf753fe61f2ca5df1af31974ebffe1633f82ca",
+  "tests_sha256": "dbf14f49fee78042543c9a338f160aec8c6667cbbc44c97e7d9d0377247f7c64"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "constructor parameters cannot be generated",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_232",
+ "task_id": "RealClassEval/csn/snippet_232"
+}

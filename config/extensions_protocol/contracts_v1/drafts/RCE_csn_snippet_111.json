@@ -1,0 +1,63 @@
+{
+ "attributes": [],
+ "class_name": "Connection",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Connection": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "getInstance": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_111",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "e64178990dba3744b9d3e0aee714f8ae44976c8f1f57de0b2f2aa33af3ddc0e2",
+  "skeleton_sha256": "b78937c79d7ce3e928a357f2bf77a2fa308cc4cece739a0fa553a2d274a60668",
+  "tests_sha256": "9fdd49b58d83948b9f3fb39b957e7baa1a7ea1f5ef2ef3446f8fc65134f9004a"
+ },
+ "support": {
+  "generatable_methods": [
+   "getInstance"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_111",
+ "task_id": "RealClassEval/csn/snippet_111"
+}

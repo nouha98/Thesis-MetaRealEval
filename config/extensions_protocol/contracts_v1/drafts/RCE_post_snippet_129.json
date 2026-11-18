@@ -1,0 +1,154 @@
+{
+ "attributes": [],
+ "class_name": "TranscriptionBuffer",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "TranscriptionBuffer": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null,
+     [
+      "Nf9\f\tcb\n",
+      "Nf9\f\tcb\n",
+      "Nf9\f\tcb\n"
+     ]
+    ],
+    "kind": "positional",
+    "name": "client_uid",
+    "type": {
+     "items": {
+      "t": "str"
+     },
+     "t": "list"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "add_segments": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "%R",
+      null
+     ],
+     "kind": "positional",
+     "name": "partial_segments",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "items": {
+         "options": [
+          {
+           "t": "str"
+          },
+          {
+           "items": {
+            "t": "str"
+           },
+           "t": "list"
+          }
+         ],
+         "t": "union"
+        },
+        "t": "tuple",
+        "variadic": true
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "%R",
+      null,
+      "Nf9\f\tcb\n"
+     ],
+     "kind": "positional",
+     "name": "completed_segments",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_segments_for_response": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_129",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "cdbb67105b24d8b7ab6885b77bb741e9d05c3bf121bfc3efc58283d7d0f8d046",
+  "skeleton_sha256": "f057ef0aa8fcfd7da751cb5d1885b5e33d46a16ee3ca6e749102c22bac87a163",
+  "tests_sha256": "1ab7f48d38d6e722a792ac3588e79f8673557d1b16b03c10bbd967690f418056"
+ },
+ "support": {
+  "generatable_methods": [
+   "add_segments",
+   "get_segments_for_response"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_129",
+ "task_id": "RealClassEval/post_cut-off/snippet_129"
+}

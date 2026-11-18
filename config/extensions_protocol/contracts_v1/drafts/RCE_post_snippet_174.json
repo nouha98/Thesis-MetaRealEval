@@ -1,0 +1,124 @@
+{
+ "attributes": [],
+ "class_name": "Configuration",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Configuration": {
+    "accessors": [],
+    "attributes": [
+     "bedrock_client"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+    ],
+    "kind": "positional",
+    "name": "model_id",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     "us-west-2"
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "us-west-2"
+    ],
+    "kind": "positional",
+    "name": "region",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "load_config": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "file_path",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "FileNotFoundError",
+    "JSONDecodeError"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_174",
+ "properties": [
+  "bedrock_client"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "ba55aca54aa90e3ef6567c2f623abf343ab91ed830d7f3ca96598e9727b968e1",
+  "skeleton_sha256": "6edb96635e2fd0ff18f4121421be18801b02fcdb73f1a6f7dc5f47bd330738c6",
+  "tests_sha256": "5655a1ce216aa9360deab5343df089641ebce7f0828a01fdee17a1b71724a125"
+ },
+ "support": {
+  "generatable_methods": [
+   "load_config"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [
+   "bedrock_client"
+  ],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_174",
+ "task_id": "RealClassEval/post_cut-off/snippet_174"
+}

@@ -1,0 +1,163 @@
+{
+ "attributes": [],
+ "class_name": "DigitalFilter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "DigitalFilter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "name",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "savename",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "filter_coeff",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "fromfile": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "filters"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "filters"
+     ],
+     "kind": "positional",
+     "name": "path",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "tofile": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "filters"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "filters"
+     ],
+     "kind": "positional",
+     "name": "path",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_201",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "b2c12bad1b665c3e32a3a5b000cc6d009bea015e250579d06575e24797f097d5",
+  "skeleton_sha256": "6e37715dba8825a19111ec375938534e93f7df41a3351c02708425cf863b02c0",
+  "tests_sha256": "d5d9042232fbd2117d00f6da1319710330664cc826e5a74005b3f1b7d240e32d"
+ },
+ "support": {
+  "generatable_methods": [
+   "tofile",
+   "fromfile"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_201",
+ "task_id": "RealClassEval/csn/snippet_201"
+}

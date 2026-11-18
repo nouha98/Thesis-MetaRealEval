@@ -1,0 +1,347 @@
+{
+ "attributes": [
+  "Methods",
+  "gating_distance",
+  "initiate",
+  "multi_predict",
+  "predict",
+  "project",
+  "update"
+ ],
+ "class_name": "KalmanFilterXYAH",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "KalmanFilterXYAH": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "gating_distance": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "mean",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "covariance",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "measurements",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "only_position",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "maha"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "maha"
+     ],
+     "kind": "positional",
+     "name": "metric",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "initiate": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "measurement",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "multi_predict": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "mean",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "covariance",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "predict": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "mean",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "covariance",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "project": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "mean",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "covariance",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "update": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "mean",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "covariance",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "measurement",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_101",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "a3bcac3bcbd98c7705e1f61e3a8f62b56f478a16e26b4dffebf3ace108b93690",
+  "skeleton_sha256": "efa6c5cf3de481b7fd5b86eebed38c2fae65e98b038d0f97082a639e1c410d27",
+  "tests_sha256": "bc8693d407f5feba6b6fc02157cb5f31639152f3bb1fa4535a21f67b61d6b0be"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 6,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_101",
+ "task_id": "RealClassEval/post_cut-off/snippet_101"
+}

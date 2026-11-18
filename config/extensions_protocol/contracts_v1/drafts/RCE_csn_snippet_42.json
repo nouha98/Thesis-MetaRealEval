@@ -1,0 +1,78 @@
+{
+ "attributes": [],
+ "class_name": "WifiManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "WifiManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "D16^?"
+    ],
+    "kind": "positional",
+    "name": "device",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "getWifiState": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_42",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "2bb83a540f3ad8df81012c73bf82948e2e421e1458b06d26c584ef327659b30a",
+  "skeleton_sha256": "599a0f804e513a5055bd2d529d556ed3f25ce321d6168e1eab0c61e49f981dce",
+  "tests_sha256": "a575ae1876f76552f06742a9f63ad6f8e45124a5080090133ee36899335ab347"
+ },
+ "support": {
+  "generatable_methods": [
+   "getWifiState"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_42",
+ "task_id": "RealClassEval/csn/snippet_42"
+}

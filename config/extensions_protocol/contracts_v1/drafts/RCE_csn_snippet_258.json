@@ -1,0 +1,180 @@
+{
+ "attributes": [],
+ "class_name": "RGsolution",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RGsolution": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "fun",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "scale_min",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "scale_max",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "plotdata": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "key",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": [
+      "re"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "re"
+     ],
+     "kind": "positional",
+     "name": "part",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "log"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "log"
+     ],
+     "kind": "positional",
+     "name": "scale",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      50
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      50
+     ],
+     "kind": "positional",
+     "name": "steps",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_258",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "d744b0e58afc60afdc14365581e87a6b670338b9f487193b78da4821876a59a6",
+  "skeleton_sha256": "4ab3a45faaeece6c2ba2558fe657b8896515b2285e46b90ca8ac15761b1e6d5f",
+  "tests_sha256": "43adf3dcc41febeae51ea110690f1314ac9b6eb9ac87d71fe7bb0ef14feba117"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_258",
+ "task_id": "RealClassEval/csn/snippet_258"
+}

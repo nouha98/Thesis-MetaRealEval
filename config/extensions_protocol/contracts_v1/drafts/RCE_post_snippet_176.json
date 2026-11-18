@@ -1,0 +1,136 @@
+{
+ "attributes": [
+  "buffer",
+  "count",
+  "device",
+  "head",
+  "size"
+ ],
+ "class_name": "CircularBuffer",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CircularBuffer": {
+    "accessors": [],
+    "attributes": [
+     "is_full"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     2378,
+     false,
+     2342
+    ],
+    "kind": "positional",
+    "name": "size",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "device",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "append": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "value",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation torch.Tensor"
+     },
+     "type_source": "annotation",
+     "why": "annotation torch.Tensor"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "get_array": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_176",
+ "properties": [
+  "is_full"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "e1d54f7613e28b130c35ffddb73ca893cf53193594590038a29408e423b52160",
+  "skeleton_sha256": "5d46ce3a326fb12e39af5632492c6881a1c6800e23eb6a854404c20586cca117",
+  "tests_sha256": "3f24a6b2138995194793d58a771f21e674c97baba507a2bd4433d49865eea6a9"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_array"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [
+   "is_full"
+  ],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_176",
+ "task_id": "RealClassEval/post_cut-off/snippet_176"
+}

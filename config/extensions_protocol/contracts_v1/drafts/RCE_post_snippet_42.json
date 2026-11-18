@@ -1,0 +1,208 @@
+{
+ "attributes": [],
+ "class_name": "ScreenManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ScreenManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "create_full_screen_layout": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "1(xop,nZV.9hzl`"
+     ],
+     "kind": "positional",
+     "name": "content_sections",
+     "type": {
+      "items": {
+       "items": {
+        "t": "str"
+       },
+       "t": "list"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "set_margins": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      0
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      0
+     ],
+     "kind": "positional",
+     "name": "left",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      0
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      0
+     ],
+     "kind": "positional",
+     "name": "right",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      0
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      0
+     ],
+     "kind": "positional",
+     "name": "top",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      0
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      0
+     ],
+     "kind": "positional",
+     "name": "bottom",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "set_screen_dimensions": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      717
+     ],
+     "kind": "positional",
+     "name": "width",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      717
+     ],
+     "kind": "positional",
+     "name": "height",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_42",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "78412714a4b7f60a999ebfdd5cbbda03eec40928a5a00a62b44a9b6081546f95",
+  "skeleton_sha256": "dcea28b50a04adda5bbafc314a1c80ce7d750290acb8f37607f5abc55f969a05",
+  "tests_sha256": "8900d62eb09f8ae4bc762a122fc059d4c826f9eaec39678ddaea1769c6b912fb"
+ },
+ "support": {
+  "generatable_methods": [
+   "set_screen_dimensions",
+   "set_margins",
+   "create_full_screen_layout"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_42",
+ "task_id": "RealClassEval/post_cut-off/snippet_42"
+}

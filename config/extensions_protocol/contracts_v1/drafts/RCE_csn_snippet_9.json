@@ -1,0 +1,99 @@
+{
+ "attributes": [
+  "id",
+  "name"
+ ],
+ "class_name": "RecordThread",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RecordThread": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     -4170,
+     -3323
+    ],
+    "kind": "positional",
+    "name": "id_",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null,
+     -3323
+    ],
+    "kind": "positional",
+    "name": "name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_9",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "3b49013d3cc1db99132795b3e1a56d74af093e32b3a3097cf60368f46fb1d0e8",
+  "skeleton_sha256": "90109551eb792e7ec746a556b5fd8d463fd4f654437c501c4d58e85eb4a6555f",
+  "tests_sha256": "7567314d80ab20e9d12f1240e275b41322bce53b488c0cd34338a512c4147af9"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_9",
+ "task_id": "RealClassEval/csn/snippet_9"
+}

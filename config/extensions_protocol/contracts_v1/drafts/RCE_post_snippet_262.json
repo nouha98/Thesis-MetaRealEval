@@ -1,0 +1,168 @@
+{
+ "attributes": [],
+ "class_name": "STMessages",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "STMessages": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "error": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "An error occurred."
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "\"|bp<\t*\ni^y&uUf:'R",
+      "An error occurred."
+     ],
+     "kind": "positional",
+     "name": "message",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "skull": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "\ud83d\udc80"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "\ud83d\udc80"
+     ],
+     "kind": "positional",
+     "name": "message",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "success": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "Operation completed successfully."
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "Operation completed successfully."
+     ],
+     "kind": "positional",
+     "name": "message",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "warning": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "Holy! the dev forgot to write this warning messsage lol \ud83d\udc80."
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "xMZQLeJ=\n4",
+      "Holy! the dev forgot to write this warning messsage lol \ud83d\udc80."
+     ],
+     "kind": "positional",
+     "name": "message",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_262",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "04e17ec93f11432b9947b19dc9782809d41e35f350100cfbbb374da8353c9cf0",
+  "skeleton_sha256": "ed515bbaf33c17d89db0f28001ecfcf19bcc97a5515064fa34515f31d0ccf8f4",
+  "tests_sha256": "2c35a3e536f82b0abd59e6d869fbe37c9bde9f9e3d5ee995485174c5632ea52e"
+ },
+ "support": {
+  "generatable_methods": [
+   "success",
+   "warning",
+   "error",
+   "skull"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_262",
+ "task_id": "RealClassEval/post_cut-off/snippet_262"
+}

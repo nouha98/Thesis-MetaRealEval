@@ -1,0 +1,101 @@
+{
+ "attributes": [],
+ "class_name": "Cmd2AttributeWrapper",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Cmd2AttributeWrapper": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "attribute",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "annotation",
+    "why": "no type and no valid literal hints"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "set": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "new_val",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_86",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "4eed058dc784a1a0cfe21c3118c1ea2d0b5150f2ccf4a318b074001c46dc48e0",
+  "skeleton_sha256": "ff3a154b3c5fe5c3d05406ce80610295ea3b389d8ff1a0317e7b289fea210f72",
+  "tests_sha256": "7e4fa0ecb99eb31549ff5067210a355119dbbe1cf5dc642bcfb95c99e32d4692"
+ },
+ "support": {
+  "generatable_methods": [
+   "get"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_86",
+ "task_id": "RealClassEval/csn/snippet_86"
+}

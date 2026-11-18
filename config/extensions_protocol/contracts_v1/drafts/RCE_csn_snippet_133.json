@@ -1,0 +1,113 @@
+{
+ "attributes": [],
+ "class_name": "DependenciesConfiguration",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "DependenciesConfiguration": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "args",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation argparse.Namespace"
+    },
+    "type_source": "annotation",
+    "why": "annotation argparse.Namespace"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "build_job_script": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "builder",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Builder"
+     },
+     "type_source": "annotation",
+     "why": "annotation Builder"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "command",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_133",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "f5c7dc3a6d29510ff9826450706fd9b338806e28adb3a9f14fa4189839d42841",
+  "skeleton_sha256": "7539c685b72ee06f25ce9a7ddb3cc9ffbe9d9beeccfb9919bd9978f689bf41a4",
+  "tests_sha256": "569533bae9ada04128a1c4daf15a3e8652ded2a48816cd484ddce51ed07cabab"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_133",
+ "task_id": "RealClassEval/csn/snippet_133"
+}

@@ -1,0 +1,81 @@
+{
+ "attributes": [],
+ "class_name": "SuperChatRecord",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SuperChatRecord": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "is_expired": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "remaining_time": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_67",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "b910cd1f500726c3038198967ba13d6921cf3c4257e0a51ae891bba1b47330d4",
+  "skeleton_sha256": "e190e416af7db5bede7a8332cbf00b0f677816b15900cc2f1ebd231f2b314fdd",
+  "tests_sha256": "8cd3b66efeb703c3466b8950da679b5102c7d7c917eb876ec7eeb76ef81c4357"
+ },
+ "support": {
+  "generatable_methods": [
+   "is_expired",
+   "remaining_time",
+   "to_dict"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_67",
+ "task_id": "RealClassEval/post_cut-off/snippet_67"
+}

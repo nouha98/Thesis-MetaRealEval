@@ -1,0 +1,333 @@
+{
+ "attributes": [],
+ "class_name": "Shell",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Shell": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "dry_run",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     true
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "safe_mode",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "run": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "parts",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      30
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      30
+     ],
+     "kind": "keyword_only",
+     "name": "timeout",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "keyword_only",
+     "name": "cwd",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "RuntimeError"
+   ],
+   "why": null
+  },
+  "run_check": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "parts",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      30
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      30
+     ],
+     "kind": "keyword_only",
+     "name": "timeout",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "keyword_only",
+     "name": "cwd",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "write_file": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "path",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "content",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "w"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "w"
+     ],
+     "kind": "positional",
+     "name": "mode",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "create_dirs",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "permissions",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "RuntimeError"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_210",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "02bcd6f6b7c8e3e62354b44b35c8506cb9b67beca6bdf9ac4b68f205ede6507f",
+  "skeleton_sha256": "187e10d2641111a2e6c5f54542027740c94d9753af450629d8b089d45d88ef72",
+  "tests_sha256": "08fead34045305a7d04be7bf88a10fb8cf1c051c052e6d9f3856ab335a771feb"
+ },
+ "support": {
+  "generatable_methods": [
+   "run",
+   "run_check",
+   "write_file"
+  ],
+  "n_p_scenarios": 13,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['subprocess']"
+  ],
+  "side_effect_imports": [
+   "subprocess"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_210",
+ "task_id": "RealClassEval/post_cut-off/snippet_210"
+}

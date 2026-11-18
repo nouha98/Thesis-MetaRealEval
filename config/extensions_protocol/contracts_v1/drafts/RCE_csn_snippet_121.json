@@ -1,0 +1,123 @@
+{
+ "attributes": [],
+ "class_name": "Excels",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Excels": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "clean": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "read": {
+   "async": false,
+   "generate": false,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "file_name",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "tab",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "read_opyxl": {
+   "async": false,
+   "generate": false,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "file_name",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_121",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "ddef7148f0215f97e450b28271b07c8741755e28af54b4bbdd8ff0a55bfa7a35",
+  "skeleton_sha256": "f7c8bf1ad8b5a81028b95aa1f0f4ac536b3ce824a8ca0877f3c0bc495faeb955",
+  "tests_sha256": "ac18abda9a7e015a768f1fa478321d81b556835b11c7b8d178b57cc35bac2cd8"
+ },
+ "support": {
+  "generatable_methods": [
+   "clean"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_121",
+ "task_id": "RealClassEval/csn/snippet_121"
+}

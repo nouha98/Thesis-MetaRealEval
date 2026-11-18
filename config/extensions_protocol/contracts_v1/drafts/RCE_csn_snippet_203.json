@@ -1,0 +1,167 @@
+{
+ "attributes": [],
+ "class_name": "MegKDE",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "MegKDE": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "train",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation np.ndarray"
+    },
+    "type_source": "annotation",
+    "why": "annotation np.ndarray"
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "weights",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     3.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     3.0
+    ],
+    "kind": "positional",
+    "name": "truncation",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     4
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     4
+    ],
+    "kind": "positional",
+    "name": "nmin",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     1.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     1.0
+    ],
+    "kind": "positional",
+    "name": "factor",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "evaluate": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation np.ndarray"
+     },
+     "type_source": "annotation",
+     "why": "annotation np.ndarray"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_203",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "fb00a69b1d80255a58be7a37c9d3b7302a8e6ee913e761f3c657af54170df220",
+  "skeleton_sha256": "64f61b6d043d57be7d8a0c9f2d8c0c4edda82fde2f0854e2974c7c211cc76917",
+  "tests_sha256": "f4730908c8bc71bd2f35e0283da8ae9c6b9af848756c22156d20779a14704e91"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "constructor parameters cannot be generated",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_203",
+ "task_id": "RealClassEval/csn/snippet_203"
+}

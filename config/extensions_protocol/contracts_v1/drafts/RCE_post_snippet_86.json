@@ -1,0 +1,235 @@
+{
+ "attributes": [
+  "Methods",
+  "auto",
+  "center",
+  "new_shape",
+  "scaleFill",
+  "scaleup",
+  "stride"
+ ],
+ "class_name": "LetterBox",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LetterBox": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [],
+    "generate": true,
+    "has_default": true,
+    "hints": [],
+    "kind": "positional",
+    "name": "new_shape",
+    "type": {
+     "items": [
+      {
+       "t": "int"
+      },
+      {
+       "t": "int"
+      }
+     ],
+     "t": "tuple"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "auto",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "scaleFill",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     true
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "scaleup",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     true
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "center",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     32
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     32
+    ],
+    "kind": "positional",
+    "name": "stride",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "labels",
+     "type": {
+      "options": [
+       {
+        "keys": {
+         "t": "any"
+        },
+        "t": "dict",
+        "values": {
+         "t": "any"
+        }
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "image",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_86",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "da26935945c1d7cc5259c77a6312488ac98ed787c792ad922ab9ac6e581e9fb3",
+  "skeleton_sha256": "2c503acebcb77ca88c3389080d122ad0b562c000bd412605ab9bdd1d378d69a8",
+  "tests_sha256": "ab02ade9c7d1f049f71db6629da5afb5db119e28ccc42e24f74c64c0b5448f03"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_86",
+ "task_id": "RealClassEval/post_cut-off/snippet_86"
+}

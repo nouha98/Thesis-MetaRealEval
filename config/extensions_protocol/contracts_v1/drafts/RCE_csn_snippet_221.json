@@ -1,0 +1,72 @@
+{
+ "attributes": [],
+ "class_name": "Attachment",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Attachment": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "multipart_form_element": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_221",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "cac82578f0424dd7a727086577d4514f87c19f80d3ecac2a3e75ce3c53c604eb",
+  "skeleton_sha256": "c84bf958af14228160d59d72d8394fe0e31fe768ed5619480cad3213f50e910e",
+  "tests_sha256": "ff6feb21c3499df13dec40072ebc70f98c591537dcd6b5e0b2b988b764bc8569"
+ },
+ "support": {
+  "generatable_methods": [
+   "to_dict",
+   "multipart_form_element"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_221",
+ "task_id": "RealClassEval/csn/snippet_221"
+}

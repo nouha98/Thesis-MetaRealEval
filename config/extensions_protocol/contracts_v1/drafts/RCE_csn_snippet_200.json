@@ -1,0 +1,92 @@
+{
+ "attributes": [],
+ "class_name": "EventInterceptor",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "EventInterceptor": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     4302,
+     false
+    ],
+    "kind": "positional",
+    "name": "source",
+    "type": {
+     "options": [
+      {
+       "t": "int"
+      },
+      {
+       "t": "bool"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varkw",
+    "name": "events",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "**kwargs are not generated (keyword names are not specified)"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_200",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "0493563fe4247ea1e8dd838595562872fb35bf0f0844f881f50afb205202da3e",
+  "skeleton_sha256": "92c8bcece8a0b3eec1980dd149e61efb6c2ec46c5d1470db8e38f27fbb42bb8e",
+  "tests_sha256": "f53e38dcfb3988b0cda45b01cb13d0ee5c8b3171d1327c65df49cab0cb2db62d"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_200",
+ "task_id": "RealClassEval/csn/snippet_200"
+}

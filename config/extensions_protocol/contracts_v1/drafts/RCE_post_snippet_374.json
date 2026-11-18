@@ -1,0 +1,124 @@
+{
+ "attributes": [],
+ "class_name": "ChannelIterator",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ChannelIterator": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true,
+     0
+    ],
+    "kind": "positional",
+    "name": "num_channels",
+    "type": {
+     "options": [
+      {
+       "t": "bool"
+      },
+      {
+       "t": "int"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__len__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_channel": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      2318,
+      true
+     ],
+     "kind": "positional",
+     "name": "index",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "bool"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_374",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "9300ebe9bf725903660b2d2711fad5d3a1afa1a4b7ead45a8259575d10de3826",
+  "skeleton_sha256": "b6c7e75ccef51c848db62cb31b2e6430586a3de80cf8b1f21110a1e32614e8ec",
+  "tests_sha256": "86f65a1970174ef85ee05ea79c4596894462e1ae0222dd3bd63dea88b50c63f5"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_channel",
+   "__len__"
+  ],
+  "n_p_scenarios": 7,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_374",
+ "task_id": "RealClassEval/post_cut-off/snippet_374"
+}

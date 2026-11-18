@@ -1,0 +1,83 @@
+{
+ "attributes": [],
+ "class_name": "SystemMixin",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SystemMixin": {
+    "accessors": [],
+    "attributes": [
+     "can_schedule_tasks",
+     "can_manage_services"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_app_version": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_os_type": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_316",
+ "properties": [
+  "can_schedule_tasks",
+  "can_manage_services"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "25732972a2e37dc3f2381711acd87bdc469d503073f386d5e3628cadf373fe2c",
+  "skeleton_sha256": "695fb14bdeac2af4e88a0de06498161d2226a1547d0aa737791e685194e6b9dc",
+  "tests_sha256": "b962a9a2a40fca7e99cac944656803bde06d4b59e2a29441d309ac394c31cfe1"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_app_version",
+   "get_os_type"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [
+   "can_schedule_tasks",
+   "can_manage_services"
+  ],
+  "reasons": [
+   "imports side-effect modules ['shutil']"
+  ],
+  "side_effect_imports": [
+   "shutil"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_316",
+ "task_id": "RealClassEval/post_cut-off/snippet_316"
+}

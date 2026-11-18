@@ -1,0 +1,247 @@
+{
+ "attributes": [],
+ "class_name": "Config",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Config": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "logger",
+    "type": {
+     "items": {
+      "t": "any"
+     },
+     "t": "tuple",
+     "variadic": true
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     8765
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true,
+     8765
+    ],
+    "kind": "positional",
+    "name": "mcp_port",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     "gemini/gemini-2.5-flash"
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "ht}H4`S\fo",
+     "gemini/gemini-2.5-flash"
+    ],
+    "kind": "positional",
+    "name": "model",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     ""
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     ""
+    ],
+    "kind": "positional",
+    "name": "output_dir",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     0
+    ],
+    "kind": "positional",
+    "name": "temperature",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     50
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     50
+    ],
+    "kind": "positional",
+    "name": "max_iterations",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     "localhost"
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "localhost"
+    ],
+    "kind": "positional",
+    "name": "host",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "prompt",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     7
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     7
+    ],
+    "kind": "positional",
+    "name": "confidence",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     ""
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     ""
+    ],
+    "kind": "positional",
+    "name": "project_path",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_216",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "833fdad9f8b9e0a0eee7cba8817148c6ac0de5ab10654276741f2b5f23ff295a",
+  "skeleton_sha256": "cc032eff2a07c598e0631924c272f330b3885ab562869cd8238d7a3fd2d37b42",
+  "tests_sha256": "1c091000ef7f94f2fe36aef9f4ef4b7f20acc59b7753fe9261198afd963e30f1"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_216",
+ "task_id": "RealClassEval/post_cut-off/snippet_216"
+}

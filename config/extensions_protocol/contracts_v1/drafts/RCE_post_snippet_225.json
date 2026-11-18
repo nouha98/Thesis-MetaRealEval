@@ -1,0 +1,158 @@
+{
+ "attributes": [],
+ "class_name": "PrecisionPreservingDataHandler",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PrecisionPreservingDataHandler": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "preserve_calculation_precision": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      1504
+     ],
+     "kind": "positional",
+     "name": "result",
+     "type": {
+      "t": "float"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "LcA?lNH\t1B,z_*",
+      "3?d\"\taH\nU `[#!vvL23w"
+     ],
+     "kind": "positional",
+     "name": "operation",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "retrieve_price_data": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "store_price_data": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      true
+     ],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "validate_system_precision": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_225",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "62493155b9d7034081d903754e56aeb9789002f0abf7afcfde2c61eb16f9c37f",
+  "skeleton_sha256": "ab8a8c638810c38ed4c3e67ca6b5307060f9ef5fd02b1aa41956dc3b78a890fb",
+  "tests_sha256": "ebd762880a22a275f881cb0e390941c4b95800a04ea66a0ffca8ae249b01df12"
+ },
+ "support": {
+  "generatable_methods": [
+   "validate_system_precision",
+   "store_price_data",
+   "retrieve_price_data",
+   "preserve_calculation_precision"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_225",
+ "task_id": "RealClassEval/post_cut-off/snippet_225"
+}

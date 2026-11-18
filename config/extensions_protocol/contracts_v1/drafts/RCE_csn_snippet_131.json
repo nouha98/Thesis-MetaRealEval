@@ -1,0 +1,106 @@
+{
+ "attributes": [],
+ "class_name": "NullFunc",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "NullFunc": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "distance": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "other",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_131",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "2e9f2a9f506597fc02b33a1b0e8501f7d5a98796e835bd3910ea59561ae94b39",
+  "skeleton_sha256": "da7c83d27043ac51cf6cc365a58baaae6463b0644be3b335fb1a4fbfce814bfe",
+  "tests_sha256": "d7d554db1029d50c782fda98deea1fd7b6a8fcd90bc01af611d7502185b607d1"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__",
+   "distance"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_131",
+ "task_id": "RealClassEval/csn/snippet_131"
+}

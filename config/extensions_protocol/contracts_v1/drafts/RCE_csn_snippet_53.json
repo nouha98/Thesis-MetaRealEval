@@ -1,0 +1,106 @@
+{
+ "attributes": [],
+ "class_name": "Bits",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Bits": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     1409,
+     false,
+     true
+    ],
+    "kind": "positional",
+    "name": "num_bits",
+    "type": {
+     "options": [
+      {
+       "t": "int"
+      },
+      {
+       "t": "bool"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      1409,
+      null
+     ],
+     "kind": "positional",
+     "name": "val",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_53",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "c228a5e938f0db6bd4752e6fd6ccd998a221be21f669c9d010df6d92713110a4",
+  "skeleton_sha256": "b1d0900c57d08f620cab9a91cb564c88cd598ff3e0622b221eef1f3f95958ff6",
+  "tests_sha256": "55c622bfbba0909eb550021bb80e501331b8e49d78982bda891c28650d091d1a"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_53",
+ "task_id": "RealClassEval/csn/snippet_53"
+}

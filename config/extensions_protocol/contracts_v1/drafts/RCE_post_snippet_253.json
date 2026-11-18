@@ -1,0 +1,288 @@
+{
+ "attributes": [],
+ "class_name": "PromptLogger",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PromptLogger": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     "log.txt"
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "E8 0I=~U1%k)\t/6",
+     "y)(R3z%C{4L<rp\tk:",
+     "log.txt"
+    ],
+    "kind": "positional",
+    "name": "log_file",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "clear_logs": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_recent_logs": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      10
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "y)(R3z%C{4L<rp\tk:",
+      -1748,
+      10
+     ],
+     "kind": "positional",
+     "name": "count",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "log_formatted_prompt": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "Ap]ef\t7dxU",
+      null,
+      "G1R(\tiN)",
+      "y)(R3z%C{4L<rp\tk:"
+     ],
+     "kind": "positional",
+     "name": "system_prompt",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      "1\u000b+",
+      "S@b\"kP,"
+     ],
+     "kind": "positional",
+     "name": "user_prompt",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      ""
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "M7^(mk3\f>\r'1w<M+U\\",
+      ""
+     ],
+     "kind": "positional",
+     "name": "memory_context",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "character_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "user_query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "log_prompt": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       {}
+      ],
+      "y)(R3z%C{4L<rp\tk:"
+     ],
+     "kind": "positional",
+     "name": "messages",
+     "type": {
+      "items": {
+       "keys": {
+        "t": "str"
+       },
+       "t": "dict",
+       "values": {
+        "t": "str"
+       }
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "character_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "user_query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_253",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "20a00d0245d4ffc4da8f28c2a1bfa7ce13c7eb004cfd5e32b03c70aae2f4fe06",
+  "skeleton_sha256": "3bed0192f4dd4ce3bbdf1ce33f04c90aed540dadd198ced49b2d2f9707894052",
+  "tests_sha256": "2ef05aa5e58adc81d55baf5a1954ffa6cd782c8dba9484fe7c05c8c19ef1c782"
+ },
+ "support": {
+  "generatable_methods": [
+   "log_prompt",
+   "log_formatted_prompt",
+   "get_recent_logs",
+   "clear_logs"
+  ],
+  "n_p_scenarios": 13,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_253",
+ "task_id": "RealClassEval/post_cut-off/snippet_253"
+}

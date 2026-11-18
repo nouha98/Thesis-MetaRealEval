@@ -1,0 +1,116 @@
+{
+ "attributes": [],
+ "class_name": "tracked_lru_cache",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "tracked_lru_cache": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "func",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "no type and no valid literal hints"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "tracked_cache_clear": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_177",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "ee86653ec975574d44bbe7a5d873335cd5a6d56fe1f95ea13ce27b73462c97bf",
+  "skeleton_sha256": "f3c746c8f94ea3d3cfb6eee52043b189bc889a743b3412a3b17e02370d6e8530",
+  "tests_sha256": "157f6734fec020a10a4223448a809f6ecaf5afc7e5cc6694b76b34426fec25e7"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__",
+   "tracked_cache_clear"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_177",
+ "task_id": "RealClassEval/csn/snippet_177"
+}

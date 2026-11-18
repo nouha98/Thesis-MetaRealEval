@@ -1,0 +1,177 @@
+{
+ "attributes": [],
+ "class_name": "DriverAnalyzer",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "DriverAnalyzer": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     {
+      "7": "7"
+     }
+    ],
+    "kind": "positional",
+    "name": "file_contents",
+    "type": {
+     "keys": {
+      "t": "unsupported",
+      "why": "annotation pathlib.Path"
+     },
+     "t": "dict",
+     "values": {
+      "t": "str"
+     }
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "analyze_access_sequences": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "reg_name",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "analyze_function_context": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "7",
+      ""
+     ],
+     "kind": "positional",
+     "name": "reg_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "analyze_timing_constraints": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "reg_name",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_209",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "86424eccb673f4d5a84352095b9d5d355c880c9a54243bacbea211b6b473d531",
+  "skeleton_sha256": "a58fe743a7a3cdb09f79684be4e8b681522bdaf1a5e70f9b4f1652b716dc9863",
+  "tests_sha256": "c366d8c5754dcc9c1ee592b8a8863b4309411a60a9c5dcefed0e28e459d4f250"
+ },
+ "support": {
+  "generatable_methods": [
+   "analyze_function_context",
+   "analyze_access_sequences",
+   "analyze_timing_constraints"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_209",
+ "task_id": "RealClassEval/post_cut-off/snippet_209"
+}

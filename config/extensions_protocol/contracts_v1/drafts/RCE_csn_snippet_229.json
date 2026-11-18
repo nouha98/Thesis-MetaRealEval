@@ -1,0 +1,69 @@
+{
+ "attributes": [],
+ "class_name": "PacketContext",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PacketContext": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "packet",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_229",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "889d3e542cde0cb737b26edbdff6ffb49ae8e0545680aaef56bca373a59028e9",
+  "skeleton_sha256": "08af8210ff2d3837b805c5d6560196b731646823998ca6dbaf83fd8dd373d7c4",
+  "tests_sha256": "394897bf04e4e9276fd65f46a7111ef842316bfa02798231bb571d91c91269a1"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_229",
+ "task_id": "RealClassEval/csn/snippet_229"
+}

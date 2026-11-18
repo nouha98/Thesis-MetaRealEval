@@ -1,0 +1,140 @@
+{
+ "attributes": [],
+ "class_name": "ToolHistory",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ToolHistory": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "add_searched_queries": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       "Tcw7b3XU8Cc=}i7J~Cz",
+       "f9H_\t#b\nW_+E",
+       "Tcw7b3XU8Cc=}i7J~Cz"
+      ]
+     ],
+     "kind": "positional",
+     "name": "queries",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "add_visited_urls": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       "u0?<Kb<A-|:^!0",
+       "Fh=^f.P_`4I*",
+       "u0?<Kb<A-|:^!0"
+      ],
+      [
+       "q(\r^Nh",
+       "SwPmx~95E_nI'ta{'?"
+      ]
+     ],
+     "kind": "positional",
+     "name": "urls",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_searched_queries": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_visited_urls": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_165",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "79ca8d0d75e83e59e0561dc56cfab268c4643b611b20c3223cea0326004a8256",
+  "skeleton_sha256": "30254be5d19278674860a02617e4fc9845e36e9a29fbf2f041bc51092694eb52",
+  "tests_sha256": "70245abe0fe52fe5f3ab02711aea395496aa3490ab8f8a6dfc8d94a200ba7820"
+ },
+ "support": {
+  "generatable_methods": [
+   "add_visited_urls",
+   "add_searched_queries",
+   "get_visited_urls",
+   "get_searched_queries"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_165",
+ "task_id": "RealClassEval/post_cut-off/snippet_165"
+}

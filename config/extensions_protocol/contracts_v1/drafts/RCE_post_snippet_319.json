@@ -1,0 +1,170 @@
+{
+ "attributes": [],
+ "class_name": "TaskManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "TaskManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "max_workers",
+    "type": {
+     "options": [
+      {
+       "t": "int"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_task": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "task_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "run_task": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "target_function",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Callable"
+     },
+     "type_source": "annotation",
+     "why": "annotation Callable"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [
+    "RuntimeError"
+   ],
+   "why": "a required parameter cannot be generated"
+  },
+  "shutdown": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_319",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "8a55bc7d6c06b29019b341bc56be7852ce9c70a57896f5a320054e5515f285a0",
+  "skeleton_sha256": "3c6f9aac520c9c62af4ef29b00cce2af640635ebc5a5baaf52e6132f670e1910",
+  "tests_sha256": "8918679bb5c0aaa17bcd012ef480c5ea4bf0758babf0bdf93ec623403647cc12"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_task",
+   "shutdown"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['concurrent']"
+  ],
+  "side_effect_imports": [
+   "concurrent"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_319",
+ "task_id": "RealClassEval/post_cut-off/snippet_319"
+}

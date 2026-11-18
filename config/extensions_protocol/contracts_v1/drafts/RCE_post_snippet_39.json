@@ -1,0 +1,96 @@
+{
+ "attributes": [],
+ "class_name": "ScreenBufferManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ScreenBufferManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "create_screen_renderable": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       "-uc?8pGb@\rTmt"
+      ],
+      [
+       "-uc?8pGb@\rTmt",
+       "-uc?8pGb@\rTmt"
+      ],
+      [],
+      [
+       "k(#Lt|Yd?Xd{o>RjO$+a",
+       "Sxxa4TsP>>\\Q\t*'RX3J!",
+       "&>f\n(i\f<ODXpL",
+       "k(#Lt|Yd?Xd{o>RjO$+a"
+      ]
+     ],
+     "kind": "positional",
+     "name": "screen_buffer",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_39",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "ceeed8b92c39c8211c7990f86e0668202ec379dfb2b2ba5da98f6c201a1ed8ea",
+  "skeleton_sha256": "6279ce7a0587320c7a7dbd969b60edb837134852c402e16ad7140086ae4f41dd",
+  "tests_sha256": "edff61775ddf9fe2d9fd223fe2393a61dda426c90dd977f2f25f5e237f731bd3"
+ },
+ "support": {
+  "generatable_methods": [
+   "create_screen_renderable"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_39",
+ "task_id": "RealClassEval/post_cut-off/snippet_39"
+}

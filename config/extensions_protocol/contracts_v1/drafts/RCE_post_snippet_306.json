@@ -1,0 +1,139 @@
+{
+ "attributes": [],
+ "class_name": "OutputMappingValidator",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "OutputMappingValidator": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "validate_output_mappings": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "vobK",
+      {}
+     ],
+     "kind": "positional",
+     "name": "workflow",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {
+       "vobK": "vobK"
+      }
+     ],
+     "kind": "positional",
+     "name": "openapi_spec",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "endpoints",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "keys": {
+        "t": "str"
+       },
+       "t": "dict",
+       "values": {
+        "t": "any"
+       }
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_306",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "4554bde90cf80e8897425c5f2a8ed7213cecda49ad19b3d076cb59bc926f66d1",
+  "skeleton_sha256": "3b34fa7ce3e1684f1252558e64f135791bb76a18e71198f45112b58d310e227d",
+  "tests_sha256": "54c46236051e0b424851edec05a4c821b53ecffc22594731eba745456d14af74"
+ },
+ "support": {
+  "generatable_methods": [
+   "validate_output_mappings"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_306",
+ "task_id": "RealClassEval/post_cut-off/snippet_306"
+}

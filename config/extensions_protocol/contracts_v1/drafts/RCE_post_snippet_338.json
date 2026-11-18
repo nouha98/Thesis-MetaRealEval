@@ -1,0 +1,102 @@
+{
+ "attributes": [],
+ "class_name": "RateLimiter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RateLimiter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     3
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     3
+    ],
+    "kind": "positional",
+    "name": "max_calls",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     1.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     1.0
+    ],
+    "kind": "positional",
+    "name": "period",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "wait": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_338",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "c5c0d37c0084af88fd78384be9e0c0bc99eeb8ee1520886e08ccef0d83ffddec",
+  "skeleton_sha256": "87b0e6d94ed4ff90bcd5df582b6b91cdfd1bded9e4a2e16b269bbb31bee9e0f6",
+  "tests_sha256": "43d03dd587ceff0176f265a139b3a5b3e26dd7af83ebe1d20460d8e57df53e78"
+ },
+ "support": {
+  "generatable_methods": [
+   "wait"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['threading']"
+  ],
+  "side_effect_imports": [
+   "threading"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_338",
+ "task_id": "RealClassEval/post_cut-off/snippet_338"
+}

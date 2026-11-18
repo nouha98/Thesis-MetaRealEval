@@ -1,0 +1,237 @@
+{
+ "attributes": [],
+ "class_name": "SessionResetHandler",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SessionResetHandler": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     -3660.6,
+     null
+    ],
+    "kind": "positional",
+    "name": "log_func",
+    "type": {
+     "options": [
+      {
+       "t": "float"
+      },
+      {
+       "t": "none"
+      },
+      {
+       "items": {
+        "options": [
+         {
+          "t": "str"
+         },
+         {
+          "t": "float"
+         }
+        ],
+        "t": "union"
+       },
+       "t": "tuple",
+       "variadic": true
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "check_for_reset_command": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      ";~W\rudy;\\8=P$/0&D$"
+     ],
+     "kind": "positional",
+     "name": "command",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "clear_reset_state": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "find_reset_session_file": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "project_dir",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Path"
+     },
+     "type_source": "annotation",
+     "why": "annotation Path"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "current_file",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Path"
+     },
+     "type_source": "annotation",
+     "why": "annotation Path"
+    },
+    {
+     "constraints": {},
+     "default": [
+      10.0
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      -1192.88686,
+      10.0
+     ],
+     "kind": "positional",
+     "name": "max_wait",
+     "type": {
+      "t": "float"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "get_reset_info": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_reset_pending": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "mark_reset_detected": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      "'x(\f30cs<IDfpe(`\n"
+     ],
+     "kind": "positional",
+     "name": "command",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_112",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "a46d0b6643b1639eaf357679e78ec1134e3cab582da044bb7118d4026ec3f29a",
+  "skeleton_sha256": "76e31254c3be851ea1f7072c6a394bcf39725882bc61ff64f5d81f2214c6598b",
+  "tests_sha256": "96b8fcbf8d3c432d91eee2ee29be71c367889dc4b91cebbb580b57d69d15e4dc"
+ },
+ "support": {
+  "generatable_methods": [
+   "check_for_reset_command",
+   "mark_reset_detected",
+   "is_reset_pending",
+   "clear_reset_state",
+   "get_reset_info"
+  ],
+  "n_p_scenarios": 9,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_112",
+ "task_id": "RealClassEval/post_cut-off/snippet_112"
+}

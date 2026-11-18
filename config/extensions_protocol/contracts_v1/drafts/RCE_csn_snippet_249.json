@@ -1,0 +1,107 @@
+{
+ "attributes": [],
+ "class_name": "Template",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Template": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "render": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "sources",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "config",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": true,
+     "hints": [],
+     "kind": "positional",
+     "name": "out",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_249",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "1b0dc2556795f2f63549f2ed45e4e1b775ce633db4bd6cf772e6a60446f99fc2",
+  "skeleton_sha256": "dfcfbd34c28f3c67cec6ace7f7086dcbb2b65f020e6d763ad01a18b05d89cdfa",
+  "tests_sha256": "c11f6265683d55dec9ab346849fe95955e65a7405e281dd238409ed9a9ad58f0"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['shutil']",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [
+   "shutil"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_249",
+ "task_id": "RealClassEval/csn/snippet_249"
+}

@@ -1,0 +1,110 @@
+{
+ "attributes": [],
+ "class_name": "NotesSearchController",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "NotesSearchController": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "search_notes": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {},
+      [
+       {},
+       {}
+      ],
+      []
+     ],
+     "kind": "positional",
+     "name": "notes",
+     "type": {
+      "items": {
+       "keys": {
+        "t": "str"
+       },
+       "t": "dict",
+       "values": {
+        "t": "any"
+       }
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "]NOFY9p+g|v\u000b*&?I",
+      "/rnGxMZQLeJ=\n4",
+      ""
+     ],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_312",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "704ed24287ec6b7a5faab77a0105fb8b04feb2b23335de0a8bdc2dc3cf0f6c07",
+  "skeleton_sha256": "cd95e8b91a889beb238a9fc3791a6a4d20449896c861ac9be1b73efeb564e496",
+  "tests_sha256": "4d995dc1f60607ee2d3ee0e076b4e6f996d01d4805842729f9196513b80f5275"
+ },
+ "support": {
+  "generatable_methods": [
+   "search_notes"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_312",
+ "task_id": "RealClassEval/post_cut-off/snippet_312"
+}

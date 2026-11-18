@@ -1,0 +1,52 @@
+{
+ "attributes": [],
+ "class_name": "NullFile",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "NullFile": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_208",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "92ef1cdc2a2256d6b7bf41be99ec91a54e2392aa736c144c0c0cfa8bf35477c6",
+  "skeleton_sha256": "9498e44ea334ac97e08d76e7c09a66d240be48fa6106cf24c25f42b96f036fca",
+  "tests_sha256": "b6804d224406e956340bddb47b5af714a0bfcca003798f07901ce2427a81e523"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_208",
+ "task_id": "RealClassEval/csn/snippet_208"
+}

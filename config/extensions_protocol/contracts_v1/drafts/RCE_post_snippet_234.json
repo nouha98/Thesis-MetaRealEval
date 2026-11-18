@@ -1,0 +1,65 @@
+{
+ "attributes": [],
+ "class_name": "Build",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Build": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "main": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_234",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "59222a67e200e5d4bc94a59e27e55cb77a2886be948f92bfefdc9603b06c371a",
+  "skeleton_sha256": "3bc0defd6a4d5a401de2831a88fcee565a7c16bf83da61ca9b8061b906abcba7",
+  "tests_sha256": "0b3f16fd98115627702468e9a9a7dd84613fc18cc236d7c5698e757a7b32bcdc"
+ },
+ "support": {
+  "generatable_methods": [
+   "main"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['shutil']"
+  ],
+  "side_effect_imports": [
+   "shutil"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_234",
+ "task_id": "RealClassEval/post_cut-off/snippet_234"
+}

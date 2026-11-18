@@ -1,0 +1,72 @@
+{
+ "attributes": [],
+ "class_name": "CLIResult",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CLIResult": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "is_success": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_364",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "28406bc6492ad874d610f8b442c9dd1b3915b6171e322bd9f8fc70ca0d00bd3c",
+  "skeleton_sha256": "00f699c7676db75676a99b663d0e2a5e0abfa11f9d5834e0d51f55d4070401fa",
+  "tests_sha256": "93b59a29a5c1a7366afb186c67c5ddffb07d6e184126cd8d7358dbae77b69d8e"
+ },
+ "support": {
+  "generatable_methods": [
+   "is_success",
+   "to_dict"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_364",
+ "task_id": "RealClassEval/post_cut-off/snippet_364"
+}

@@ -1,0 +1,182 @@
+{
+ "attributes": [],
+ "class_name": "ErrorHandler",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ErrorHandler": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     -992.31
+    ],
+    "kind": "positional",
+    "name": "app",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "handle_error": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "error",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Exception"
+     },
+     "type_source": "annotation",
+     "why": "annotation Exception"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "context",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "error"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "error"
+     ],
+     "kind": "positional",
+     "name": "severity",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "handle_operation_error": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "operation",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "error",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Exception"
+     },
+     "type_source": "annotation",
+     "why": "annotation Exception"
+    },
+    {
+     "constraints": {},
+     "default": [
+      "error"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "error"
+     ],
+     "kind": "positional",
+     "name": "severity",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_211",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "bafac09e8f7358f39efc57dd24d3fb6936f0eb978af0d3d9a0862b4cef5de0ba",
+  "skeleton_sha256": "818ddc3a12a3301d82489fb1dec84f4c284d76ae33365568fe65f96e4a62063c",
+  "tests_sha256": "3c3baaf6e59a59754128d83a3ef87b64f24e49ab1ea3828a0c6087d8ccdb56ee"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_211",
+ "task_id": "RealClassEval/post_cut-off/snippet_211"
+}

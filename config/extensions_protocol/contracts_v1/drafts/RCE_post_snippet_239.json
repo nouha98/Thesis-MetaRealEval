@@ -1,0 +1,88 @@
+{
+ "attributes": [
+  "name"
+ ],
+ "class_name": "Tag",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Tag": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "from_dict": {
+   "async": false,
+   "generate": false,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_239",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "c40ba7cba08f194a6bccd6d6daa0653cc5b0c533ee175add8d8b0c5daca7dc3f",
+  "skeleton_sha256": "c113dd1f6f505c905e34bce58765868455b42e5b28f0c154607140566bae9083",
+  "tests_sha256": "55ac533faec893064d29fe175e7acca108de8b72ffb51239aefaac0ce5a61ef7"
+ },
+ "support": {
+  "generatable_methods": [
+   "to_dict"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_239",
+ "task_id": "RealClassEval/post_cut-off/snippet_239"
+}

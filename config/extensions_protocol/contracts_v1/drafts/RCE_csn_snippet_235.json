@@ -1,0 +1,121 @@
+{
+ "attributes": [],
+ "class_name": "Deduplicator",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Deduplicator": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "deduplicate": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "aligned_sequence_objects",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'array of Sequence objects'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'array of Sequence objects'"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "lca_taxonomy": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "deduplicated_sequences",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'Array of arrays of Sequence objects'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'Array of arrays of Sequence objects'"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "taxonomy_hash",
+     "type": {
+      "keys": {
+       "t": "any"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_235",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "62b3189ea5743a9a3794e7c3ab5c74c1c5746d0495a80dbff878223a494869bb",
+  "skeleton_sha256": "7e9cdfcf06f7670f6ada0ccac9198b78fe88b01431c057f6d3382dc0967a3314",
+  "tests_sha256": "c77685808958b93e43ec1c713b41394612d06518986a7cb106a7092161bf3b5b"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_235",
+ "task_id": "RealClassEval/csn/snippet_235"
+}

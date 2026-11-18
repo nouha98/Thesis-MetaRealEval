@@ -1,0 +1,81 @@
+{
+ "attributes": [],
+ "class_name": "SearchAssistantConfig",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SearchAssistantConfig": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "args",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation argparse.Namespace"
+    },
+    "type_source": "annotation",
+    "why": "annotation argparse.Namespace"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "validate": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [
+    "ValueError"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_166",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "7bd195e04243552eb8e94cc1e806739a99df3afa96a238ab64aae666a47072e7",
+  "skeleton_sha256": "bdd818310d05bd547f78366d930eeb95307c12df53aeb28990a8503642e6dc9c",
+  "tests_sha256": "0898a19c791a13b588e33bb539f8b31b95b08e0461022ffeecee1cd2491e03a1"
+ },
+ "support": {
+  "generatable_methods": [
+   "validate"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_166",
+ "task_id": "RealClassEval/post_cut-off/snippet_166"
+}

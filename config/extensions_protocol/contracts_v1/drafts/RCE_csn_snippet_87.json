@@ -1,0 +1,52 @@
+{
+ "attributes": [],
+ "class_name": "ContextFlag",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ContextFlag": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_87",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "88f1802ddc64f1d74a59dd01a100e23b6d449b44e82f9b3baff5c32043b3967a",
+  "skeleton_sha256": "36a5eb2e65aa5bdabf39f51b649b4c62cb843d6afb76ab4caf3244697b7924e2",
+  "tests_sha256": "d1c0baefa6023d3d84caecee4eaa8add71c456a3f7991b295d4cf52f5729de63"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_87",
+ "task_id": "RealClassEval/csn/snippet_87"
+}

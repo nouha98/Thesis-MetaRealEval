@@ -1,0 +1,266 @@
+{
+ "attributes": [],
+ "class_name": "__Timer__",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "__Timer__": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "loop_timer": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "n",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'scalar(int)'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'scalar(int)'"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "function",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'function'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'function'"
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "args",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "verbose",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      2
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      2
+     ],
+     "kind": "positional",
+     "name": "digits",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      3
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      3
+     ],
+     "kind": "positional",
+     "name": "best_of",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "tac": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "verbose",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      2
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      2
+     ],
+     "kind": "positional",
+     "name": "digits",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "tic": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "toc": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "verbose",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      2
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      2
+     ],
+     "kind": "positional",
+     "name": "digits",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_35",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "7b66a77ee2f15c8931f1d95263e515f2f5e51baeff9434613a4e40501574866e",
+  "skeleton_sha256": "5eb2a1869dfa5da8d6e2bd521a5279a8d32cc0918a6541a36b556dbe0cc81527",
+  "tests_sha256": "1a1ed785a0edb38c52eed1b8f58210bfc43d73884c9ebf245602ae01b45a8019"
+ },
+ "support": {
+  "generatable_methods": [
+   "tic",
+   "tac",
+   "toc"
+  ],
+  "n_p_scenarios": 6,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_35",
+ "task_id": "RealClassEval/csn/snippet_35"
+}

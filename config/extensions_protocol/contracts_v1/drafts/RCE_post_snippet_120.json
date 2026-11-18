@@ -1,0 +1,86 @@
+{
+ "attributes": [],
+ "class_name": "NunchakuIPAdapterLoader",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "NunchakuIPAdapterLoader": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "INPUT_TYPES": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "load": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "model",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "docstring",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_120",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "27e1e0393bfac0c0e8eb10ac740983aa36493cf55acf7e0c64aaf2fbe812be43",
+  "skeleton_sha256": "5eaf2f7f2937bd44e81ebe5d344caf9ca0c47e199838f5245199fc225292f366",
+  "tests_sha256": "58633ed07a220dd3df7678a3c72afdeba3e9d866b9fa1a95694791411c35837d"
+ },
+ "support": {
+  "generatable_methods": [
+   "INPUT_TYPES"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_120",
+ "task_id": "RealClassEval/post_cut-off/snippet_120"
+}

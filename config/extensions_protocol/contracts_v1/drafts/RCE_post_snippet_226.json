@@ -1,0 +1,284 @@
+{
+ "attributes": [],
+ "class_name": "PriceFormatter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PriceFormatter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "format_currency": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      1327,
+      -2025,
+      null,
+      -2136,
+      1566.7264,
+      824
+     ],
+     "kind": "positional",
+     "name": "price",
+     "type": {
+      "options": [
+       {
+        "t": "float"
+       },
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "USD"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "",
+      "[Y!CrxTp%/#*",
+      824,
+      "USD"
+     ],
+     "kind": "positional",
+     "name": "currency",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "format_percentage": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      2660,
+      null,
+      -2136,
+      false,
+      {
+       "true": true
+      }
+     ],
+     "kind": "positional",
+     "name": "percentage",
+     "type": {
+      "options": [
+       {
+        "t": "float"
+       },
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "format_price_for_display": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      true,
+      -1939,
+      -197,
+      false,
+      -1063.308
+     ],
+     "kind": "positional",
+     "name": "price",
+     "type": {
+      "options": [
+       {
+        "t": "float"
+       },
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "format_price_for_logging": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      1327,
+      -2653,
+      -2354.04,
+      false,
+      true
+     ],
+     "kind": "positional",
+     "name": "price",
+     "type": {
+      "options": [
+       {
+        "t": "float"
+       },
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "format_quantity": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      -334,
+      null,
+      -2354.04,
+      -2653,
+      false,
+      true
+     ],
+     "kind": "positional",
+     "name": "quantity",
+     "type": {
+      "options": [
+       {
+        "t": "float"
+       },
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_226",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "9488929103c22bb7e0482d0df4661c71f0f140fef32ff02c769a52e8d5774761",
+  "skeleton_sha256": "4eb067744a9beb3a1ec1a1b10a560a5271b831d86293a71386f0292915e2a322",
+  "tests_sha256": "dd3efa4e92542631e1363697e07b4c392f01f6472303a58f4210df1fceb235b6"
+ },
+ "support": {
+  "generatable_methods": [
+   "format_price_for_display",
+   "format_price_for_logging",
+   "format_quantity",
+   "format_percentage",
+   "format_currency"
+  ],
+  "n_p_scenarios": 23,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_226",
+ "task_id": "RealClassEval/post_cut-off/snippet_226"
+}

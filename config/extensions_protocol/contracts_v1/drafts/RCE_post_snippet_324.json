@@ -1,0 +1,119 @@
+{
+ "attributes": [],
+ "class_name": "CommandRateLimiter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CommandRateLimiter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     5
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true,
+     -1161,
+     5
+    ],
+    "kind": "positional",
+    "name": "max_calls",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     60.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false,
+     60.0
+    ],
+    "kind": "positional",
+    "name": "period",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "calls_remaining": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "can_call": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "time_to_next_call": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_324",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "8cad343f3fb164e00f09ffb250ec96f5f5747b23c471972a8422badf330e981c",
+  "skeleton_sha256": "3cf310b1b6b8e618bec58375ee042d54cba8c84d474e41d35f7978e8229dcec4",
+  "tests_sha256": "cf70135acf612299a33182e96f7fec2c49977e4f9ac4eb3a500bb64808c28a33"
+ },
+ "support": {
+  "generatable_methods": [
+   "can_call",
+   "calls_remaining",
+   "time_to_next_call"
+  ],
+  "n_p_scenarios": 7,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_324",
+ "task_id": "RealClassEval/post_cut-off/snippet_324"
+}

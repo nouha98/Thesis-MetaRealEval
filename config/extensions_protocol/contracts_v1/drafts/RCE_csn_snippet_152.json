@@ -1,0 +1,82 @@
+{
+ "attributes": [],
+ "class_name": "_FakeParent",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "_FakeParent": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "element",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation bs4.Tag"
+    },
+    "type_source": "annotation",
+    "why": "annotation bs4.Tag"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__len__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_152",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "156576d593ed303a8f1d80c2316957d1e214c4a57831cfe8f92d5340c1084f4c",
+  "skeleton_sha256": "209ea6fad2b75e3979d3f38d5a55da23fda7bb51710c9e4bb56431d033dec267",
+  "tests_sha256": "0352b30247da42023b46b68d03be567c56b47e0c816795e4df5a596b83ddc566"
+ },
+ "support": {
+  "generatable_methods": [
+   "__len__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_152",
+ "task_id": "RealClassEval/csn/snippet_152"
+}

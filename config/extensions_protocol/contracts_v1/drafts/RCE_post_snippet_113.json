@@ -1,0 +1,63 @@
+{
+ "attributes": [],
+ "class_name": "BiomniConfig",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BiomniConfig": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_113",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "bba32c0c376cc159a06d09eb40ab1c58fda31b7650abe6aaf229c5c8b6a0ae33",
+  "skeleton_sha256": "ccc63230285cc4e481efb24e7bc22ea64394e13bb112cc887a2557e53c08754b",
+  "tests_sha256": "b7db559c10b58594ab8b6ca8c245a89171ec279c771f790ab6d8c0181fbb2b90"
+ },
+ "support": {
+  "generatable_methods": [
+   "to_dict"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_113",
+ "task_id": "RealClassEval/post_cut-off/snippet_113"
+}

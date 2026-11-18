@@ -1,0 +1,119 @@
+{
+ "attributes": [],
+ "class_name": "ArazzoComponentsBuilder",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ArazzoComponentsBuilder": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "build_default_components": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "create_action": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "action_type",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "action_definition",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_305",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "e2fcc9957790eecf143199291b33a49c2f003d7caf26d8e2c04677e82ba94bdd",
+  "skeleton_sha256": "5a1c799be8018281bba50e4837196c5d512c91f2c77a3f2ed3b1f76a9f6745b1",
+  "tests_sha256": "a1ee34941bd2cf54bfd99091b34258aec3be538a1c2aafa23f9f04f7ef93d5ff"
+ },
+ "support": {
+  "generatable_methods": [
+   "create_action",
+   "build_default_components"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_305",
+ "task_id": "RealClassEval/post_cut-off/snippet_305"
+}

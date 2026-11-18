@@ -1,0 +1,117 @@
+{
+ "attributes": [
+  "Methods",
+  "h",
+  "w"
+ ],
+ "class_name": "CenterCrop",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CenterCrop": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     640
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     640
+    ],
+    "kind": "positional",
+    "name": "size",
+    "type": {
+     "options": [
+      {
+       "t": "int"
+      },
+      {
+       "items": [
+        {
+         "t": "int"
+        },
+        {
+         "t": "int"
+        }
+       ],
+       "t": "tuple"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": false,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "im",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'numpy.ndarray'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'numpy.ndarray'"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_83",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "f616ad40f53fae9ba4a4b596308696e1b6b554984bf174efa53834203570316d",
+  "skeleton_sha256": "4a9acd13f8562d93c728dde13cd206eaa0c6a9fa78a2e134ac69fe9108686ea1",
+  "tests_sha256": "6bc52f6e3a017ae28beb49d82a628978f3a161ddbec594e6a33a8d9e15ecd753"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_83",
+ "task_id": "RealClassEval/post_cut-off/snippet_83"
+}

@@ -1,0 +1,76 @@
+{
+ "attributes": [],
+ "class_name": "BufferSegment",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BufferSegment": {
+    "accessors": [],
+    "attributes": [
+     "offset"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__len__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "tobytes": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_104",
+ "properties": [
+  "offset"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "ad02a6b1e7c732c2a538aa4b98f044a834fd7a6e0d8647ec54a4712c3ef801fa",
+  "skeleton_sha256": "fbe3b401b68294f86ceb50ac48629b2962360042092928f6daa33238f04f03ac",
+  "tests_sha256": "491d516ad18f2b37dd3dc0e8d7b4067f898ebd4e05fb45394ec29e03dc558367"
+ },
+ "support": {
+  "generatable_methods": [
+   "__len__",
+   "tobytes"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [
+   "offset"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_104",
+ "task_id": "RealClassEval/csn/snippet_104"
+}

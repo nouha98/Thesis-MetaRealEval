@@ -1,0 +1,70 @@
+{
+ "attributes": [],
+ "class_name": "AuthenticationBase",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "AuthenticationBase": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "authenticate_request": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_request_credentials": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_204",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "8b8597ab81b133745769034be7f7ddfcbd7c961c27510d48e8d550afc2a7cf07",
+  "skeleton_sha256": "707c759cc4c92a1cabc082974d99def40b872dcd734aef892812c09b976a1f6d",
+  "tests_sha256": "dbd28ed9f0c3b3337e425028ff9df41e0306d3ef60ce8cb5463bd5e91bced32f"
+ },
+ "support": {
+  "generatable_methods": [
+   "authenticate_request",
+   "get_request_credentials"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_204",
+ "task_id": "RealClassEval/csn/snippet_204"
+}

@@ -1,0 +1,213 @@
+{
+ "attributes": [],
+ "class_name": "PluginAPI",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PluginAPI": {
+    "accessors": [],
+    "attributes": [
+     "app_context"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "plugin_name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "plugin_manager",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation PluginManager"
+    },
+    "type_source": "annotation",
+    "why": "annotation PluginManager"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "app_context",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation AppContext"
+    },
+    "type_source": "annotation",
+    "why": "annotation AppContext"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_plugin_html_pages": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "list_available_apis": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "listen_for_event": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "event_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "callback",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Callable[..., None]"
+     },
+     "type_source": "annotation",
+     "why": "annotation Callable[..., None]"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "send_event": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "event_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_318",
+ "properties": [
+  "app_context"
+ ],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "d1cf53550cd7f69a473efdea0833d8a9e4b2e00d0a8ba2a1ce649da37ccde6d2",
+  "skeleton_sha256": "166b1382c7073eb777f29fb87463cad57acd02fb64ff0ef092ba7905ac446e3e",
+  "tests_sha256": "5febaba89f25725ca294520dab4e2aabfe1e627c85ee391f1a47574d50e08e44"
+ },
+ "support": {
+  "generatable_methods": [
+   "list_available_apis",
+   "send_event",
+   "get_plugin_html_pages"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [
+   "app_context"
+  ],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_318",
+ "task_id": "RealClassEval/post_cut-off/snippet_318"
+}

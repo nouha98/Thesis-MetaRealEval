@@ -1,0 +1,118 @@
+{
+ "attributes": [],
+ "class_name": "BudgetTracker",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BudgetTracker": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "can_afford": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "cost",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Decimal"
+     },
+     "type_source": "annotation",
+     "why": "annotation Decimal"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "spend": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "amount",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Decimal"
+     },
+     "type_source": "annotation",
+     "why": "annotation Decimal"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "Cuj\\FJ0dE({"
+     ],
+     "kind": "positional",
+     "name": "agent_card_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_150",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "35b3be56256c482845f3abf5c2295937efa43d800965e68074f9043a1c072cf9",
+  "skeleton_sha256": "960e13ece9c40bacea48149196ff84f38789e005885b42a090e962e68954c2be",
+  "tests_sha256": "227fcfa2d67a0c3fdba5f89a1bc6750eee110876a87dd704bf4a785c5533e4d6"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_150",
+ "task_id": "RealClassEval/post_cut-off/snippet_150"
+}

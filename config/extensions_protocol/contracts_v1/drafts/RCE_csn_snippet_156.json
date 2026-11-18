@@ -1,0 +1,83 @@
+{
+ "attributes": [
+  "access_urls",
+  "name",
+  "service_type"
+ ],
+ "class_name": "SimpleService",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SimpleService": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "service_node",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type ':class:`~xml.etree.ElementTree.Element`'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type ':class:`~xml.etree.ElementTree.Element`'"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "is_resolver": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_156",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "472ceb4008a172ca15a7bd4c3d16c52a0d1b593c7b69eb7d50ebd260ab76b495",
+  "skeleton_sha256": "8a8521d1413337b9b12d67818916d6fd4b33083bdbc367c97bcb4065faac381c",
+  "tests_sha256": "7b2551b6aad34fb43c7c027d6c66ff2449acf1d8a982ede8abc0629e2eeb9165"
+ },
+ "support": {
+  "generatable_methods": [
+   "is_resolver"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_156",
+ "task_id": "RealClassEval/csn/snippet_156"
+}

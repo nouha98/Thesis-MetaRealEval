@@ -1,0 +1,110 @@
+{
+ "attributes": [],
+ "class_name": "DiffHunk",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "DiffHunk": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "contains_line_change": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      "'>.{|GuN"
+     ],
+     "kind": "positional",
+     "name": "content",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_new_line_number": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      -1322,
+      false,
+      true,
+      1071
+     ],
+     "kind": "positional",
+     "name": "diff_line_offset",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_156",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "6b42e9675eacafec0d8c3cc7c86a8c7748facc6612d0a96072a71444ec1617bf",
+  "skeleton_sha256": "280d2e4122cdeda50bd9d789e1d0fea2efdead1dcc8e7b3bc571850dde310c4c",
+  "tests_sha256": "7a11d5b64bc7624de0b40a6466e3b14a4974e6d57e5419fe5b03cd9155cd298b"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_new_line_number",
+   "contains_line_change"
+  ],
+  "n_p_scenarios": 6,
+  "properties": [],
+  "reasons": [
+   "dataclass whose fields are not in the skeleton (constructor unspecified)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_156",
+ "task_id": "RealClassEval/post_cut-off/snippet_156"
+}

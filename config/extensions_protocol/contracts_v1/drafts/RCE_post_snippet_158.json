@@ -1,0 +1,109 @@
+{
+ "attributes": [],
+ "class_name": "AWSComponentRegistry",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "AWSComponentRegistry": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_node": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "?M\u000bbn\r}NhyA>:9Srw"
+     ],
+     "kind": "positional",
+     "name": "node_type",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "list_available_components": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      ".).F",
+      null
+     ],
+     "kind": "positional",
+     "name": "category",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_158",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "75e6fe6911287ff0d22a2fe8314e4d4301a2e3f716e63bbc444ffe1db6e42245",
+  "skeleton_sha256": "b460711a410bcaa48b416d0653ca0eaacde60d1d6522b483a0f7ffc7d6f926a6",
+  "tests_sha256": "b4b751363d69b9fea7c8d3ab38eb544552255e65407e548e5ab143e84656bab6"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_node",
+   "list_available_components"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_158",
+ "task_id": "RealClassEval/post_cut-off/snippet_158"
+}

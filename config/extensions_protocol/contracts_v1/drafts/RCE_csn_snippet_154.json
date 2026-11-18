@@ -1,0 +1,109 @@
+{
+ "attributes": [
+  "href",
+  "name",
+  "title"
+ ],
+ "class_name": "CatalogRef",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CatalogRef": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "base_url",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "element_node",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type ':class:`~xml.etree.ElementTree.Element`'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type ':class:`~xml.etree.ElementTree.Element`'"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__str__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "follow": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_154",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "d57f0231f5405e1d6d9e2e4d25ed89e9b5ea8661376bc95b0abaa0b83425df2e",
+  "skeleton_sha256": "33f2889fa91652f42e92b79e24126c10c90c2872f907fe3d99623a6f62c63ced",
+  "tests_sha256": "e4e857b0bfc7c4951d4d75094593a040a1d9f94fd635fb4c92334b23b0a85964"
+ },
+ "support": {
+  "generatable_methods": [
+   "__str__",
+   "follow"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['urllib']",
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [
+   "urllib"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_154",
+ "task_id": "RealClassEval/csn/snippet_154"
+}

@@ -1,0 +1,134 @@
+{
+ "attributes": [],
+ "class_name": "RIODataset",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RIODataset": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "rfile",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "overviews",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "overviews_resampling",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     256
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     256
+    ],
+    "kind": "positional",
+    "name": "overviews_minsize",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "close": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_284",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "5312b0728adfd972ed8fa91b992e374374899f44bed4b9a7fc44fd1112900987",
+  "skeleton_sha256": "ab7b48208a8a6f8e7bc00311d13ede050f7f15cff0b33c7ea9ee373f44bd76f8",
+  "tests_sha256": "dc1f6c32fad4fcf197628b095f0c64a93e4b47d13c3146670952c0e5f20d6641"
+ },
+ "support": {
+  "generatable_methods": [
+   "close"
+  ],
+  "n_p_scenarios": 7,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_284",
+ "task_id": "RealClassEval/csn/snippet_284"
+}

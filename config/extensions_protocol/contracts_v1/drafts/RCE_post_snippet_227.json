@@ -1,0 +1,158 @@
+{
+ "attributes": [],
+ "class_name": "ConversationTurn",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ConversationTurn": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     {},
+     true,
+     -2266.63672,
+     null
+    ],
+    "kind": "positional",
+    "name": "user_message",
+    "type": {
+     "options": [
+      {
+       "keys": {
+        "t": "any"
+       },
+       "t": "dict",
+       "values": {
+        "t": "any"
+       }
+      },
+      {
+       "t": "bool"
+      },
+      {
+       "t": "float"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null,
+     true,
+     -2266.63672,
+     "z"
+    ],
+    "kind": "positional",
+    "name": "message_index",
+    "type": {
+     "options": [
+      {
+       "t": "bool"
+      },
+      {
+       "t": "float"
+      },
+      {
+       "t": "str"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_preview": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      50
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      50
+     ],
+     "kind": "positional",
+     "name": "max_length",
+     "type": {
+      "options": [
+       {
+        "items": {
+         "t": "str"
+        },
+        "t": "set"
+       },
+       {
+        "t": "int"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_227",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "288ca777c6dbf2b6c3609121e83def280fccb94b2f6d7275d27d5634bd361b5f",
+  "skeleton_sha256": "04df50276253dbc1e5a51f71959bd30faf49bc3917df13777831507625ff14f7",
+  "tests_sha256": "ef6c9c32f42fdb29fa85a7cb0284e8790d648f5c6944f23026447a0f06b49529"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_preview"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_227",
+ "task_id": "RealClassEval/post_cut-off/snippet_227"
+}

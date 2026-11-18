@@ -1,0 +1,123 @@
+{
+ "attributes": [],
+ "class_name": "ResidualConnection",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ResidualConnection": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "use_residual",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "apply": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "y",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation torch.Tensor"
+     },
+     "type_source": "annotation",
+     "why": "annotation torch.Tensor"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "register": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "x",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation torch.Tensor"
+     },
+     "type_source": "annotation",
+     "why": "annotation torch.Tensor"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_358",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "67693fa71ee825a820c24712e565159fe81805b00a569507a867379b65784433",
+  "skeleton_sha256": "faee4a2702d21f6bc0f5e7c0c62caaddcbc6c1a4f08f3fe32c217de7ba7dfc61",
+  "tests_sha256": "60b4541a2e8b62063cd39cc10660321a27987fe57bd8a0a2d93a0cbed76fe23f"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_358",
+ "task_id": "RealClassEval/post_cut-off/snippet_358"
+}

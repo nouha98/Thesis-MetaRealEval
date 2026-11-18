@@ -1,0 +1,122 @@
+{
+ "attributes": [],
+ "class_name": "LastUsedParams",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LastUsedParams": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "config_dir",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "clear": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "exists": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "load": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "save": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "settings",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation Settings"
+     },
+     "type_source": "annotation",
+     "why": "annotation Settings"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_29",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "3d6e4fd3fd70f1c1a8d9a10c91b3537ddc9b304c0938c7e36e9db9ebcc6d2982",
+  "skeleton_sha256": "97d8d6e64c8137b10fd19fe6a60fd12088fe855787101cb80d1f3d94efb302ca",
+  "tests_sha256": "bce0a0acfdf687842a1bad9bf8b2e98924bfee5658727976ca31d1aca16a4ffa"
+ },
+ "support": {
+  "generatable_methods": [
+   "load",
+   "clear",
+   "exists"
+  ],
+  "n_p_scenarios": 6,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_29",
+ "task_id": "RealClassEval/post_cut-off/snippet_29"
+}

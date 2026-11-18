@@ -1,0 +1,139 @@
+{
+ "attributes": [],
+ "class_name": "GitDiffTracker",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "GitDiffTracker": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     true
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false,
+     true
+    ],
+    "kind": "positional",
+    "name": "enabled",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false,
+     null
+    ],
+    "kind": "positional",
+    "name": "logger",
+    "type": {
+     "options": [
+      {
+       "t": "bool"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false,
+     null
+    ],
+    "kind": "positional",
+    "name": "cwd",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_diff": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_111",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "049f746e6878caa6206cf4475f9ffc38898c9ebb7f02af09ca298f5aeaeed283",
+  "skeleton_sha256": "95b8fd76be2985853e195f19b956b4a87fbf3b6f02872a68e5cd1980acd09449",
+  "tests_sha256": "5cbed5a355c718a9619fe8c0845c1a201cd9189d6380c91394adfff8376788d5"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_diff"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [
+   "imports side-effect modules ['subprocess']"
+  ],
+  "side_effect_imports": [
+   "subprocess"
+  ],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_111",
+ "task_id": "RealClassEval/post_cut-off/snippet_111"
+}

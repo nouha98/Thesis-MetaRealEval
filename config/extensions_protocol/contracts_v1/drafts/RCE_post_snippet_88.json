@@ -1,0 +1,100 @@
+{
+ "attributes": [
+  "Methods",
+  "half"
+ ],
+ "class_name": "ToTensor",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ToTensor": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "half",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": false,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "im",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'numpy.ndarray'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'numpy.ndarray'"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_88",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "72c0bc3b832de1660b5263dff61cc59d51cbccad9ab9fa79c3a7f886c9de5141",
+  "skeleton_sha256": "599ba889df58714d0af85d206b0055ecab13a415690bfad9561fde19c5b8e1e6",
+  "tests_sha256": "4ea8781e73d8c08a7ce9198a9eec67fa367aaff52a7b579e1ddf81627b05ad28"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "imports non-stdlib modules",
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": false,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_88",
+ "task_id": "RealClassEval/post_cut-off/snippet_88"
+}

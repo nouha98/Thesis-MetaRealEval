@@ -1,0 +1,137 @@
+{
+ "attributes": [],
+ "class_name": "BaseHook",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BaseHook": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "layer_key",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "hook_fn",
+    "type": {
+     "t": "unsupported",
+     "why": "docstring type 'Callable'"
+    },
+    "type_source": "docstring",
+    "why": "docstring type 'Callable'"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "agent",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "register": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "model",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'torch.nn.Module'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'torch.nn.Module'"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "remove": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_292",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "14f74e0763ec68168cd55bf648bf3d7c231dbb1fc6b288e8f12c567154b8f37d",
+  "skeleton_sha256": "b4f6c50691e87bff24a5e873066a3a7a045daeabb5e48279e56d0e9949d5181b",
+  "tests_sha256": "2f9af3086447909f74bd492a1eeae7b7b768b8145533fa3e5ec5c6f69f38e4c3"
+ },
+ "support": {
+  "generatable_methods": [
+   "remove"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "constructor parameters cannot be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_292",
+ "task_id": "RealClassEval/post_cut-off/snippet_292"
+}

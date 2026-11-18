@@ -1,0 +1,118 @@
+{
+ "attributes": [
+  "info",
+  "pipeline"
+ ],
+ "class_name": "PipelineDefinition",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PipelineDefinition": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     2997,
+     null,
+     false,
+     "\"("
+    ],
+    "kind": "positional",
+    "name": "pipeline",
+    "type": {
+     "options": [
+      {
+       "t": "int"
+      },
+      {
+       "t": "bytes"
+      },
+      {
+       "t": "bool"
+      },
+      {
+       "t": "str"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null,
+     false,
+     "\"("
+    ],
+    "kind": "positional",
+    "name": "info",
+    "type": {
+     "options": [
+      {
+       "t": "bytes"
+      },
+      {
+       "t": "bool"
+      },
+      {
+       "t": "str"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_92",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "8746b5653f451449b1a9df03119d0b1e1996246d608d8905e17d185544e6600c",
+  "skeleton_sha256": "b3b50a513fd253b0d8c6f97d5220e7f49f5f12a59c52ab06da4a29f796323056",
+  "tests_sha256": "d189046fa78e0a83d73ac157919e83d19a8aa098a7e5f1092be4f24bf1efe703"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_92",
+ "task_id": "RealClassEval/csn/snippet_92"
+}

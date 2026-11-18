@@ -1,0 +1,158 @@
+{
+ "attributes": [],
+ "class_name": "WebVTTStyleBlock",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "WebVTTStyleBlock": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "c4kW-8L-&\r|zND+/",
+     "\ts\tYrWzE}Tw.d:F\n!p+Q"
+    ],
+    "kind": "positional",
+    "name": "text",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "format_lines": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       "X8'}Zgv;)",
+       "KT&sK2u;p",
+       "U*yP_5d6y\n}]dj{",
+       "\ts\tYrWzE}Tw.d:F\n!p+Q"
+      ]
+     ],
+     "kind": "positional",
+     "name": "lines",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "from_lines": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "lines",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_valid": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "lines",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_163",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "34e26cc9169a6d360bb7f31481cab7b172217eaf1d09f85dfc7b324241d9411a",
+  "skeleton_sha256": "08d1ee0851714f1c261ac28c09779fdfc58330d53ae34cbf6ee14e9f4c1f5ec4",
+  "tests_sha256": "b95982b53e5b363eca7e270c733a24e34c4dd3e98b60da4a4e50fe1b8ba3e1c6"
+ },
+ "support": {
+  "generatable_methods": [
+   "is_valid",
+   "from_lines",
+   "format_lines"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_163",
+ "task_id": "RealClassEval/csn/snippet_163"
+}

@@ -1,0 +1,69 @@
+{
+ "attributes": [],
+ "class_name": "RawPacket",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RawPacket": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "packet",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_230",
+ "properties": [],
+ "review": {
+  "date": null,
+  "notes": "",
+  "reviewer": null,
+  "status": "draft"
+ },
+ "sources": {
+  "reference_sha256": "d52d7f9663b2b62a65e6d8cceb5ee115bc5152327008c1d28fd9752a17b55db0",
+  "skeleton_sha256": "2f758dfa7ee9ad89a79197f2872fcb622dfb7a74dd6e1f0d0fdcf597146a6fe4",
+  "tests_sha256": "f76356677518ed7c3f3a0e0cf5df4909b74c36197b47316f6fec951067c2e1ff"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "no public method or property can be generated"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_230",
+ "task_id": "RealClassEval/csn/snippet_230"
+}

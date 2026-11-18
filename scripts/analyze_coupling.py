@@ -76,6 +76,24 @@ def inputs(det: dict, pool: str = "primary", gen_limit: int | None = None):
 # Technical report (gate GC)
 # ---------------------------------------------------------------------------
 
+def stratified_sample(spot: list[dict], n: int) -> list[dict]:
+    """Deterministic spot-check sample: round-robin over tasks, within a task one row per distinct
+    (test, difference) first, so n rows are not all the same difference of the same task."""
+    by_task: dict[str, list[dict]] = {}
+    seen: set = set()
+    for s in sorted(spot, key=lambda s: (s["task"], s["test"], s["solution"])):
+        key = (s["task"], s["test"], s["difference"])
+        if key not in seen:
+            seen.add(key)
+            by_task.setdefault(s["task"], []).append(s)
+    out = []
+    while len(out) < n and any(by_task.values()):
+        for rows in by_task.values():
+            if rows and len(out) < n:
+                out.append(rows.pop(0))
+    return out
+
+
 def technical(dets: list[dict]) -> dict:
     rows, hist_m, hist_s, fd_num, fd_den, spot, hist_timeouts = [], [0, 0], [0, 0], 0, 0, [], 0
     for det in dets:
@@ -127,7 +145,8 @@ def technical(dets: list[dict]) -> dict:
         "perturbed_pool_unavailable": [r["task"] for r in rows if r["perturbed_pool_error"]],
         "perturbed_false_detection_on_p_passing": (fd_num / fd_den) if fd_den else None,
         "primary_p_scenario_detections_on_p_passing_solutions": len(spot),
-        "spot_check_sample": spot[:10],
+        "spot_check_by_task": {t: sum(s["task"] == t for s in spot) for t in sorted({s["task"] for s in spot})},
+        "spot_check_sample": stratified_sample(spot, 10),
         "exclusion_reasons": exclusion_counts(rows),
         "projected_conditional_population": sum(r["excluded"] is None for r in rows),
         "seconds_total": sum(r["seconds"] for r in rows), "per_task": rows,

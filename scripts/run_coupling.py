@@ -46,11 +46,25 @@ def _init(cfg, task, ctx, pctx, p_timeout):
     _W.update(bench=get_benchmark(cfg), task=task, ctx=ctx, pctx=pctx, p_timeout=p_timeout)
 
 
+def _err(exc: BaseException) -> str:
+    return f"{type(exc).__name__}: {exc}"[-500:]
+
+
 def _job(code):
+    """Cells for one program. A runner-level failure (the fork runner timed out as a whole or
+    died without traces -- e.g. heavy imports under a loaded node) is recorded per pool as
+    ``<pool>_error`` with the cells set to None; it never fails the task."""
     t0 = time.monotonic()
-    rec = {"primary": primary_cells(_W["ctx"], code)}
-    rec["perturbed"] = (perturbed_cells(_W["bench"], _W["task"], _W["pctx"], code)
-                        if _W["pctx"] is not None else None)
+    rec = {}
+    try:
+        rec["primary"] = primary_cells(_W["ctx"], code)
+    except Exception as exc:
+        rec["primary"], rec["primary_error"] = None, _err(exc)
+    try:
+        rec["perturbed"] = (perturbed_cells(_W["bench"], _W["task"], _W["pctx"], code)
+                            if _W["pctx"] is not None else None)
+    except Exception as exc:
+        rec["perturbed"], rec["perturbed_error"] = None, _err(exc)
     rec["p_outcomes"] = rec["p_passed_all"] = None
     if code is not None and _W["p_timeout"]:
         try:
@@ -110,8 +124,14 @@ def run_task(label, task, cfg, bench, groups, baseline, gated, workers, perturbe
                               excluded, gated, sp["timeout_s"], sp["max_calls"])
     else:
         ctx = {"support": {"supported": False, "reasons": ["no contract"]}, "tests": {}}
-    pctx = (prepare_perturbed(bench, task, SPEC["perturbed_pool"]["n_items"], cfg.extensions.seed,
-                              sp["timeout_s"]) if perturbed else None)
+    pctx, perturbed_error = None, None
+    if perturbed:
+        try:
+            pctx = prepare_perturbed(bench, task, SPEC["perturbed_pool"]["n_items"], cfg.extensions.seed,
+                                     sp["timeout_s"])
+        except Exception as exc:                    # reference pool unrunnable: task has no perturbed tests
+            perturbed_error = _err(exc)
+            print(f"[{label}] perturbed pool unavailable: {perturbed_error[:200]}", flush=True)
     progs = mutant_programs(label, task, bench, groups, baseline)
     sols, sol_digest = solution_programs(label, task, bench, baseline)
     progs += sols
@@ -134,8 +154,21 @@ def run_task(label, task, cfg, bench, groups, baseline, gated, workers, perturbe
         _init(cfg, task, ctx, pctx, p_timeout)
         results = [_job(c) for c in codes]
         break
+    # runner-level failures under a loaded pool are as likely the machine as the program: re-run
+    # each such program once, alone (same policy as RQ2's whole-suite-timeout re-run)
+    rerun = [i for i, r in enumerate(results) if "primary_error" in r or "perturbed_error" in r]
+    if rerun:
+        print(f"[{label}] runner error on {len(rerun)} program(s); re-running them serially", flush=True)
+        _init(cfg, task, ctx, pctx, p_timeout)
+        for i in rerun:
+            results[i] = {**_job(codes[i]), "runner_rerun": True}
+    still = [progs[i][0]["id"] for i in rerun if "primary_error" in results[i] or "perturbed_error" in results[i]]
+    if still:
+        print(f"[{label}] {len(still)} program(s) still fail in the runner (recorded, excluded from "
+              f"that pool's analysis): {still[:5]}", flush=True)
     return {"task": label, "gated": gated, "contract": crec, "support": ctx["support"], "workers_used": workers,
             "runtime": ctx.get("runtime"), "solution_groups_digest": sol_digest,
+            "perturbed_error": perturbed_error, "runner_reruns": len(rerun), "runner_errors": still,
             "tests": {"primary": ctx["tests"],
                       "perturbed": sorted(pctx["tests"]) if pctx is not None else None},
             "programs": [{**meta, **res} for (meta, _), res in zip(progs, results)],

@@ -59,6 +59,8 @@ def inputs(det: dict, pool: str = "primary", gen_limit: int | None = None):
     tests = {t: s for t, s in tests.items() if t not in masked}
     muts, sols = [], []
     for p in det["programs"]:
+        if p.get(f"{pool}_error"):                  # never ran in this pool: no cells, not "undetected"
+            continue
         cells = p.get(pool) or {"detect": [], "import_error": True}
         detect = {t for t in cells["detect"] if t in tests}
         if p["kind"] == "mutant":
@@ -82,8 +84,11 @@ def technical(dets: list[dict]) -> dict:
         r = task_analysis(det["task"], tests, muts, sols, counts_only=True)
         rows.append({"task": det["task"], "supported": det["support"]["supported"], "valid_tests": r["n_tests"],
                      "by_stratum": r["n_tests_by_stratum"], "masked_tests": n_masked,
-                     "masked_cell_share": (sum(len(p["primary"]["masked"]) for p in det["programs"]) / n_cells
-                                           if n_cells else None),
+                     "masked_cell_share": (sum(len((p["primary"] or {}).get("masked", [])) for p in det["programs"])
+                                           / n_cells if n_cells else None),
+                     "runner_errors": {pl: sum(bool(p.get(f"{pl}_error")) for p in det["programs"])
+                                       for pl in ("primary", "perturbed")},
+                     "perturbed_pool_error": det.get("perturbed_error"),
                      "programs": len(det["programs"]), "seconds": det["seconds"],
                      "mutants": r["mutants"], "goals": r.get("goals"), "solution_categories": r["solution_categories"],
                      "excluded": r["excluded"]})
@@ -107,7 +112,7 @@ def technical(dets: list[dict]) -> dict:
                 fd_num += len(set(p["perturbed"]["detect"]) & set(orig))
         for p in det["programs"]:
             if p["kind"] == "solution" and p_pass(p):
-                for t, d in p["primary"].get("p_details", {}).items():
+                for t, d in (p["primary"] or {}).get("p_details", {}).items():
                     spot.append({"task": det["task"], "solution": p["id"], "test": t, "difference": d})
     valid = [r["valid_tests"] for r in rows if r["supported"]]
     shares = [r["masked_cell_share"] for r in rows if r["masked_cell_share"] is not None]
@@ -118,6 +123,8 @@ def technical(dets: list[dict]) -> dict:
         "history_mutants_killed_reproduced": f"{hist_m[0]}/{hist_m[1]}",
         "history_solutions_p_pass_reproduced": f"{hist_s[0]}/{hist_s[1]}",
         "p_whole_suite_timeouts_excluded": hist_timeouts,
+        "runner_errors_excluded": {pl: sum(r["runner_errors"][pl] for r in rows) for pl in ("primary", "perturbed")},
+        "perturbed_pool_unavailable": [r["task"] for r in rows if r["perturbed_pool_error"]],
         "perturbed_false_detection_on_p_passing": (fd_num / fd_den) if fd_den else None,
         "primary_p_scenario_detections_on_p_passing_solutions": len(spot),
         "spot_check_sample": spot[:10],

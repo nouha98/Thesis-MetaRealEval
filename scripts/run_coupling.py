@@ -19,7 +19,9 @@ import json
 import os
 import sys
 import time
+import traceback
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -117,14 +119,22 @@ def run_task(label, task, cfg, bench, groups, baseline, gated, workers, perturbe
     if p_timeout:                                   # cold-cache imports otherwise time out the first batch
         _warm_up(bench, task, p_timeout, label)
     codes = [c for _, c in progs]
-    if workers > 1 and len(codes) > 1:
-        with ProcessPoolExecutor(max_workers=workers, initializer=_init,
-                                 initargs=(cfg, task, ctx, pctx, p_timeout)) as ex:
-            results = list(ex.map(_job, codes))
-    else:
+    while True:
+        if workers > 1 and len(codes) > 1:
+            try:
+                with ProcessPoolExecutor(max_workers=workers, initializer=_init,
+                                         initargs=(cfg, task, ctx, pctx, p_timeout)) as ex:
+                    results = list(ex.map(_job, codes))
+                break
+            except BrokenProcessPool:                    # a worker died (e.g. memory: heavy imports x workers)
+                print(f"[{label}] worker pool broke with {workers} workers; retrying with {max(1, workers // 4)}",
+                      flush=True)
+                workers = max(1, workers // 4)
+                continue
         _init(cfg, task, ctx, pctx, p_timeout)
         results = [_job(c) for c in codes]
-    return {"task": label, "gated": gated, "contract": crec, "support": ctx["support"],
+        break
+    return {"task": label, "gated": gated, "contract": crec, "support": ctx["support"], "workers_used": workers,
             "runtime": ctx.get("runtime"), "solution_groups_digest": sol_digest,
             "tests": {"primary": ctx["tests"],
                       "perturbed": sorted(pctx["tests"]) if pctx is not None else None},
@@ -162,13 +172,21 @@ def main(argv=None) -> int:
                          "(or a symlink at that path) at the frozen Tier 2 results")
     args.out.mkdir(parents=True, exist_ok=True)
     spec_sha = hashlib.sha256(json.dumps(SPEC, sort_keys=True).encode()).hexdigest()
+    failed = []
     for lab in labels:
         f = args.out / lab / "detection.json"
         if f.exists() and not args.force:
             continue
-        res = run_task(lab, tasks[lab], cfg, bench, groups, baseline, gated, args.workers, not args.no_perturbed)
-        res["spec_sha256"] = spec_sha
         f.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            res = run_task(lab, tasks[lab], cfg, bench, groups, baseline, gated, args.workers, not args.no_perturbed)
+        except Exception:                                  # one task must not stop the others; rerun it later
+            (f.parent / "error.txt").write_text(traceback.format_exc(), encoding="utf-8")
+            print(f"[{lab}] FAILED: see {f.parent / 'error.txt'}", flush=True)
+            failed.append(lab)
+            continue
+        (f.parent / "error.txt").unlink(missing_ok=True)
+        res["spec_sha256"] = spec_sha
         f.write_text(json.dumps(res, indent=1, default=str), encoding="utf-8")
         print(f"[{lab}] supported={res['support']['supported']} tests={len(res['tests']['primary'])} "
               f"programs={len(res['programs'])} ({res['seconds']:.0f}s)", flush=True)
@@ -180,8 +198,10 @@ def main(argv=None) -> int:
                 "benchmark_data": [cfg.benchmark.data_path]},
         seeds={"extension_seed": cfg.extensions.seed}, settings={"spec": SPEC, "spec_sha256": spec_sha,
                                                                   "tasks": labels, "gated": gated, "workers": args.workers},
-        checks={"pins": pins, "canary": report}, argv=sys.argv if argv is None else argv)
-    return 0
+        checks={"pins": pins, "canary": report, "failed_tasks": failed}, argv=sys.argv if argv is None else argv)
+    if failed:
+        print(f"{len(failed)} task(s) failed (rerun the same command; finished tasks are skipped): {failed}")
+    return int(bool(failed))
 
 
 if __name__ == "__main__":

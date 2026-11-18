@@ -1,0 +1,101 @@
+{
+ "attributes": [],
+ "class_name": "RateLimiter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RateLimiter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     2035,
+     3652
+    ],
+    "kind": "positional",
+    "name": "hz",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "sleep": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      2035,
+      null,
+      870
+     ],
+     "kind": "positional",
+     "name": "env",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_189",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4/R2: real sleeping and timing; env.sim.render() needs a simulator object",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "41f58fe2a60f7e332709bcc2983487f48875518892e8f8af054eec31dad163f6",
+  "skeleton_sha256": "d534467f32c10236f45f8a85b4c1d7ecf8870a0fe38bb05f102080dc8b45a720",
+  "tests_sha256": "48b679ed08748d7b9c291e722c266c114fe13c54de693eec60f16c144299747b"
+ },
+ "support": {
+  "generatable_methods": [
+   "sleep"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R4/R2: real sleeping and timing; env.sim.render() needs a simulator object"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_189",
+ "task_id": "RealClassEval/post_cut-off/snippet_189"
+}

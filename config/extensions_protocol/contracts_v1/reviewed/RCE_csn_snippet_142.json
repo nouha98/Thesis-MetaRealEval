@@ -1,0 +1,144 @@
+{
+ "attributes": [],
+ "class_name": "ProjectTemplate",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ProjectTemplate": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_project_template": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "Default"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "Default"
+     ],
+     "kind": "positional",
+     "name": "name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "exe"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "exe"
+     ],
+     "kind": "positional",
+     "name": "output_type",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null,
+      "gdb"
+     ],
+     "kind": "positional",
+     "name": "debugger",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "review",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "build"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "build"
+     ],
+     "kind": "positional",
+     "name": "build_dir",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_142",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R2/R5: build_dir is 'Build output path' (class doc), the draft's float came from one P literal; debugger str or None is an inference (doc says only 'Debugger').",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "3e6a80c3b1f2951232e3a87a17116c0cd3155198c5192ad76f091d51a5b910af",
+  "skeleton_sha256": "4964477c1bc7c17c843960d490ff5c92dd2dbd73ddf44fc0228e1bdd33c5da91",
+  "tests_sha256": "209ad17d00c9076886970624e00bfce4de7070857c5c8fea882b89725f2fb2e4"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_project_template"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_142",
+ "task_id": "RealClassEval/csn/snippet_142"
+}

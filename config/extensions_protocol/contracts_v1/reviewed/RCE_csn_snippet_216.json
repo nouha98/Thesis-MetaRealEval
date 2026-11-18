@@ -1,0 +1,104 @@
+{
+ "attributes": [],
+ "class_name": "PowerManagementObserver",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PowerManagementObserver": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "on_power_sources_change": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "power_management",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "on_time_remaining_change": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "power_management",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_216",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1a/R2: pass observer callbacks on an ABC; the input is a PowerManagement instance",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "2d404181faecf70aa1b2a5cc70012e55bab1b4ab6a2db89258d8df457b658256",
+  "skeleton_sha256": "cf7b42212a7688543a4d1c6f7a81977d9fbfd0ac35efecac6748485c9a860f50",
+  "tests_sha256": "547410877de256a64da7a43ea7173b50ff57e8afdb7510aa8227abc9e1c124ea"
+ },
+ "support": {
+  "generatable_methods": [
+   "on_time_remaining_change"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1a/R2: pass observer callbacks on an ABC; the input is a PowerManagement instance"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_216",
+ "task_id": "RealClassEval/csn/snippet_216"
+}

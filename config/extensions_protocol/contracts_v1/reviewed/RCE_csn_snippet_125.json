@@ -1,0 +1,140 @@
+{
+ "attributes": [],
+ "class_name": "FenwickMin",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "FenwickMin": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {
+     "min": 0
+    },
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "size",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "prefixMin": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      false,
+      -2429.0
+     ],
+     "kind": "positional",
+     "name": "a",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "update": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {
+      "min": 0
+     },
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      true,
+      false
+     ],
+     "kind": "positional",
+     "name": "a",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "review",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "val",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_125",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: ctor size int >= 0 (draft: bool or int); update.a is 'index in t' (non-negative; a negative index never terminates in the reference), val int; prefixMin.a stays any int (negative is documented).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "2b7cf22311e7c022235a798152d6ab191a2e62386ff994aa3cbf0027856d77c2",
+  "skeleton_sha256": "58b9533bc64a03af21e6c4427644c28a499bf0e8a951886133698f637cf0b8d3",
+  "tests_sha256": "f3358c8848a563578ef7a5d82295c078426ac1e0c2a4590770b917ce9437892f"
+ },
+ "support": {
+  "generatable_methods": [
+   "prefixMin",
+   "update"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_125",
+ "task_id": "RealClassEval/csn/snippet_125"
+}

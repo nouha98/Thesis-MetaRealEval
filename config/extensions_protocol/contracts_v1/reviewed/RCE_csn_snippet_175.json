@@ -1,0 +1,119 @@
+{
+ "attributes": [],
+ "class_name": "S2Image",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "S2Image": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "extend": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "source",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "new_image_name",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "s2i_args",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "usage": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_175",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: all methods raise NotImplementedError",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "2e71cba2157b1bf33d171138fcbbcd975c15e65f0436265b6b8ea66dd1b0dcc5",
+  "skeleton_sha256": "b2cb8e7ca7521e2ea28c836b121c1f6e3f715f25cd81dd4e58134c92926fd1a3",
+  "tests_sha256": "e53ef006c7a263f019fc0aa92e2023306119f5a09c95c23880df26e1944d26da"
+ },
+ "support": {
+  "generatable_methods": [
+   "usage"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: all methods raise NotImplementedError"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_175",
+ "task_id": "RealClassEval/csn/snippet_175"
+}

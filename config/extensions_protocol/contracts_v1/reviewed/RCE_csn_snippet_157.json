@@ -1,0 +1,234 @@
+{
+ "attributes": [],
+ "class_name": "HashMixin",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "HashMixin": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "original",
+    "type": {
+     "t": "none"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varargs",
+    "name": "args",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "no type and no valid literal hints"
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varkw",
+    "name": "kwargs",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "**kwargs are not generated (keyword names are not specified)"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_encrypt_sql": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "connection",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "get_placeholder": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null,
+      "\\x4142",
+      "abc"
+     ],
+     "kind": "positional",
+     "name": "value",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "review",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "compiler",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "connection",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "pre_save": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "model_instance",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "add",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_157",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: get_placeholder: docstring 'The `value` string is checked'; encrypt_sql = None so both documented branches are defined; hint starting with a backslash-x reaches the keep branch.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "8615cdaaa09057ebb52ae54319afb37bdbd4b3a705e2104da2885de8d8321469",
+  "skeleton_sha256": "f5793d96755e335bb797595e989cdddb9351612177d0d24a25ed0e82e9ac8df0",
+  "tests_sha256": "a153fa761ef7bd47fe9ab52cd4cd1a35ccccfe04b68869eb5181f3283c460233"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_placeholder"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_157",
+ "task_id": "RealClassEval/csn/snippet_157"
+}

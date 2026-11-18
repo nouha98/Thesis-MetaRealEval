@@ -1,0 +1,167 @@
+{
+ "attributes": [],
+ "class_name": "EventDataNormalizer",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "EventDataNormalizer": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "extract_target_info": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {
+       "G@Zr4U": "G@Zr4U"
+      }
+     ],
+     "kind": "positional",
+     "name": "event_data",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "extract_user_id": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {}
+     ],
+     "kind": "positional",
+     "name": "event_data",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "normalize_event_data": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {}
+     ],
+     "kind": "positional",
+     "name": "event_type",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {}
+     ],
+     "kind": "positional",
+     "name": "event_data",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_346",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "e1e78bc66e3bf06bf222650ff8b5857567d31af4ebe953d4cc2bf70b2ecd14c8",
+  "skeleton_sha256": "a5a4ef19cbced54bdc5909aad4f6985e5b37b0c650ed0fd8f3bc9297252495be",
+  "tests_sha256": "b741d2581c16ab8579661dbcb1a52147129cf8cfe3dbba956ee9b6f0172e8a9c"
+ },
+ "support": {
+  "generatable_methods": [
+   "extract_target_info",
+   "extract_user_id",
+   "normalize_event_data"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_346",
+ "task_id": "RealClassEval/post_cut-off/snippet_346"
+}

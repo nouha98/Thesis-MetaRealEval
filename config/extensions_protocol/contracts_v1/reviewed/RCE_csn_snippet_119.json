@@ -1,0 +1,68 @@
+{
+ "attributes": [],
+ "class_name": "DummyClass",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "DummyClass": {
+    "accessors": [],
+    "attributes": [
+     "prop"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "run": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_119",
+ "properties": [
+  "prop"
+ ],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted (R1a exception: documented no-op): No-op documented ('Do nothing').",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "ae83b0799f16758533777ba29bee2ece15b4db44f858e77a798aa4d8b2369e36",
+  "skeleton_sha256": "846a62a0aec88d346224c6d7ebeda87e15dc2ac5b8118851ea2e0c3897b81fa7",
+  "tests_sha256": "215c68ca0516020e00d31d3295b033cbe1f381cf09d671b38407d7e0402a521c"
+ },
+ "support": {
+  "generatable_methods": [
+   "run"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [
+   "prop"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_119",
+ "task_id": "RealClassEval/csn/snippet_119"
+}

@@ -1,0 +1,100 @@
+{
+ "attributes": [
+  "id",
+  "name"
+ ],
+ "class_name": "RecordProcess",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RecordProcess": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     -4170,
+     -3323
+    ],
+    "kind": "positional",
+    "name": "id_",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null,
+     -3323
+    ],
+    "kind": "positional",
+    "name": "name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_8",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "99201e830db8dbef6a3f20e76af8a5c8f055a9d168e5813e9fb23532d28ba01b",
+  "skeleton_sha256": "742299e41bca943d1e58e9a0c829d211e8f404da11c95f79c99406d78b07e48b",
+  "tests_sha256": "2f21323202c5b1697d8ed40fe935909a28e3533b4fde96132433df4023770b53"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_8",
+ "task_id": "RealClassEval/csn/snippet_8"
+}

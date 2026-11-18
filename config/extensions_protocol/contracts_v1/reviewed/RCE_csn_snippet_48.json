@@ -1,0 +1,109 @@
+{
+ "attributes": [],
+ "class_name": "Datetime",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Datetime": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "now": {
+   "async": false,
+   "generate": false,
+   "kind": "staticmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": "review: not generated"
+  },
+  "pack": {
+   "async": false,
+   "generate": false,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "datetime",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation dt.datetime"
+     },
+     "type_source": "annotation",
+     "why": "annotation dt.datetime"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "unpack": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "t": "bytes"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_48",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4/R5: now() returns the current time: not generated. unpack(data: bytes) kept. pack stays ungenerated: the generator has no datetime type. Bytes hints cannot be stored, so unpack relies on random 12-byte values: the usability check decides.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "03cede40171922cf0c44e8eb04481c91e06d7f7577c95dfa756b51ed0c2f520c",
+  "skeleton_sha256": "15abf63c3e716eb39239b9d3221aac50272410ccf99c37466b9a729559ea1f55",
+  "tests_sha256": "4e3f99d42df3d6c3b2b5b6641b51daa5f91a47b5095bda80f49f5343efd409f6"
+ },
+ "support": {
+  "generatable_methods": [
+   "unpack"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_48",
+ "task_id": "RealClassEval/csn/snippet_48"
+}

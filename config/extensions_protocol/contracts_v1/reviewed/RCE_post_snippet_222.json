@@ -1,0 +1,79 @@
+{
+ "attributes": [],
+ "class_name": "ModelConfig",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ModelConfig": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "model_name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": [
+   "ValueError"
+  ]
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_supported_models": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_222",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted: Only get_supported_models (constant list) is generated; low value.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "411c80dc83212c380b6c5ee72d7eb04e9f7b21d3427f2395345dcea3568b496c",
+  "skeleton_sha256": "c9b7f55832c22db63ae78d168f84c5d8793ffc76e39b6af9069af0ef8cec19b1",
+  "tests_sha256": "8d9d6227bf17461c474bdf8a8938b0bfffd69f15dad94497ff99e4f6e42512d0"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_supported_models"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_222",
+ "task_id": "RealClassEval/post_cut-off/snippet_222"
+}

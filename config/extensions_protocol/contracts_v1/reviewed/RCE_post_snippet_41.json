@@ -1,0 +1,99 @@
+{
+ "attributes": [],
+ "class_name": "HeaderManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "HeaderManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "create_header": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      "pro"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "pro"
+     ],
+     "kind": "positional",
+     "name": "plan",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      "Europe/Warsaw"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "Europe/Warsaw"
+     ],
+     "kind": "positional",
+     "name": "timezone",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_41",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "0a782b218581b72783af2567779d51a278c45f0b609bd9390f46f4ed81ae3c7d",
+  "skeleton_sha256": "c9d00a405b32760a8d15812d270de6a8ff2b747ef85c0903cc903695c5a58869",
+  "tests_sha256": "0fafb1bc477d4286ad6f432cb6061572f33fe5ea5fc0b64c8ec1562b172cc1e5"
+ },
+ "support": {
+  "generatable_methods": [
+   "create_header"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_41",
+ "task_id": "RealClassEval/post_cut-off/snippet_41"
+}

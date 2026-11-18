@@ -1,0 +1,152 @@
+{
+ "attributes": [],
+ "class_name": "ObservabilityManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ObservabilityManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     {},
+     null
+    ],
+    "kind": "positional",
+    "name": "custom_callbacks",
+    "type": {
+     "options": [
+      {
+       "items": {
+        "t": "any"
+       },
+       "t": "list"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "add_callback": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "callback",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "clear_callbacks": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_callbacks": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_handler_names": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "has_callbacks": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_16",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted: add_callback stays ungenerated (callable).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "c1873b7e2f3561dd7e463163ed66cc0e85c031faaf30483751091349ac184971",
+  "skeleton_sha256": "4bce4c27c7574a8a230797a597a149a890e9e589b610a38b6bb810f0dce26e48",
+  "tests_sha256": "e306cfa1901db42aa7f8cf7d1f54aff553fb7a3f8bcaa1739fe455ef589e69bc"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__",
+   "clear_callbacks",
+   "get_callbacks",
+   "get_handler_names",
+   "has_callbacks"
+  ],
+  "n_p_scenarios": 10,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_16",
+ "task_id": "RealClassEval/post_cut-off/snippet_16"
+}

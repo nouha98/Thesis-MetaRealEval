@@ -1,0 +1,139 @@
+{
+ "attributes": [],
+ "class_name": "ShellUtils",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ShellUtils": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "contains_shell_operators": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "a && b",
+      "ls | wc",
+      "echo hi"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_shell_control_end": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "fi",
+      "done;",
+      "esac",
+      "echo hi"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_shell_control_start": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "if [ -f x ]; then",
+      "for i in 1 2; do",
+      "while true; do",
+      "echo hi"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_154",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: Hint lines reach the shell control branches.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "2eefc439e693e683854c685b1f7741fa7e6c7d5dcaae90860cad1d44e96c8644",
+  "skeleton_sha256": "a1af1e1676470376af3122e2885e3b4f42affa04638a1c87dcd14589b9d16bf9",
+  "tests_sha256": "6f5bf70e34176f196eb33c0e5cb46cd114bff37d0c9bc544991248453dcd8bb0"
+ },
+ "support": {
+  "generatable_methods": [
+   "contains_shell_operators",
+   "is_shell_control_end",
+   "is_shell_control_start"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_154",
+ "task_id": "RealClassEval/post_cut-off/snippet_154"
+}

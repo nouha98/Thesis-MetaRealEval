@@ -1,0 +1,118 @@
+{
+ "attributes": [],
+ "class_name": "ShareClass",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ShareClass": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "canonical_uri": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "uri",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "review: not generated"
+  },
+  "extract": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      -434.91
+     ],
+     "kind": "positional",
+     "name": "uri",
+     "type": {
+      "t": "float"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "review: not generated"
+  },
+  "magic": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "service_number": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": "review: not generated"
+  }
+ },
+ "module_name": "snippet_46",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1b: Only magic() has behaviour; canonical_uri, extract and service_number raise NotImplementedError.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "1c32573d8a31a032f5924f2ab81db5380816791bdc8eddd1dd79cf8de031e792",
+  "skeleton_sha256": "f32804d823c70730b03bb0a0c3c113b22a0c0e521062adb9a7a1ea2f1abbd76d",
+  "tests_sha256": "d45dc5de77b6028ae947a850a2be77e26dbc2cfd7a21d4c14eafd475378b3fca"
+ },
+ "support": {
+  "generatable_methods": [
+   "magic"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_46",
+ "task_id": "RealClassEval/csn/snippet_46"
+}

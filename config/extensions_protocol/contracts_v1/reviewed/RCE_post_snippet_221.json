@@ -1,0 +1,97 @@
+{
+ "attributes": [],
+ "class_name": "GitHubTokenPool",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "GitHubTokenPool": {
+    "accessors": [],
+    "attributes": [
+     "pool_size"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     []
+    ],
+    "kind": "positional",
+    "name": "tokens",
+    "type": {
+     "items": {
+      "t": "str"
+     },
+     "t": "list"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_current_token": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_next_token": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_221",
+ "properties": [
+  "pool_size"
+ ],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "c7763ad5bb797d96f490a1d85b1656b7079b90a0522897d84f699cfe9127d61f",
+  "skeleton_sha256": "e047d906618ddacdf87a2dc8e71c8e8c5751292005393de75cb892e871798822",
+  "tests_sha256": "01d17249f6d2b425dcdee3f71180cc762324a4aab9d4d6160b7ce41d3ca1c3cb"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_current_token",
+   "get_next_token"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [
+   "pool_size"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_221",
+ "task_id": "RealClassEval/post_cut-off/snippet_221"
+}

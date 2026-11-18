@@ -1,0 +1,214 @@
+{
+ "attributes": [],
+ "class_name": "Text_background",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Text_background": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "gMe:"
+    ],
+    "kind": "keyword_only",
+    "name": "color",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {
+     "choices": [
+      1,
+      2
+     ]
+    },
+    "default": [
+     1
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     1,
+     2
+    ],
+    "kind": "keyword_only",
+    "name": "style",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     1.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true
+    ],
+    "kind": "keyword_only",
+    "name": "alpha",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     0.0
+    ],
+    "kind": "keyword_only",
+    "name": "round_radius",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.14
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true,
+     0.14
+    ],
+    "kind": "keyword_only",
+    "name": "height",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.14
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false,
+     0.14
+    ],
+    "kind": "keyword_only",
+    "name": "width",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.5
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     0.5
+    ],
+    "kind": "keyword_only",
+    "name": "horizontal_offset",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.5
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false,
+     0.5
+    ],
+    "kind": "keyword_only",
+    "name": "vertical_offset",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "export_json": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_132",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: style is Literal[1, 2] in the reference signature.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "c6ad858281e27337f28737944629d7ffaf66944f3f15d2c33997590d3a6f56e8",
+  "skeleton_sha256": "2926f5fed6d883ee03c01843753a4817fcf5e44e16431db6b2867c1675cc862b",
+  "tests_sha256": "9a6a352dd06815a82798fc61f83961d456c8de6ae3bc2cef8a081918b7715842"
+ },
+ "support": {
+  "generatable_methods": [
+   "export_json"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_132",
+ "task_id": "RealClassEval/post_cut-off/snippet_132"
+}

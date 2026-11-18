@@ -1,0 +1,73 @@
+{
+ "attributes": [],
+ "class_name": "QuilAtom",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "QuilAtom": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__str__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "out": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_49",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: all methods raise NotImplementedError",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "da13a692c8245cfebf40c317167d2b91d1368e1099534065976ceb92855089a7",
+  "skeleton_sha256": "61f28123fba93e895f2474cdb3d5713f210a797d354bca85a3534cdd904db1ea",
+  "tests_sha256": "619acb05801129078be7b16dfc60dc28fa5edac7bd313c7415c2a658ea93fe5c"
+ },
+ "support": {
+  "generatable_methods": [
+   "out",
+   "__str__"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: all methods raise NotImplementedError"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_49",
+ "task_id": "RealClassEval/csn/snippet_49"
+}

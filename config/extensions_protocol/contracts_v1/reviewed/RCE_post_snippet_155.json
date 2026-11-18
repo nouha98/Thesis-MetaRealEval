@@ -1,0 +1,307 @@
+{
+ "attributes": [],
+ "class_name": "PatternUtils",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PatternUtils": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "apply_assignment_spacing": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "q6\fq]j]B-q^.rp&HK~z",
+      "Q;H&/5",
+      "[K\f$9QvI)oz7qJXm}FS.",
+      "=R5%D6\f",
+      "&WOmP>J\n6B9@&r,Jbvt",
+      "KBO?a;;Mv#sa[\\@B[3WV"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false,
+      true
+     ],
+     "kind": "positional",
+     "name": "use_spaces",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "contains_assignment": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "H*ts4.kx}>T5tP#8X)L_",
+      "r'n\"\trJ:p",
+      "|l8F%\\lPL"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "format_pattern_rule": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "?H]dx$7K{i_",
+      "Z0&#j",
+      "%T3\fr`FxL(s:'V",
+      "&WOmP>J\n6B9@&r,Jbvt",
+      "L`;818Nc@#e-\u000b8N5/:",
+      "&WOmP>J\n6B9&r,Jbvt"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "space_after_colon",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "format_target_colon": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "?H]dx$7K{i_",
+      "r+=n\tJ:",
+      "[K\f$9QvI)oz7qJXm}FS.",
+      "r'n\"\trJ:p",
+      "rcn\"\trJ: p",
+      "r'n\\\t\"J:\np",
+      "&WOmP>J\n6B9@&r,Jbvt",
+      "b'n\"\trJ:\n",
+      "[K\f$9QaI)oz7}JXm}FS.",
+      "\t",
+      "a\u000boFNL%\n:vF:"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "Q;H&/5",
+      false
+     ],
+     "kind": "positional",
+     "name": "space_before",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      true
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "KBO?a;;Mv#sa[\\@B[3WV",
+      true
+     ],
+     "kind": "positional",
+     "name": "space_after",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_conditional_indent_level": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "^)d6 h",
+      "?H]dx$7K{i_",
+      "Q;H&/5",
+      "|l8F%\\lPL"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_conditional_directive": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_155",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "5cab982148666eda07faa32982ef4a0dff28cd1667da8d0eea1c4c6b4f7049c8",
+  "skeleton_sha256": "cde391055318d618ec2db165487d3a85ece2abee70107b06b561d7fe3b1e9f90",
+  "tests_sha256": "77398d2c136b4a00ba350a507f117c90cc8b38a0fbe253522c15867b8c4568ea"
+ },
+ "support": {
+  "generatable_methods": [
+   "apply_assignment_spacing",
+   "contains_assignment",
+   "format_pattern_rule",
+   "format_target_colon",
+   "get_conditional_indent_level",
+   "is_conditional_directive"
+  ],
+  "n_p_scenarios": 17,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_155",
+ "task_id": "RealClassEval/post_cut-off/snippet_155"
+}

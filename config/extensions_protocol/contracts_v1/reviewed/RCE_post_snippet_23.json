@@ -1,0 +1,136 @@
+{
+ "attributes": [],
+ "class_name": "GitHubURLExtractor",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "GitHubURLExtractor": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "extract_github_urls": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "HyU",
+      "M/Cq",
+      "_/Cq"
+     ],
+     "kind": "positional",
+     "name": "text",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "extract_target_path": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "KN{~7>",
+      "M/Cq"
+     ],
+     "kind": "positional",
+     "name": "text",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "infer_repo_name": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      ">5j\\6.3;{:R\"",
+      "5N +lXPgK+Iw^CP;&O+",
+      "71HoLcHmq,\\O=fhf"
+     ],
+     "kind": "positional",
+     "name": "url",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_23",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "9bf46e7d0a7ea88f74a22427cb0d4a53ce62d91316eeae91d8bfcf6f424989fc",
+  "skeleton_sha256": "b99bb7c591b82b55039e7b7451f990c34b02dc7a74a9cb053bdcc67bac1fc8a1",
+  "tests_sha256": "d902912b2ac1f0bc1d4b3ad1f003cf4d55afbc3ae15e8c310bc12c378dd91876"
+ },
+ "support": {
+  "generatable_methods": [
+   "extract_github_urls",
+   "extract_target_path",
+   "infer_repo_name"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_23",
+ "task_id": "RealClassEval/post_cut-off/snippet_23"
+}

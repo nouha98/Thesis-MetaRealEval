@@ -1,0 +1,143 @@
+{
+ "attributes": [],
+ "class_name": "LazyField",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LazyField": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "klass",
+    "type": {
+     "t": "bytes"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "create": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "update": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_139",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R2: Field class input (the draft typed it bytes)",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "df0ca5b8d5706f2c59cc1d9d4ae4e2ebaee660b11908d733c19f5f760acfa39f",
+  "skeleton_sha256": "33ae6f90e672ed4a5e9be2bfbbf636f7cf3d5f067d0855bb84971587a5ed08b0",
+  "tests_sha256": "2ad5b9d63033d14a294430c2a6c269bca388b27e96da49a2a98231580fb1a5c2"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__",
+   "update",
+   "create"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R2: Field class input (the draft typed it bytes)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_139",
+ "task_id": "RealClassEval/csn/snippet_139"
+}

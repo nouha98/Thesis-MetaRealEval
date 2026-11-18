@@ -1,0 +1,142 @@
+{
+ "attributes": [],
+ "class_name": "ArgFilterBase",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ArgFilterBase": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "filter_query": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      580
+     ],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      580
+     ],
+     "kind": "positional",
+     "name": "view",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      168
+     ],
+     "kind": "positional",
+     "name": "arg_value",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "maybe_set_arg_name": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       false,
+       false
+      ]
+     ],
+     "kind": "positional",
+     "name": "arg_name",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_205",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: both methods raise NotImplementedError (documented)",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "96b7562585ce8b06f6b872708206c29bf109ea01cfedca497872677aece8e896",
+  "skeleton_sha256": "256262beb5f4d8231a43a61938e9b89c360eda133c6d17175d070e9256726eef",
+  "tests_sha256": "38132a55b88690d748fe1191a02069fe77308534d40cec7ee439f9ee5c66f563"
+ },
+ "support": {
+  "generatable_methods": [
+   "maybe_set_arg_name",
+   "filter_query"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: both methods raise NotImplementedError (documented)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_205",
+ "task_id": "RealClassEval/csn/snippet_205"
+}

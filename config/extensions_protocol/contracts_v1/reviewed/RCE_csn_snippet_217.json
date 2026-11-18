@@ -1,0 +1,71 @@
+{
+ "attributes": [],
+ "class_name": "FilteredValueIndicator",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "FilteredValueIndicator": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "__str__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_217",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted: Constant '[Filtered]'; low value.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "21c7f019b8ea56331081f23f5d37753f13a4b004078f8ec9e5309f3ef72292f9",
+  "skeleton_sha256": "97a03168cae1e1cbeee3c7bd8b85b60ebb87c016cf3939c522c914b5cea2c75e",
+  "tests_sha256": "4753d88ddce78ee81723b163a0e112ee0dd671d97b8a605eda39e2a430a72957"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__",
+   "__str__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_217",
+ "task_id": "RealClassEval/csn/snippet_217"
+}

@@ -1,0 +1,80 @@
+{
+ "attributes": [],
+ "class_name": "NavigationAction",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "NavigationAction": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     ";Os.pK(99\rm",
+     "!\tbF8GB8ICrq(\r^Nh>"
+    ],
+    "kind": "positional",
+    "name": "target_uri",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_286",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "23003ee3a5e121a77f3bdbe46279ec31263a69c05fa5dd9d9e75f8a49799d3ec",
+  "skeleton_sha256": "0c1c82adbc201ab37cb170519f2060f0c07893689bc475f0f8733ee6df39271a",
+  "tests_sha256": "028b4f9b0fb71697f4ab2d1b16e7197ad5b51db0ac2e94c01c1cdd11c98babcc"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_286",
+ "task_id": "RealClassEval/post_cut-off/snippet_286"
+}

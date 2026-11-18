@@ -1,0 +1,136 @@
+{
+ "attributes": [],
+ "class_name": "Encoder",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Encoder": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "decode": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "&amp;&lt;x&gt;",
+      "&quot;q&apos;"
+     ],
+     "kind": "positional",
+     "name": "s",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "encode": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "a&b<c>\"d'e",
+      "&amp;&lt;x&gt;",
+      "plain"
+     ],
+     "kind": "positional",
+     "name": "s",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "needsEncoding": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "a&b",
+      "plain",
+      "<x>"
+     ],
+     "kind": "positional",
+     "name": "s",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_184",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: encode was left ungenerated although its docstring says '@type s: str'; hints contain XML specials so the encoding paths are reached.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "7768e8f9321cd53625e7fba56d438ff1d952d8fc709e7c4f222b028f777d706b",
+  "skeleton_sha256": "3670cf06407c77e950e2ec8006e996ced5d87a6d597e83fbc7f4dc3a452c2a36",
+  "tests_sha256": "5542d80d8202e20bb31c997cb1b3acb65207a85237b2bbc8388d6dd98c5c0f82"
+ },
+ "support": {
+  "generatable_methods": [
+   "decode",
+   "encode",
+   "needsEncoding"
+  ],
+  "n_p_scenarios": 7,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_184",
+ "task_id": "RealClassEval/csn/snippet_184"
+}

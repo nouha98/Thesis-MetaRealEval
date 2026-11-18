@@ -1,0 +1,118 @@
+{
+ "attributes": [],
+ "class_name": "StreamingFile",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "StreamingFile": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     -3426,
+     "+na}_<"
+    ],
+    "kind": "positional",
+    "name": "data_stream",
+    "type": {
+     "options": [
+      {
+       "t": "int"
+      },
+      {
+       "t": "str"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "read": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      -3426,
+      null
+     ],
+     "kind": "positional",
+     "name": "size",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_63",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R2: data_stream is an iterator (next(...)); the generator has no iterator type",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "90a9eac1308c44aafa1d43c89065fd60651cec7be15478fe41438ee0ebb5a89a",
+  "skeleton_sha256": "84be477c10c6c253f4117db2affea934674e4645b12bf1809258b2ab0a747dfd",
+  "tests_sha256": "9fca4b7b818424dd03c36b8d8ef1449a8c2c0943f525401a9d9b76e0cd53ef7a"
+ },
+ "support": {
+  "generatable_methods": [
+   "read"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R2: data_stream is an iterator (next(...)); the generator has no iterator type"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_63",
+ "task_id": "RealClassEval/csn/snippet_63"
+}

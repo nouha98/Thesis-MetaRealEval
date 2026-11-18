@@ -1,0 +1,310 @@
+{
+ "attributes": [],
+ "class_name": "BoundWorkerMethod",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BoundWorkerMethod": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     {
+      "false": false
+     }
+    ],
+    "kind": "positional",
+    "name": "wrapper",
+    "type": {
+     "keys": {
+      "t": "bool"
+     },
+     "t": "dict",
+     "values": {
+      "t": "bool"
+     }
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "instance",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "async_call": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "run_and_wait": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "keyword_only",
+     "name": "timeout",
+     "type": {
+      "options": [
+       {
+        "t": "float"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [
+    "Exception",
+    "RuntimeError"
+   ],
+   "why": null
+  },
+  "set_pool": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "pool",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation WorkerPool"
+     },
+     "type_source": "annotation",
+     "why": "annotation WorkerPool"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "shutdown_default_pool": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "submit": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "args",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_280",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4: worker pool and background execution; *args/**kwargs forwarded to an arbitrary function",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "2614bb4180d6338efdba42d577a3525b59ad3b5b030782a3315b99591a0aba9f",
+  "skeleton_sha256": "0bc7bd842567a1badac2eb9792feb4c0d9f352758f2d86938a13a36134706c14",
+  "tests_sha256": "1cc414ea874ac046fb875b7a5c24faafeda13f9d4c20663dbc356a82bbe61a20"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__",
+   "async_call",
+   "submit",
+   "run_and_wait",
+   "shutdown_default_pool"
+  ],
+  "n_p_scenarios": 8,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R4: worker pool and background execution; *args/**kwargs forwarded to an arbitrary function"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_280",
+ "task_id": "RealClassEval/post_cut-off/snippet_280"
+}

@@ -1,0 +1,119 @@
+{
+ "attributes": [],
+ "class_name": "DocumentAnalyzer",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "DocumentAnalyzer": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "analyze_document_type": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "eyT4\"`"
+     ],
+     "kind": "positional",
+     "name": "content",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "detect_segmentation_strategy": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      ">`Oye(zX?\"O\fkLdq_6~"
+     ],
+     "kind": "positional",
+     "name": "content",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "doc_type",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_22",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "2861dde79324fb3ff32b719f04c887f162d5de3e1d8b4cb49ae6356c3ac12fdd",
+  "skeleton_sha256": "f6a589043d790ec5b3681541ed8e0e4372d8f371c609699846a179847a99fbfb",
+  "tests_sha256": "47fc442ed3ceb1b58cd58d7504ad0b17b34eea12c951e46af3ae5b4b1c044d5e"
+ },
+ "support": {
+  "generatable_methods": [
+   "analyze_document_type",
+   "detect_segmentation_strategy"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_22",
+ "task_id": "RealClassEval/post_cut-off/snippet_22"
+}

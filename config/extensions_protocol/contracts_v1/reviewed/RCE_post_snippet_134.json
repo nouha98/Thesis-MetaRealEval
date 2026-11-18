@@ -1,0 +1,174 @@
+{
+ "attributes": [],
+ "class_name": "Text_shadow",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Text_shadow": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "keyword_only",
+    "name": "has_shadow",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.9
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     0.9
+    ],
+    "kind": "keyword_only",
+    "name": "alpha",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     -45.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     -45.0
+    ],
+    "kind": "keyword_only",
+    "name": "angle",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     "#000000"
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "]%DKW+]",
+     "#000000"
+    ],
+    "kind": "keyword_only",
+    "name": "color",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     5.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "]%DKW+]",
+     5.0
+    ],
+    "kind": "keyword_only",
+    "name": "distance",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     0.45
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     "]%DKW+]",
+     0.45
+    ],
+    "kind": "keyword_only",
+    "name": "smoothing",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "export_json": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_134",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "9608650ff2082ffc392a7862ea083be4bd84e43243903551e0382c977b2bc472",
+  "skeleton_sha256": "c667e11687c5fe621d22d027064eda2efe83556e1328ad15876c4043d8b51cf2",
+  "tests_sha256": "91e0b633644616d4f7400cd7bcb1405d0584be9cd9cfc3f8a726306db9d94791"
+ },
+ "support": {
+  "generatable_methods": [
+   "export_json"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_134",
+ "task_id": "RealClassEval/post_cut-off/snippet_134"
+}

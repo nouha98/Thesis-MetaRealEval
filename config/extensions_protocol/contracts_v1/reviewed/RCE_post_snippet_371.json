@@ -1,0 +1,133 @@
+{
+ "attributes": [],
+ "class_name": "WorkflowDefinition",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "WorkflowDefinition": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     {}
+    ],
+    "kind": "positional",
+    "name": "name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     {}
+    ],
+    "kind": "positional",
+    "name": "file_path",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     {}
+    ],
+    "kind": "positional",
+    "name": "metadata",
+    "type": {
+     "keys": {
+      "t": "any"
+     },
+     "t": "dict",
+     "values": {
+      "t": "any"
+     }
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     {}
+    ],
+    "kind": "positional",
+    "name": "content",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "validate": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_371",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "092ff320564760f8dcfe14cb78ac65588186059a420e45d5bfbd02e6e66fde28",
+  "skeleton_sha256": "53536574a482ba9f971649277305e20471b57afa9bd985271e4aa49f33a6ee5b",
+  "tests_sha256": "fda888ef032b9f3014fdbcf32825753d8dc8b17608a9c5af9d3cd305e0be1ab5"
+ },
+ "support": {
+  "generatable_methods": [
+   "validate"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_371",
+ "task_id": "RealClassEval/post_cut-off/snippet_371"
+}

@@ -1,0 +1,118 @@
+{
+ "attributes": [],
+ "class_name": "SingleThing",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SingleThing": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "thing",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_name": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_thing": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "_",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_things": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_173",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R2: get_name returns self.thing.title: thing is a framework Thing object (draft: bool)",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "bc3d53eb25e6a0cf3c13d30bf18d1e54a00ada40f4654f8b7cb86473c4bcfc40",
+  "skeleton_sha256": "d8d159c37a2d9c1ddaa2fe44fe6d4a4a5779b8a817a9f86bd44e66cde912426f",
+  "tests_sha256": "92e078036bcc04fbd3a8ba94eb7fd466892a5b381aa164cc980dd5c1477c9670"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_thing",
+   "get_things",
+   "get_name"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R2: get_name returns self.thing.title: thing is a framework Thing object (draft: bool)"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_173",
+ "task_id": "RealClassEval/csn/snippet_173"
+}

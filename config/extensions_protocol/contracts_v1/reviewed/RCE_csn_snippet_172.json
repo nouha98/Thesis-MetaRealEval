@@ -1,0 +1,127 @@
+{
+ "attributes": [],
+ "class_name": "MultipleThings",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "MultipleThings": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "things",
+    "type": {
+     "items": {
+      "t": "any"
+     },
+     "t": "list"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_name": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_thing": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "idx",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_things": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_172",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: get_thing idx is 'the index'; class doc 'container for multiple things'; name is the mDNS server name.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "e5f7c6798d6d6cc7054ecc683cf4c388976527c13fdfdfcfc3df40cd10dc8429",
+  "skeleton_sha256": "9361e5b2c13adab2661a46ea798b0368ef8afc1436af69d079cede613c6658b6",
+  "tests_sha256": "63466f6396c483f0f120c9507dac42f7fddc04011af5360fa3f450a78ff74ae8"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_name",
+   "get_thing",
+   "get_things"
+  ],
+  "n_p_scenarios": 9,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_172",
+ "task_id": "RealClassEval/csn/snippet_172"
+}

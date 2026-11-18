@@ -1,0 +1,156 @@
+{
+ "attributes": [],
+ "class_name": "ConditionalTracker",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ConditionalTracker": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "are_mutually_exclusive": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "context1",
+     "type": {
+      "items": {
+       "t": "any"
+      },
+      "t": "tuple",
+      "variadic": true
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "context2",
+     "type": {
+      "items": {
+       "t": "any"
+      },
+      "t": "tuple",
+      "variadic": true
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "process_line": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "ifeq ($(A),1)",
+      "else",
+      "endif",
+      "ifdef X",
+      "all: dep"
+     ],
+     "kind": "positional",
+     "name": "line",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "}Lz6_UE[L1\u000by^!\"\u000bnu"
+     ],
+     "kind": "positional",
+     "name": "line_index",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "reset": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_153",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: Hint lines reach the conditional branches of the Makefile tracker.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "29d9cb3f04207101e17ee0b361494bab9e0850524401f52472217c7a67b33cdc",
+  "skeleton_sha256": "df333ddd7c970c450b43bbdd39dcef4907e6791fb9b3b559775f8a4b6926d406",
+  "tests_sha256": "cf8c5508921316daad08e3da8e49cfbaa5684ee4e1af712e57801a44bd0bcd39"
+ },
+ "support": {
+  "generatable_methods": [
+   "are_mutually_exclusive",
+   "process_line",
+   "reset"
+  ],
+  "n_p_scenarios": 7,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_153",
+ "task_id": "RealClassEval/post_cut-off/snippet_153"
+}

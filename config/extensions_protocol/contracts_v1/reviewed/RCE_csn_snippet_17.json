@@ -1,0 +1,105 @@
+{
+ "attributes": [],
+ "class_name": "Variable",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Variable": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "val",
+    "type": {
+     "options": [
+      {
+       "t": "int"
+      },
+      {
+       "t": "str"
+      },
+      {
+       "items": {
+        "t": "int"
+       },
+       "t": "list"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "_type",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__str__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_17",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: 'variable with value and type': val int, str or list, _type str (inferred from the class doc).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "14f3ae7edca07c7110aca33a2c4490d0964145c252bd8117c4303899b06ad154",
+  "skeleton_sha256": "265f5f09e347b7d82bf12addd74319485f4fe44325e3d2b26330df08d539593f",
+  "tests_sha256": "20de5879f8d18739426232e533cf8aa805bd4d3bbffc317d6eec5d0e9912cf22"
+ },
+ "support": {
+  "generatable_methods": [
+   "__str__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_17",
+ "task_id": "RealClassEval/csn/snippet_17"
+}

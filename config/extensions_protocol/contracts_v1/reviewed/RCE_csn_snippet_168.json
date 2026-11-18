@@ -1,0 +1,81 @@
+{
+ "attributes": [],
+ "class_name": "Gateway",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Gateway": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "req",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "p_literals",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "respond": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_168",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: all methods raise NotImplementedError",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "a8e666742a2576c2affaa6555759bfa16c99d519d59e0a8b4fb655051bf7e5ae",
+  "skeleton_sha256": "a3684a6ba9f1b202dcba6d2810728659775afa12db09ca0250f421f57098047e",
+  "tests_sha256": "e88b773bc6beed7dc6bdfd0d4db710b4fe681fd5957fc53b2158ff7e0f210a51"
+ },
+ "support": {
+  "generatable_methods": [
+   "respond"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: all methods raise NotImplementedError"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_168",
+ "task_id": "RealClassEval/csn/snippet_168"
+}

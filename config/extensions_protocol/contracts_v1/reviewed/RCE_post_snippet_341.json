@@ -1,0 +1,79 @@
+{
+ "attributes": [
+  "guess"
+ ],
+ "class_name": "Free",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Free": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "guess",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_341",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: 'free state variable': numeric guess (inferred).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "15dbbc2c8c8fc33df16682ff5d5d4de6ea6071ab16086eb854dc8a38cbbf4081",
+  "skeleton_sha256": "24cc1218f3992cc208c472abcc49c1d90c3337989d58f9eb6d6c617cffc0240c",
+  "tests_sha256": "863fdea295571f752ea700a702dba4de2be05fbf2a2e8d4e8b6bce37a20ad003"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_341",
+ "task_id": "RealClassEval/post_cut-off/snippet_341"
+}

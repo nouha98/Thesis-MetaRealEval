@@ -1,0 +1,103 @@
+{
+ "attributes": [],
+ "class_name": "PromptCompiler",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PromptCompiler": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "compile": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "w0a%\nj"
+     ],
+     "kind": "positional",
+     "name": "prompt_file",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "w0a%\nj"
+     ],
+     "kind": "positional",
+     "name": "params",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "str"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_368",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4: reads prompt files and creates .apm/compiled",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "6a376e1f2568ea65a5cb8f8f99b68c50194d83f751b8396f821a653bd159c01e",
+  "skeleton_sha256": "9c0ecaeef0af790ba6e8e9ab56cfec30be6deae4a3d070de04bfef28fb4acf42",
+  "tests_sha256": "9d364e87a300369ad1a78f164eee291d6a33c01db31c4e06e353b81bfc507b25"
+ },
+ "support": {
+  "generatable_methods": [
+   "compile"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R4: reads prompt files and creates .apm/compiled"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_368",
+ "task_id": "RealClassEval/post_cut-off/snippet_368"
+}

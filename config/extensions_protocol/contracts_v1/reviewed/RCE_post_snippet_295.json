@@ -1,0 +1,403 @@
+{
+ "attributes": [],
+ "class_name": "ToolSelector",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ToolSelector": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     [
+      {
+       "J3.f#]NOFY9p+g|v\u000b*&": "J3.f#]NOFY9p+g|v\u000b*&",
+       "pL0JGu#": "pL0JGu#"
+      },
+      {
+       "J3.f#]NOFY9p+g|v\u000b*&": "J3.f#]NOFY9p+g|v\u000b*&",
+       "pL0JGu#": "pL0JGu#"
+      },
+      {
+       "J3.f#]NOFY9p+g|v\u000b*&": "J3.f#]NOFY9p+g|v\u000b*&",
+       "pL0JGu#": "pL0JGu#"
+      }
+     ],
+     [
+      {
+       "HR": []
+      }
+     ],
+     [],
+     [
+      {}
+     ],
+     [
+      {
+       "]": "]"
+      }
+     ],
+     {},
+     [
+      {
+       "": ""
+      }
+     ],
+     [
+      {
+       "^\r+y&Y0)2iop?boA\te": "^\r+y&Y0)2iop?boA\te"
+      },
+      {},
+      {
+       "^\r+y&Y0)2iop?boA\te": "^\r+y&Y0)2iop?boA\te"
+      },
+      {
+       "^\r+y&Y0)2iop?boA\te": "^\r+y&Y0)2iop?boA\te"
+      }
+     ],
+     [
+      {
+       "sa$Vl'x|\tc%Y": {
+        "sa$Vl'x|\tc%Y": "sa$Vl'x|\tc%Y"
+       }
+      },
+      {
+       "sa$Vl'x|\tc%Y": {
+        "sa$Vl'x|\tc%Y": "sa$Vl'x|\tc%Y"
+       }
+      },
+      {
+       "sa$Vl'x|\tc%Y": "sa$Vl'x|\tc%Y"
+      },
+      {
+       "sa$Vl'x|\tc%Y": "sa$Vl'x|\tc%Y"
+      }
+     ],
+     [
+      {},
+      {},
+      {},
+      {}
+     ]
+    ],
+    "kind": "positional",
+    "name": "tools",
+    "type": {
+     "items": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "t": "list"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "filter_by_keywords": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       "B]r&%_cx=b}4!1x ",
+       "B]r&%_cx=b}4!1x "
+      ],
+      [
+       "^\r+y&Y0)2iop?boA\te",
+       "^\r+y&Y0)2iop?boA\te"
+      ],
+      [
+       ".fJ\nG]y-RNJ6*",
+       "\fw\t}T\n}r*4p",
+       "k!:\fmc\\2I_%"
+      ],
+      [
+       "^\r+\ty& 2iopboA\te",
+       "^\r+\ty& 2iopboA\te"
+      ]
+     ],
+     "kind": "positional",
+     "name": "keywords",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      false,
+      true
+     ],
+     "kind": "positional",
+     "name": "match_all",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "filter_by_roles": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {
+       "%a#w-I'Y3etQP?&T0j;\f": [
+        "+\"n?&9#",
+        "\\zgEChhwQ>r4Ep1z-"
+       ],
+       "+\"n?&9#": [
+        "+\"n?&9#",
+        "\\zgEChhwQ>r4Ep1z-"
+       ]
+      },
+      {},
+      {
+       "^\r+y&Y0)2iop?boA\te": "^\r+y&Y0)2iop?boA\te"
+      },
+      {
+       "": ""
+      }
+     ],
+     "kind": "positional",
+     "name": "role_patterns",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "items": {
+        "t": "str"
+       },
+       "t": "list"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "select_by_names": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [],
+      [
+       "B]r&%_cx=b}4!1x ",
+       "B]r&%_cx=b}4!1x "
+      ],
+      "^\r+y&Y0)2iop?boA\te",
+      "l@CB\r\r|*\rF^\f.nz",
+      [
+       "^\r+\ty& 2iop?boA\te",
+       "^\r+\ty& 2iop?boA\te"
+      ]
+     ],
+     "kind": "positional",
+     "name": "tool_names",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "select_tools": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      ";c",
+      "",
+      "^\r+\ty& 2iop?boA\te",
+      "l@CB\r\r|*\rF^\f.nz",
+      ".fJ\nG]y-RNJ6*",
+      "p\\ yBzmbzK{i0SoDil72",
+      "#)D'kY\"~"
+     ],
+     "kind": "positional",
+     "name": "task_description",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": false,
+     "has_default": true,
+     "hints": [
+      603,
+      true,
+      602,
+      null
+     ],
+     "kind": "positional",
+     "name": "num_agents",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": "review: not generated"
+    },
+    {
+     "constraints": {},
+     "default": [
+      false
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      true,
+      {
+       "^\r+\ty& 2iopboA\te": "^\r+\ty& 2iopboA\te"
+      },
+      false
+     ],
+     "kind": "positional",
+     "name": "overlap",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      5
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      5
+     ],
+     "kind": "positional",
+     "name": "limit",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_295",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4 (parameter level): select_tools.num_agents not generated: the default None keeps the single-agent path; the multi-agent path uses random.choice.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "dabce20a31aa3a496c2998ebf571f798e3fc86c58ff369028506c365b024db26",
+  "skeleton_sha256": "37bff74c0f7af1b20bbf55a7fd414865ec8f4a5d6fb4e6bbb738abdacaf7f326",
+  "tests_sha256": "a339b069f96b479ad840710031ba398bab4ec27709fcba01fae7f4c8800c0e43"
+ },
+ "support": {
+  "generatable_methods": [
+   "filter_by_keywords",
+   "filter_by_roles",
+   "select_by_names",
+   "select_tools"
+  ],
+  "n_p_scenarios": 14,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_295",
+ "task_id": "RealClassEval/post_cut-off/snippet_295"
+}

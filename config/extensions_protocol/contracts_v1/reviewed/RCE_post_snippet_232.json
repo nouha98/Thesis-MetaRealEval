@@ -1,0 +1,85 @@
+{
+ "attributes": [
+  "elapsed",
+  "is_running"
+ ],
+ "class_name": "Stopwatch",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Stopwatch": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "reset": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "start": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "stop": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_232",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4: time.perf_counter() elapsed times",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "d4ad2174f6b9137190548efbc10705b4e42bf7f507ba43e0e2265755a66225bd",
+  "skeleton_sha256": "c94259785a3c5931c527898295a479213299d70277cc86a549364ed6d907fe79",
+  "tests_sha256": "f45c152e8781858e47dea3877d764353a9aba5c405d03b741eacf62ceedb9c8c"
+ },
+ "support": {
+  "generatable_methods": [
+   "reset",
+   "start",
+   "stop"
+  ],
+  "n_p_scenarios": 6,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R4: time.perf_counter() elapsed times"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_232",
+ "task_id": "RealClassEval/post_cut-off/snippet_232"
+}

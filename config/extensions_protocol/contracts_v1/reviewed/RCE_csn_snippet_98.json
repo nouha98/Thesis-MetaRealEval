@@ -1,0 +1,250 @@
+{
+ "attributes": [],
+ "class_name": "LCModel",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "LCModel": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "extend_partial": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      -1679
+     ],
+     "kind": "positional",
+     "name": "times",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      -1679
+     ],
+     "kind": "positional",
+     "name": "obs_times",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      -1679
+     ],
+     "kind": "positional",
+     "name": "obs_losses",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "config",
+     "type": {
+      "t": "none"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "fit": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "times",
+     "type": {
+      "items": {
+       "t": "any"
+      },
+      "t": "list"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "losses",
+     "type": {
+      "items": {
+       "t": "any"
+      },
+      "t": "list"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "configs",
+     "type": {
+      "options": [
+       {
+        "items": {
+         "t": "any"
+        },
+        "t": "list"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "predict_unseen": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      ""
+     ],
+     "kind": "positional",
+     "name": "times",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      ""
+     ],
+     "kind": "positional",
+     "name": "config",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_98",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: all generated methods raise NotImplementedError; extend_partial takes numpy arrays",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "f707836e916bfe5732f4f7208bdc79f6079a4edc28d831849f97ed260122f449",
+  "skeleton_sha256": "ca4d2ba043edfe89c513a0de1ed1858a744e0c240c54563a42ce798215dc00f9",
+  "tests_sha256": "53ccd284cc18ab33c677a85e1346ea1e7824a4197f9ed3d3a00f5fdfc34fbada"
+ },
+ "support": {
+  "generatable_methods": [
+   "fit",
+   "predict_unseen",
+   "extend_partial"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: all generated methods raise NotImplementedError; extend_partial takes numpy arrays"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_98",
+ "task_id": "RealClassEval/csn/snippet_98"
+}

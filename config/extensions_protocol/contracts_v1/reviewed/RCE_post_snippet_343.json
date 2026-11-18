@@ -1,0 +1,79 @@
+{
+ "attributes": [
+  "guess"
+ ],
+ "class_name": "Minimize",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Minimize": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "guess",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_343",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: 'minimized state variable': numeric guess (inferred).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "e84273b45cdea138205462969f4b1197d9fae0082952d501504e0f708d3ebb78",
+  "skeleton_sha256": "3485460ee011b8eb81cc64d088627a264961e81179ecde72f6d8a9d5d040b09a",
+  "tests_sha256": "9f0c8d940e72e9fa62b6850d08cc5b795a6b03faebcb145ad94feeda12e85934"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_343",
+ "task_id": "RealClassEval/post_cut-off/snippet_343"
+}

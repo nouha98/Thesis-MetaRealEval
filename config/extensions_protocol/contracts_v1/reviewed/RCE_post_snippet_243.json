@@ -1,0 +1,88 @@
+{
+ "attributes": [],
+ "class_name": "PrintAndFlushSink",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "PrintAndFlushSink": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "flush": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "write": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "XFPz$.SPCcfqD;5Y_Q"
+     ],
+     "kind": "positional",
+     "name": "message",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_243",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted: stdout-only behaviour (not observed); flush is a documented no-op; low value.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "68ad1d1ece3ab36a560a6da29b260ec598fb1b3dca51dcd6a05bd3e76e478ca6",
+  "skeleton_sha256": "c0ac70e5bc67e19a450e212fa513c37421a12b80df5a6298682f11ba93eef000",
+  "tests_sha256": "75823136ca58b8cee9761f2629dc50bce1a24b4f85079eeb34855eba86682d1f"
+ },
+ "support": {
+  "generatable_methods": [
+   "flush",
+   "write"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_243",
+ "task_id": "RealClassEval/post_cut-off/snippet_243"
+}

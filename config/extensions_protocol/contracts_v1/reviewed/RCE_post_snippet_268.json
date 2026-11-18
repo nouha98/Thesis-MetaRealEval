@@ -1,0 +1,307 @@
+{
+ "attributes": [],
+ "class_name": "IndexManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "IndexManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "clear": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "index": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "doc",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "options": [
+        {
+         "t": "int"
+        },
+        {
+         "t": "str"
+        }
+       ],
+       "t": "union"
+      }
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "query": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "field",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "value",
+     "type": {
+      "options": [
+       {
+        "t": "int"
+       },
+       {
+        "t": "str"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "query_in": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "Tow'KBs\tcZs,(\u000b"
+     ],
+     "kind": "positional",
+     "name": "field",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "Tow'KBs\tcZs,(\u000b"
+     ],
+     "kind": "positional",
+     "name": "values",
+     "type": {
+      "items": {
+       "options": [
+        {
+         "t": "int"
+        },
+        {
+         "t": "str"
+        }
+       ],
+       "t": "union"
+      },
+      "t": "list"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "reindex": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "old_doc",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "options": [
+        {
+         "t": "int"
+        },
+        {
+         "t": "str"
+        }
+       ],
+       "t": "union"
+      }
+     },
+     "type_source": "review",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "new_doc",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "options": [
+        {
+         "t": "int"
+        },
+        {
+         "t": "str"
+        }
+       ],
+       "t": "union"
+      }
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "remove": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "doc",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "options": [
+        {
+         "t": "int"
+        },
+        {
+         "t": "str"
+        }
+       ],
+       "t": "union"
+      }
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_268",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: Docstrings say the document 'should be a dictionary'; index/remove/reindex were left ungenerated, so generated scenarios only queried an empty store.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "2783fe1d1c33f0cd303ddc8bb164185a699ebf22dcaf8b791ebb944aa0d97464",
+  "skeleton_sha256": "a803fe375eadc99b3d41f2530edb71bc69b921092af42dde4e14731543434037",
+  "tests_sha256": "c44b4136369f2b2a586ac8e73b567a85ebedb83589b7469d5ec7d0a196113d0c"
+ },
+ "support": {
+  "generatable_methods": [
+   "clear",
+   "index",
+   "query",
+   "query_in",
+   "reindex",
+   "remove"
+  ],
+  "n_p_scenarios": 10,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_268",
+ "task_id": "RealClassEval/post_cut-off/snippet_268"
+}

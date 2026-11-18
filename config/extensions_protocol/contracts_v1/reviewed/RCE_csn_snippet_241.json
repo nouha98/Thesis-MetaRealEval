@@ -1,0 +1,165 @@
+{
+ "attributes": [],
+ "class_name": "Issue",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Issue": {
+    "accessors": [],
+    "attributes": [
+     "payload"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "pb001",
+     "ab001",
+     "si001",
+     "ti001",
+     "nd001"
+    ],
+    "kind": "positional",
+    "name": "issue_type",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     "c"
+    ],
+    "kind": "positional",
+    "name": "comment",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     false
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     false
+    ],
+    "kind": "positional",
+    "name": "auto_analyzed",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     true
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     true
+    ],
+    "kind": "positional",
+    "name": "ignore_analyzer",
+    "type": {
+     "t": "bool"
+    },
+    "type_source": "default",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "external_issue_add": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "issue",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  }
+ },
+ "module_name": "snippet_241",
+ "properties": [
+  "payload"
+ ],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: issue_type 'Allowable values: pb***, ab***, si***, ti***, nd001'; comment is text. external_issue_add stays ungenerated (needs an ExternalIssue).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "8ec168fba4cf0d12335b6ccbd848ae8f8883c7387c045988946a87731618d5f9",
+  "skeleton_sha256": "d5d1a3af99ac4e7ed6629f3a30336828fd55402411fd468fe96a3bc253b25163",
+  "tests_sha256": "681f417cdbe67122fa4e3742f8ead0bfa11c29b68100a2c74d9e38ebaca5971b"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 2,
+  "properties": [
+   "payload"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_241",
+ "task_id": "RealClassEval/csn/snippet_241"
+}

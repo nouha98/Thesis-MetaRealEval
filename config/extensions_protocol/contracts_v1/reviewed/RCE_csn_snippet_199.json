@@ -1,0 +1,77 @@
+{
+ "attributes": [],
+ "class_name": "UriParam",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "UriParam": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "uri",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_199",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: Class doc 'a URI value'; __repr__ must return a str.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "6be4a566ee59fbef2b850b1e66e5a856b2f8c7caf21aa5e6bfaee7dc2183d033",
+  "skeleton_sha256": "89c5aa95aea0acc97c03a97832f0688f087dbe89c0bf00c2625d8b9346a025cd",
+  "tests_sha256": "805d8c4a4b7078764b1e260de2c7dda62b57c88ccd950eaf6bfa28b74b9652d8"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_199",
+ "task_id": "RealClassEval/csn/snippet_199"
+}

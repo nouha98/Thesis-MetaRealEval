@@ -1,0 +1,120 @@
+{
+ "attributes": [],
+ "class_name": "BasePagination",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BasePagination": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_paginated_response": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "paginate_query": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      1613
+     ],
+     "kind": "positional",
+     "name": "query",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      1613
+     ],
+     "kind": "positional",
+     "name": "request",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_273",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: NotImplementedError; inputs are an SQLAlchemy query and a request",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "e7668601baa185d0ece206e405ed8c064c91c519ae0e57dee42d9e353e42e722",
+  "skeleton_sha256": "98d4b7965047726128ec2b3c66a5ec3b7363594f23214820e5ec180e2831da12",
+  "tests_sha256": "1262882a7bfb043e0de5be6351a131cd29862d1a42b080c5c5d1ff04e47f8135"
+ },
+ "support": {
+  "generatable_methods": [
+   "paginate_query"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: NotImplementedError; inputs are an SQLAlchemy query and a request"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_273",
+ "task_id": "RealClassEval/csn/snippet_273"
+}

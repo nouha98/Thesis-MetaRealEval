@@ -1,0 +1,89 @@
+{
+ "attributes": [],
+ "class_name": "CkClass",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CkClass": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__str__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "flags2text": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "state2text": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_193",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted: Base class with empty flags_dict/fields; real code, low value.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "ad5e2258aa779de68e230baf3faf65240a65dce21e6197b4f31841c70121d170",
+  "skeleton_sha256": "b47b9f2d575cff7a01eb6d963eb63252dd176f5c5e6cbf4d1a220379c649d761",
+  "tests_sha256": "b35ebb1f2d237581814aa89452df46d5dea1edfa86548d17430b14a8d39ac264"
+ },
+ "support": {
+  "generatable_methods": [
+   "__str__",
+   "flags2text",
+   "state2text",
+   "to_dict"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_193",
+ "task_id": "RealClassEval/csn/snippet_193"
+}

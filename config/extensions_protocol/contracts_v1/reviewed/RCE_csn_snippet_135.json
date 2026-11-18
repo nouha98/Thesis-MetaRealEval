@@ -1,0 +1,62 @@
+{
+ "attributes": [],
+ "class_name": "NoOpTraceId",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "NoOpTraceId": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "to_id": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_135",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted: Constant id string; low value.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "5ae8ac7f2ed5076ce6d0ac8761eaa63cd2fa301b87be2f1280e1ea5ba017ff2a",
+  "skeleton_sha256": "3df28e1823a87e9156d8e69c5ec3c7bdb7518d304dcfcc8515602843224e1e56",
+  "tests_sha256": "b1ca400fee0ac0d9288523c014c3fffad65a57086a85b346d8b022fece4b7143"
+ },
+ "support": {
+  "generatable_methods": [
+   "to_id"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_135",
+ "task_id": "RealClassEval/csn/snippet_135"
+}

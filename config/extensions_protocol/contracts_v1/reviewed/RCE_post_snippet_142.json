@@ -1,0 +1,207 @@
+{
+ "attributes": [],
+ "class_name": "SystemOverrideTemplate",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SystemOverrideTemplate": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "enhance_api_admin_call": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "Izn:^VmBJqm7%(h",
+      "j5g",
+      "[fG\\i\"U"
+     ],
+     "kind": "positional",
+     "name": "attack",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "enhance_emergency_protocol": {
+   "async": false,
+   "generate": false,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "unRaJ4\fioNK",
+      null
+     ],
+     "kind": "positional",
+     "name": "attack",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "review: not generated"
+  },
+  "enhance_machine_identity": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "attack",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "enhance_maintenance_mode": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "attack",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "enhance_system_override": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "Izn:^VmBJqm7%(h"
+     ],
+     "kind": "positional",
+     "name": "attack",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "enhance_trusted_integration": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "Y\fx#a@z5\u000b$b6"
+     ],
+     "kind": "positional",
+     "name": "attack",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_142",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4: enhance_emergency_protocol embeds hash(attack), which is salted per process for str: not generated.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "5ae36ee8bf2237b8b339467993585d7db7f54adf9ebca2aeb3bfc24bcf3e910b",
+  "skeleton_sha256": "2ec2cae290d3e85e94376c434d4e31f7db3716a03f6ac555666cae47d9721694",
+  "tests_sha256": "1d536e4dce76e2fa19b3dda5c6b734e907ded8e54ac163f56cd623ad4b9a078d"
+ },
+ "support": {
+  "generatable_methods": [
+   "enhance_api_admin_call",
+   "enhance_machine_identity",
+   "enhance_maintenance_mode",
+   "enhance_system_override",
+   "enhance_trusted_integration"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_142",
+ "task_id": "RealClassEval/post_cut-off/snippet_142"
+}

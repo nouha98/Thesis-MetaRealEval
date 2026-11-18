@@ -1,0 +1,95 @@
+{
+ "attributes": [],
+ "class_name": "CompositeCallbackHandler",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CompositeCallbackHandler": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varargs",
+    "name": "handlers",
+    "type": {
+     "t": "unsupported",
+     "why": "annotation Callable"
+    },
+    "type_source": "annotation",
+    "why": "annotation Callable"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "annotation",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_69",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R2: *handlers are callables",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "834b323acb21b5684b164a877a8f35c4f55a1506e247e3e07ec2a1be12c87e70",
+  "skeleton_sha256": "a93a0b2c98556363d470d18e747ef5c8314a2569bdf3644b3ff77b40e4973482",
+  "tests_sha256": "8918bdb883fb98d27109b0e5fc55ceac84805d8ef965c5069250bab0196798d8"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R2: *handlers are callables"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_69",
+ "task_id": "RealClassEval/post_cut-off/snippet_69"
+}

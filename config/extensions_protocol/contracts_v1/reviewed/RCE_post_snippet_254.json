@@ -1,0 +1,165 @@
+{
+ "attributes": [],
+ "class_name": "TimeTracker",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "TimeTracker": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "@!-nM",
+     "`\\eHtj*+6,-ZUN*",
+     null
+    ],
+    "kind": "positional",
+    "name": "history_dir",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "format_time_elapsed": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "last_time",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation datetime"
+     },
+     "type_source": "annotation",
+     "why": "annotation datetime"
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "current_time",
+     "type": {
+      "t": "unsupported",
+      "why": "annotation datetime"
+     },
+     "type_source": "annotation",
+     "why": "annotation datetime"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "get_last_message_time": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "@!-nM"
+     ],
+     "kind": "positional",
+     "name": "character_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_time_elapsed_prefix": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "`\\eHtj*+6,-ZUN*"
+     ],
+     "kind": "positional",
+     "name": "character_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_254",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4: reads history files; datetime.now()",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "46ac2537c1b60eda957bc11eb390600b3fb97a87947c29ac89377d62c54e48e4",
+  "skeleton_sha256": "1e428cd36cd168848ea3ffbb9236ca33bb5484ac43be57a1c8d120ccedd12a93",
+  "tests_sha256": "0155ddb93fa5d4fc0699ac5e064489ce2f5af48c8204f850963e0775c1d25016"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_last_message_time",
+   "get_time_elapsed_prefix"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R4: reads history files; datetime.now()"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_254",
+ "task_id": "RealClassEval/post_cut-off/snippet_254"
+}

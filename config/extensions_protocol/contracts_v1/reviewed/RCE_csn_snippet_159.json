@@ -1,0 +1,86 @@
+{
+ "attributes": [],
+ "class_name": "Style",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Style": {
+    "accessors": [],
+    "attributes": [
+     "text"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "\rTmtROD~FL\"GR1IiN>M*",
+     -3249
+    ],
+    "kind": "positional",
+    "name": "text",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "items": {
+        "t": "str"
+       },
+       "t": "list"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_159",
+ "properties": [
+  "text"
+ ],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "05260b4938eeda9c5a56d2598c808fc169e03b3107dad83a0e7c02e117713414",
+  "skeleton_sha256": "decbf3a61583cd2f792b222ab26d8e26f15ab07152663be47d86b62557fd8906",
+  "tests_sha256": "a8b4d6d17bac6c00299e6301f1bee9b7f84e928221eeb97c157ee588ae3345fb"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 2,
+  "properties": [
+   "text"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_159",
+ "task_id": "RealClassEval/csn/snippet_159"
+}

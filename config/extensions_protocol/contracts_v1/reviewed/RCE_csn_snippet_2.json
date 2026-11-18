@@ -1,0 +1,101 @@
+{
+ "attributes": [],
+ "class_name": "OcrQualityDictionary",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "OcrQualityDictionary": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "RkE0|i+v>h)f0lYa!AV",
+     "RkE0|i+v>hcf0lYa!AV"
+    ],
+    "kind": "keyword_only",
+    "name": "wordlist",
+    "type": {
+     "items": {
+      "t": "str"
+     },
+     "t": "list"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "measure_words_matched": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "RkE0|i+v>h)f0lYa!AV",
+      "RkE0|i+v>hcf0lYa!AV"
+     ],
+     "kind": "positional",
+     "name": "ocr_text",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_2",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "a981d0161e104d1bc86539c1ba4975d5cdacba48c107029fed7263b66a386a6b",
+  "skeleton_sha256": "99e386f07a2fa95a62bc1d1e05b2132f444e398d3459333dab876c3d18321504",
+  "tests_sha256": "11790803f7195c2f36f9f7b479ca7e03b27b84aea7d57bbe527569927eb8ad27"
+ },
+ "support": {
+  "generatable_methods": [
+   "measure_words_matched"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_2",
+ "task_id": "RealClassEval/csn/snippet_2"
+}

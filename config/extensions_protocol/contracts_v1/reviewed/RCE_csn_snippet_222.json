@@ -1,0 +1,182 @@
+{
+ "attributes": [],
+ "class_name": "Transport",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Transport": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "gateway",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "connect",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     1.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     1.0
+    ],
+    "kind": "positional",
+    "name": "timeout",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "default",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     10.0
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     10.0
+    ],
+    "kind": "positional",
+    "name": "reconnect_timeout",
+    "type": {
+     "options": [
+      {
+       "t": "none"
+      },
+      {
+       "t": "float"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "p_literals",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varkw",
+    "name": "kwargs",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "**kwargs are not generated (keyword names are not specified)"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "disconnect": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "send": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "message",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_222",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R2/R4: needs a gateway, a connect coroutine and a protocol with a transport; asyncio I/O",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "bfec34c7521a5bb98fe9fa35297f57e8e8d1231837effec2c0a16ba04751506c",
+  "skeleton_sha256": "a1a82216afff076fe5bf986e21a414c43bb97c5174cadb05255fa1497e29fd18",
+  "tests_sha256": "f13f20fbc7ef0e0968ca443da5bcbc6cf480444ae60669c7d5e4a251675774ce"
+ },
+ "support": {
+  "generatable_methods": [
+   "disconnect",
+   "send"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R2/R4: needs a gateway, a connect coroutine and a protocol with a transport; asyncio I/O"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_222",
+ "task_id": "RealClassEval/csn/snippet_222"
+}

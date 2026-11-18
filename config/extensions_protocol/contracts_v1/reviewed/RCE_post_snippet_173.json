@@ -1,0 +1,91 @@
+{
+ "attributes": [],
+ "class_name": "Clock",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Clock": {
+    "accessors": [],
+    "attributes": [
+     "now_ns",
+     "now_s"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "update": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      true,
+      -2505.065008
+     ],
+     "kind": "positional",
+     "name": "ns",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "ValueError"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_173",
+ "properties": [
+  "now_ns",
+  "now_s"
+ ],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "1ee1bb27b0293218325c455d206abd9987a212cc7b0995f653e7eaa708581c1d",
+  "skeleton_sha256": "7499d6446c68e998dda89cf451bfdf12536353bd54310760ea28a65de3a97018",
+  "tests_sha256": "0494d587e29282781d9c6ee1de899566bcdb5df3bede9364fd5e9c4286a23130"
+ },
+ "support": {
+  "generatable_methods": [
+   "update"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [
+   "now_ns",
+   "now_s"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_173",
+ "task_id": "RealClassEval/post_cut-off/snippet_173"
+}

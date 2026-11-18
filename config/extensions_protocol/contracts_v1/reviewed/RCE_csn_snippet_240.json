@@ -1,0 +1,193 @@
+{
+ "attributes": [],
+ "class_name": "ExternalIssue",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "ExternalIssue": {
+    "accessors": [],
+    "attributes": [
+     "payload"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     "x"
+    ],
+    "kind": "positional",
+    "name": "bts_url",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     "x"
+    ],
+    "kind": "positional",
+    "name": "bts_project",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     "x"
+    ],
+    "kind": "positional",
+    "name": "submit_date",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     "x"
+    ],
+    "kind": "positional",
+    "name": "ticket_id",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     null,
+     "x"
+    ],
+    "kind": "positional",
+    "name": "url",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_240",
+ "properties": [
+  "payload"
+ ],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: ctor docstring: URL, project, ticket id, date, url (strings or None); submit_date as str is an inference.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "d7af4163a8d25829deebbbf8325f33384eaa9ca876b7a801c4f5748a20b1d3ba",
+  "skeleton_sha256": "ca6e0d47a94e197e860492abfc655989659188abc9ca1460b2ba979d9de0ff2a",
+  "tests_sha256": "32c1f37b71f7b58060b1e57c43dcb7849f40b9a0228d1b2142874b29acee5e96"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [
+   "payload"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_240",
+ "task_id": "RealClassEval/csn/snippet_240"
+}

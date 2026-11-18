@@ -1,0 +1,144 @@
+{
+ "attributes": [],
+ "class_name": "TnsFilter",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "TnsFilter": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": false,
+    "has_default": false,
+    "hints": [],
+    "kind": "varargs",
+    "name": "tns",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "none",
+    "why": "no type and no valid literal hints"
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "add": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varargs",
+     "name": "tns",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "match": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {
+       "false": false
+      }
+     ],
+     "kind": "positional",
+     "name": "root",
+     "type": {
+      "keys": {
+       "t": "bool"
+      },
+      "t": "dict",
+      "values": {
+       "t": "bool"
+      }
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "ns",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_186",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R2: match(root, ns): root is an XML Element; a dict only fits the reference's .get accessor",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "41b02c53950f290466024cba521ca0295a349153ad93cc85c7972a8bff7e5349",
+  "skeleton_sha256": "2faa16bd58d819162d6bfd2f7b2a5e0e1f3402430aa7477c62da3b1708042c30",
+  "tests_sha256": "dbdf691a8705171b5e573d7ac04a84bcf3e057d06508f3f39efd28625973b0b5"
+ },
+ "support": {
+  "generatable_methods": [
+   "add",
+   "match"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R2: match(root, ns): root is an XML Element; a dict only fits the reference's .get accessor"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_186",
+ "task_id": "RealClassEval/csn/snippet_186"
+}

@@ -1,0 +1,96 @@
+{
+ "attributes": [],
+ "class_name": "Array",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Array": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "<I",
+     ">2H",
+     "4B"
+    ],
+    "kind": "positional",
+    "name": "fmt",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__call__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "buf",
+     "type": {
+      "t": "bytes"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_51",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: ctor fmt is the struct format string (draft: bytes); hint formats of 4 bytes. Bytes hints cannot be stored in a contract (JSON), so buf relies on random bytes: the usability check decides.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "3ea353521f76635a501d2e6cb74c69f21df9295802cd49808bb41d88a723e7cf",
+  "skeleton_sha256": "d1cab9366e3f85436d0e7cc12e3d85ecfe3d6a3e23b0172ebf099df1d5154060",
+  "tests_sha256": "dcc8439689b2d457f7491b9c4244e829696a2e0aa59539a35c0c8ad4a9e3c562"
+ },
+ "support": {
+  "generatable_methods": [
+   "__call__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_51",
+ "task_id": "RealClassEval/csn/snippet_51"
+}

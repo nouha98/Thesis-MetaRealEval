@@ -1,0 +1,152 @@
+{
+ "attributes": [],
+ "class_name": "CommandDispatcher",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CommandDispatcher": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "bound": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "instance",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "docstring",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "command": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "fn",
+     "type": {
+      "t": "unsupported",
+      "why": "docstring type 'function'"
+     },
+     "type_source": "docstring",
+     "why": "docstring type 'function'"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "execute_command": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "command",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "docstring",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "args",
+     "type": {
+      "keys": {
+       "t": "any"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "docstring",
+     "why": null
+    }
+   ],
+   "raises_documented": [
+    "KeyError"
+   ],
+   "why": null
+  }
+ },
+ "module_name": "snippet_304",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R2: core input is a callable (command(fn)); same as csn_109",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "b8bc2da335a372dbf5502fd5d019f334a34e7f3bdb3ceb582216dea115ca38a9",
+  "skeleton_sha256": "c502516f279bad66c4a0a590f0ef5dc883b67db46bd65792f1dfdeecc251680c",
+  "tests_sha256": "bcd4664d43e5df45c97a4227656fed864c19f001ced0cdc87ee8d2a580460cc7"
+ },
+ "support": {
+  "generatable_methods": [
+   "execute_command"
+  ],
+  "n_p_scenarios": 4,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R2: core input is a callable (command(fn)); same as csn_109"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_304",
+ "task_id": "RealClassEval/csn/snippet_304"
+}

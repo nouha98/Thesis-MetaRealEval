@@ -1,0 +1,120 @@
+{
+ "attributes": [],
+ "class_name": "MetricsDAO",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "MetricsDAO": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "delete": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "run_id",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "get": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      1613
+     ],
+     "kind": "positional",
+     "name": "run_id",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      1613
+     ],
+     "kind": "positional",
+     "name": "metric_id",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_170",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: get/delete raise NotImplementedError ('The MetricsDAO class is abstract')",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "02d634cbf21112e1eb06fc344aa57494631151174a3a7643c993a678097c0022",
+  "skeleton_sha256": "7b9af59ebdd39998dac30603f7233659c0746434ee585f2f24c96b381c70d2c1",
+  "tests_sha256": "b8643d4da56ec334d2a0d9f2b0d6f6e94419f9e4bd929d21cbc8ea459a7ba846"
+ },
+ "support": {
+  "generatable_methods": [
+   "get"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: get/delete raise NotImplementedError ('The MetricsDAO class is abstract')"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_170",
+ "task_id": "RealClassEval/csn/snippet_170"
+}

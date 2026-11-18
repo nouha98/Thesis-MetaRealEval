@@ -43,6 +43,9 @@ SPEC = {
     "primary": "per-task mean lift(llm_whole) - lift(operator) over contributing fault classes; paired Wilcoxon "
                "(statistics.wilcoxon_test) + task-cluster bootstrap CI; two-sided, alpha 0.05",
     "secondary_holm": ["strict_share", "fault_coverage", "hidden_fault_strict_share_p_live"],
+    # detections are reference-relative (D7); p_fail_faults_only keeps faults confirmed by a P assertion
+    "sensitivity": ["perturbed_pool", "pool_size_40", "total_failures_included", "p_fail_faults_only",
+                    "unstratified_null", "no_deduplication", "unequalised_max"],
 }
 
 

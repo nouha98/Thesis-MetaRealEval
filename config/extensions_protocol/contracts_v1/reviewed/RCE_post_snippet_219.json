@@ -1,0 +1,152 @@
+{
+ "attributes": [],
+ "class_name": "TokenUsageTracker",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "TokenUsageTracker": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_stats": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "reset": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "update": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "success",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {
+       ",W[\rO'L\u000bLkQ>\\9;": 1219,
+       "G": false
+      }
+     ],
+     "kind": "positional",
+     "name": "token_usage",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "int"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "turn_count",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      true
+     ],
+     "kind": "positional",
+     "name": "execution_time",
+     "type": {
+      "t": "float"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_219",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "64c7d17c8f16a05484ab895f191b564f08293fcd9ab65162bb4d16ae7b283e23",
+  "skeleton_sha256": "bf4e373dcee3b7d1008ce0a1c4bfd31e77ca2a0f07b2b68a092d12dee6a2f888",
+  "tests_sha256": "56394f4ae62c92c4633a773b1607bad0146d2a89863a1b287608736d287ceb41"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_stats",
+   "reset",
+   "update"
+  ],
+  "n_p_scenarios": 5,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_219",
+ "task_id": "RealClassEval/post_cut-off/snippet_219"
+}

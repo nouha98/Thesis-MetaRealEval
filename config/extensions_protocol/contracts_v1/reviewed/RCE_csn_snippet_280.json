@@ -1,0 +1,93 @@
+{
+ "attributes": [],
+ "class_name": "SystemFieldContext",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SystemFieldContext": {
+    "accessors": [],
+    "attributes": [
+     "field",
+     "record_cls"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "field",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "review",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     null
+    ],
+    "kind": "positional",
+    "name": "record_cls",
+    "type": {
+     "t": "any"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {},
+ "module_name": "snippet_280",
+ "properties": [
+  "field",
+  "record_cls"
+ ],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5a: field and record_cls are only stored and returned: opaque. Weak behavioural evidence (limitation).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "9eefcf239a035e9ee2487d73051f3b3e527769a30c020587fa4fcdd6e700c17f",
+  "skeleton_sha256": "fe8fcfc252210231ac0c0f8ff11c7264be8321ccde4c1603299a505d8bde54b9",
+  "tests_sha256": "d2259347bd5aa4106bf024747364ea4b383eebf65921f1335f1e61c20653541a"
+ },
+ "support": {
+  "generatable_methods": [],
+  "n_p_scenarios": 1,
+  "properties": [
+   "field",
+   "record_cls"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_280",
+ "task_id": "RealClassEval/csn/snippet_280"
+}

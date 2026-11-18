@@ -1,0 +1,101 @@
+{
+ "attributes": [],
+ "class_name": "CodePageManager",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CodePageManager": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "data",
+    "type": {
+     "keys": {
+      "t": "str"
+     },
+     "t": "dict",
+     "values": {
+      "t": "str"
+     }
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_encoding_name": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "utf8",
+      "latin1"
+     ],
+     "kind": "positional",
+     "name": "encoding",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_60",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "drafter bug: get_encoding_name is a staticmethod(encoding) in the reference but the draft has no parameter, so every call raised TypeError; ctor data is the dict get_encoding indexes (inferred).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "4beaad12dac33b330e787d75ddf89f14e7ac42416d274c67b53025350a5360fb",
+  "skeleton_sha256": "80a6d4b9ca4ca3b755b6675fa8594a1a859993447d6733ee71c6a5f709fd4eb1",
+  "tests_sha256": "58c2bffe7884128835215c6ba573bd941ffa95ca8f6510e0239c8ff9dbb35e83"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_encoding_name"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_60",
+ "task_id": "RealClassEval/csn/snippet_60"
+}

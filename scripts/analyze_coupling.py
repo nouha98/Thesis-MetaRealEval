@@ -240,6 +240,7 @@ def endpoints(dets: list[dict], dev: set) -> dict:
     sens = {"perturbed_pool": compare(_row_set(dets, dev, pool="perturbed"), "lift"),
             "pool_size_40": compare(_row_set(dets, dev, gen_limit=SPEC["pool_size_check_n_generated"]), "lift"),
             "total_failures_included": compare(_row_set(dets, dev, include_total_failures=True), "lift"),
+            "p_fail_faults_only": compare(_row_set(dets, dev, fault_filter=lambda s: s["p_pass"] is False), "lift"),
             "unstratified_null": compare(_row_set(dets, dev, stratified_null=False), "lift"),
             "no_deduplication": compare(_row_set(dets, dev, deduplicate=False), "lift"),
             "unequalised_max": compare(_row_set(dets, dev, equalise=False), "lift")}

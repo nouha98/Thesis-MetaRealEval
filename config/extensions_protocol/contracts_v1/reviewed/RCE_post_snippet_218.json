@@ -1,0 +1,144 @@
+{
+ "attributes": [],
+ "class_name": "CBlock",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "CBlock": {
+    "accessors": [],
+    "attributes": [
+     "value"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "{",
+     null,
+     "ga{nab<\\]LW`vb",
+     true,
+     "(o\ttk[",
+     -1544.224
+    ],
+    "kind": "positional",
+    "name": "value",
+    "type": {
+     "options": [
+      {
+       "t": "str"
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": [
+     null
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     {
+      "\t\t^\rX": "]@i_1eEmY>",
+      "(o\ttk[": "(o\ttk[",
+      "]@i_1eEmY>": "(o\ttk["
+     },
+     null
+    ],
+    "kind": "positional",
+    "name": "meta",
+    "type": {
+     "options": [
+      {
+       "keys": {
+        "t": "str"
+       },
+       "t": "dict",
+       "values": {
+        "t": "any"
+       }
+      },
+      {
+       "t": "none"
+      }
+     ],
+     "t": "union"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "__str__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_218",
+ "properties": [
+  "value"
+ ],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "ae407e8660f7d8da335b0bf4bccdf599c4f7d45f04790b87403db675ef6376e8",
+  "skeleton_sha256": "bd323c6100c9451465a94e8ddfa9806e18bb32522de1f902f16493619c3a482e",
+  "tests_sha256": "2af7b41102d683f7e6743e0a6b7f8442201fd6d4c37a667604844725cb9861c5"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__",
+   "__str__"
+  ],
+  "n_p_scenarios": 7,
+  "properties": [
+   "value"
+  ],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_218",
+ "task_id": "RealClassEval/post_cut-off/snippet_218"
+}

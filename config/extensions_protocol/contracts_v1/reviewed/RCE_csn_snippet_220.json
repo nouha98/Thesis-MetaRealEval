@@ -1,0 +1,156 @@
+{
+ "attributes": [
+  "interval",
+  "limit",
+  "remaining",
+  "throttled"
+ ],
+ "class_name": "RateLimitsInfo",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "RateLimitsInfo": {
+    "accessors": [],
+    "attributes": [
+     "interval",
+     "limit",
+     "remaining",
+     "throttled"
+    ],
+    "kind": "accessors"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__str__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "from_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {
+       "interval": 1.0,
+       "limit": 10,
+       "remaining": 5
+      }
+     ],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "options": [
+        {
+         "t": "int"
+        },
+        {
+         "t": "float"
+        },
+        {
+         "t": "str"
+        }
+       ],
+       "t": "union"
+      }
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "from_headers": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {
+       "X-RateLimit-Interval": "1",
+       "X-RateLimit-Limit": "10",
+       "X-RateLimit-Remaining": "5",
+       "X-RateLimit-Reset": "0"
+      }
+     ],
+     "kind": "positional",
+     "name": "headers",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "str"
+      }
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_220",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: from_dict ('Create ... from a dictionary') and from_headers ('from HTTP headers') were left ungenerated; without them __str__ on the default None attributes raises TypeError and nothing is valid. Returned instances are observed through interval, limit, remaining, throttled.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "8c100a64c5adb1f1369b10f81c9d571e009f70111d51d6063e23649d0a53bd22",
+  "skeleton_sha256": "a7dfb2b9db55ffcb17045960a73a016b7add046a7da7e2634cf20870ff043205",
+  "tests_sha256": "773ddb83d3d2a2d981d40ae2f7855ccb98330ce0305b53345cdaca95bed963ef"
+ },
+ "support": {
+  "generatable_methods": [
+   "__str__",
+   "from_dict",
+   "from_headers"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_220",
+ "task_id": "RealClassEval/csn/snippet_220"
+}

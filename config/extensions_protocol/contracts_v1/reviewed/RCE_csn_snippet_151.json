@@ -1,0 +1,127 @@
+{
+ "attributes": [],
+ "class_name": "AdaptiveCardComponent",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "AdaptiveCardComponent": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "QO",
+     -618
+    ],
+    "kind": "positional",
+    "name": "serializable_properties",
+    "type": {
+     "items": {
+      "t": "any"
+     },
+     "t": "list"
+    },
+    "type_source": "docstring",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "QO",
+     -618
+    ],
+    "kind": "positional",
+    "name": "simple_properties",
+    "type": {
+     "items": {
+      "t": "any"
+     },
+     "t": "list"
+    },
+    "type_source": "docstring",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "to_dict": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "to_json": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "varkw",
+     "name": "kwargs",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "**kwargs are not generated (keyword names are not specified)"
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_151",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted: Only to_json(**kwargs) is weak and it is not generated; ctor lists come from the docstring.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "da321ca08465b5abb0e33f5b883ae8bf9288bb5e2205c7a6e6dc50071e77551e",
+  "skeleton_sha256": "addd09c307888dcec664fde5e48a9b57fbaea45aa637163f5905ebb3e3d848bc",
+  "tests_sha256": "8d652993aa5afe110022460c5bad950c6eeb14233c1447b22e02c5843f51c0aa"
+ },
+ "support": {
+  "generatable_methods": [
+   "to_dict",
+   "to_json"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_151",
+ "task_id": "RealClassEval/csn/snippet_151"
+}

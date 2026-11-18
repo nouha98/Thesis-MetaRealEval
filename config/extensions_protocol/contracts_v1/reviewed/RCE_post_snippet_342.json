@@ -1,0 +1,79 @@
+{
+ "attributes": [
+  "guess"
+ ],
+ "class_name": "Maximize",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Maximize": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [],
+    "kind": "positional",
+    "name": "guess",
+    "type": {
+     "t": "float"
+    },
+    "type_source": "review",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__repr__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_342",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: 'maximized state variable': numeric guess (inferred).",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "3bc377761d38bc4f740f8526af8bb3bbdc1dba2e3ab922f6d617e38fd0ea25b1",
+  "skeleton_sha256": "bcfbd12f322fa1d0fbbaa0efce1535b732391a3af64ed885a2e25addc2133a79",
+  "tests_sha256": "6af3002001714ef1d9dd8bf6ee1efa8a9508968a87629170dfd3b51783c38489"
+ },
+ "support": {
+  "generatable_methods": [
+   "__repr__"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_342",
+ "task_id": "RealClassEval/post_cut-off/snippet_342"
+}

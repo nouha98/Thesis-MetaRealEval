@@ -1,0 +1,153 @@
+{
+ "attributes": [],
+ "class_name": "SelectorPattern",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "SelectorPattern": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "dPYnfOZhA]T2"
+    ],
+    "kind": "positional",
+    "name": "name",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   },
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "dPYnfOZhA]T2"
+    ],
+    "kind": "positional",
+    "name": "pattern",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_name": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "match": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "*"
+     ],
+     "kind": "positional",
+     "name": "selector",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      1596
+     ],
+     "kind": "positional",
+     "name": "index",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      1596
+     ],
+     "kind": "positional",
+     "name": "flags",
+     "type": {
+      "t": "int"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_153",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted: match ignores flags but only the name suggests an effect (docstring silent): kept as drafted, not R5b.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "bdbbea98beb6110eb459c4ff91483b7dc7eb4e6cbea24d09e9d2fd42c986fc45",
+  "skeleton_sha256": "ab57ac6375cbeb9323a8e6677c9622f737d6abe3c1d211ca21f03d8bd84dd863",
+  "tests_sha256": "e18e824b1a6f4daf88d5a00339600b43b215b988f9ed524362d1625faca20a75"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_name",
+   "match"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_153",
+ "task_id": "RealClassEval/csn/snippet_153"
+}

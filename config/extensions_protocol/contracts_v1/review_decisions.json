@@ -1,0 +1,1611 @@
+{
+ "RCE_csn_snippet_101": {
+  "notes": "creates a real temp file with a random name and deletes it in __del__",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_104": {
+  "notes": "all methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_105": {
+  "notes": "all methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_108": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.details",
+    "type": "dict[str, str | int]"
+   }
+  ],
+  "notes": "details is a dict (reference self.details[attr]; class doc 'data for single IP address'): inferred; low value.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_109": {
+  "notes": "core input is a callable (operation); the draft typed it bytes",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_113": {
+  "notes": "exists/remove are docstring-only interface stubs; remove would touch the file system",
+  "rule": "R1a",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_115": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_116": {
+  "notes": "all methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_119": {
+  "notes": "No-op documented ('Do nothing').",
+  "rule": "accepted as drafted (R1a exception: documented no-op)",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_120": {
+  "notes": "No-op documented ('Do nothing').",
+  "rule": "accepted as drafted (R1a exception: documented no-op)",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_125": {
+  "edits": [
+   {
+    "constraints": {
+     "min": 0
+    },
+    "hints": [],
+    "param": "__init__.size",
+    "type": "int"
+   },
+   {
+    "constraints": {
+     "min": 0
+    },
+    "param": "update.a",
+    "type": "int"
+   },
+   {
+    "hints": [],
+    "param": "update.val",
+    "type": "int"
+   }
+  ],
+  "notes": "ctor size int >= 0 (draft: bool or int); update.a is 'index in t' (non-negative; a negative index never terminates in the reference), val int; prefixMin.a stays any int (negative is documented).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_135": {
+  "notes": "Constant id string; low value.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_139": {
+  "notes": "Field class input (the draft typed it bytes)",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_141": {
+  "notes": "call_action is pass; the class doc says implementations must provide it",
+  "rule": "R1a",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_142": {
+  "edits": [
+   {
+    "hints": [
+     "build"
+    ],
+    "param": "get_project_template.build_dir",
+    "type": "str"
+   },
+   {
+    "hints": [
+     null,
+     "gdb"
+    ],
+    "param": "get_project_template.debugger",
+    "type": "str | None"
+   }
+  ],
+  "notes": "build_dir is 'Build output path' (class doc), the draft's float came from one P literal; debugger str or None is an inference (doc says only 'Debugger').",
+  "rule": "R2/R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_147": {
+  "edits": [
+   {
+    "hints": [
+     null
+    ],
+    "param": "__init__.data",
+    "type": "any"
+   },
+   {
+    "hints": [
+     null
+    ],
+    "param": "update.data",
+    "type": "any"
+   }
+  ],
+  "notes": "Documented no-op hash function; the reference never reads data and no docstring types it: opaque.",
+  "rule": "R5a",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_149": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "parse.s",
+    "type": "str"
+   }
+  ],
+  "notes": "parse: 'Given the string s'; the draft's float came from one P literal. validate stays ungenerated.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_151": {
+  "notes": "Only to_json(**kwargs) is weak and it is not generated; ctor lists come from the docstring.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_153": {
+  "notes": "match ignores flags but only the name suggests an effect (docstring silent): kept as drafted, not R5b.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_157": {
+  "edits": [
+   {
+    "hints": [
+     null,
+     "\\x4142",
+     "abc"
+    ],
+    "param": "get_placeholder.value",
+    "type": "str | None"
+   }
+  ],
+  "notes": "get_placeholder: docstring 'The `value` string is checked'; encrypt_sql = None so both documented branches are defined; hint starting with a backslash-x reaches the keep branch.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_159": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_160": {
+  "edits": [
+   {
+    "hints": [
+     [
+      "0:00:01.000,0:00:02.500",
+      "Hello"
+     ]
+    ],
+    "param": "from_lines.lines",
+    "type": "list[str]"
+   },
+   {
+    "hints": [
+     [
+      "0:00:01.000,0:00:02.500",
+      "Hello"
+     ]
+    ],
+    "param": "is_valid.lines",
+    "type": "list[str]"
+   }
+  ],
+  "notes": "Hint lines reach the timing pattern; random lines never match and from_lines then fails an assert.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_161": {
+  "edits": [
+   {
+    "hints": [
+     [
+      "1",
+      "00:00:01,000 --> 00:00:02,500",
+      "Hello"
+     ]
+    ],
+    "param": "from_lines.lines",
+    "type": "list[str]"
+   },
+   {
+    "hints": [
+     [
+      "1",
+      "00:00:01,000 --> 00:00:02,500",
+      "Hello"
+     ]
+    ],
+    "param": "is_valid.lines",
+    "type": "list[str]"
+   }
+  ],
+  "notes": "Hint lines reach the SRT cue pattern.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_162": {
+  "edits": [
+   {
+    "hints": [
+     [
+      "NOTE a comment"
+     ],
+     [
+      "NOTE",
+      "two",
+      "lines"
+     ]
+    ],
+    "param": "from_lines.lines",
+    "type": "list[str]"
+   },
+   {
+    "hints": [
+     [
+      "NOTE a comment"
+     ],
+     [
+      "NOTE",
+      "two",
+      "lines"
+     ]
+    ],
+    "param": "is_valid.lines",
+    "type": "list[str]"
+   }
+  ],
+  "notes": "Hint lines reach the NOTE pattern.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_163": {
+  "edits": [
+   {
+    "hints": [
+     [
+      "STYLE",
+      "::cue { color: red }"
+     ]
+    ],
+    "param": "from_lines.lines",
+    "type": "list[str]"
+   },
+   {
+    "hints": [
+     [
+      "STYLE",
+      "::cue { color: red }"
+     ]
+    ],
+    "param": "is_valid.lines",
+    "type": "list[str]"
+   }
+  ],
+  "notes": "Hint lines reach the STYLE pattern.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_168": {
+  "notes": "all methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_169": {
+  "notes": "all methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_17": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.val",
+    "type": "int | str | list[int]"
+   },
+   {
+    "hints": [],
+    "param": "__init__._type",
+    "type": "str"
+   }
+  ],
+  "notes": "'variable with value and type': val int, str or list, _type str (inferred from the class doc).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_170": {
+  "notes": "get/delete raise NotImplementedError ('The MetricsDAO class is abstract')",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_171": {
+  "notes": "every method raises NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_172": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "get_thing.idx",
+    "type": "int"
+   },
+   {
+    "hints": [],
+    "param": "__init__.things",
+    "type": "list"
+   },
+   {
+    "hints": [],
+    "param": "__init__.name",
+    "type": "str"
+   }
+  ],
+  "notes": "get_thing idx is 'the index'; class doc 'container for multiple things'; name is the mDNS server name.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_173": {
+  "notes": "get_name returns self.thing.title: thing is a framework Thing object (draft: bool)",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_175": {
+  "notes": "all methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_178": {
+  "edits": [
+   {
+    "hints": [
+     "<",
+     ">",
+     "^"
+    ],
+    "param": "__init__.alignment",
+    "type": "str"
+   }
+  ],
+  "notes": "alignment is a keyword-only Alignment string; the draft's type came from a P literal.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_184": {
+  "edits": [
+   {
+    "generate": true,
+    "hints": [
+     "a&b<c>\"d'e",
+     "&amp;&lt;x&gt;",
+     "plain"
+    ],
+    "param": "encode.s",
+    "type": "str"
+   },
+   {
+    "hints": [
+     "&amp;&lt;x&gt;",
+     "&quot;q&apos;"
+    ],
+    "param": "decode.s",
+    "type": "str"
+   },
+   {
+    "hints": [
+     "a&b",
+     "plain",
+     "<x>"
+    ],
+    "param": "needsEncoding.s",
+    "type": "str"
+   }
+  ],
+  "notes": "encode was left ungenerated although its docstring says '@type s: str'; hints contain XML specials so the encoding paths are reached.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_186": {
+  "notes": "match(root, ns): root is an XML Element; a dict only fits the reference's .get accessor",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_193": {
+  "notes": "Base class with empty flags_dict/fields; real code, low value.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_199": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.uri",
+    "type": "str"
+   }
+  ],
+  "notes": "Class doc 'a URI value'; __repr__ must return a str.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_2": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_204": {
+  "notes": "get_request_credentials raises NotImplementedError; authenticate_request needs Flask's request context",
+  "rule": "R1/R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_205": {
+  "notes": "both methods raise NotImplementedError (documented)",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_207": {
+  "notes": "both methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_216": {
+  "notes": "pass observer callbacks on an ABC; the input is a PowerManagement instance",
+  "rule": "R1a/R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_217": {
+  "notes": "Constant '[Filtered]'; low value.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_218": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_220": {
+  "edits": [
+   {
+    "generate": true,
+    "hints": [
+     {
+      "interval": 1.0,
+      "limit": 10,
+      "remaining": 5
+     }
+    ],
+    "param": "from_dict.data",
+    "type": "dict[str, int | float | str]"
+   },
+   {
+    "generate": true,
+    "hints": [
+     {
+      "X-RateLimit-Interval": "1",
+      "X-RateLimit-Limit": "10",
+      "X-RateLimit-Remaining": "5",
+      "X-RateLimit-Reset": "0"
+     }
+    ],
+    "param": "from_headers.headers",
+    "type": "dict[str, str]"
+   },
+   {
+    "own_class": [
+     "interval",
+     "limit",
+     "remaining",
+     "throttled"
+    ]
+   }
+  ],
+  "notes": "from_dict ('Create ... from a dictionary') and from_headers ('from HTTP headers') were left ungenerated; without them __str__ on the default None attributes raises TypeError and nothing is valid. Returned instances are observed through interval, limit, remaining, throttled.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_222": {
+  "notes": "needs a gateway, a connect coroutine and a protocol with a transport; asyncio I/O",
+  "rule": "R2/R4",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_231": {
+  "notes": "PROVISIONAL: __len__ returns a float, so len(x) raises TypeError; kept only if the usability check finds valid tests.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_233": {
+  "notes": "versions maps names to TemplateVersion objects (.timestamp())",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_240": {
+  "edits": [
+   {
+    "hints": [
+     null,
+     "x"
+    ],
+    "param": "__init__.bts_url",
+    "type": "str | None"
+   },
+   {
+    "hints": [
+     null,
+     "x"
+    ],
+    "param": "__init__.bts_project",
+    "type": "str | None"
+   },
+   {
+    "hints": [
+     null,
+     "x"
+    ],
+    "param": "__init__.submit_date",
+    "type": "str | None"
+   },
+   {
+    "hints": [
+     null,
+     "x"
+    ],
+    "param": "__init__.ticket_id",
+    "type": "str | None"
+   },
+   {
+    "hints": [
+     null,
+     "x"
+    ],
+    "param": "__init__.url",
+    "type": "str | None"
+   }
+  ],
+  "notes": "ctor docstring: URL, project, ticket id, date, url (strings or None); submit_date as str is an inference.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_241": {
+  "edits": [
+   {
+    "hints": [
+     "pb001",
+     "ab001",
+     "si001",
+     "ti001",
+     "nd001"
+    ],
+    "param": "__init__.issue_type",
+    "type": "str"
+   },
+   {
+    "hints": [
+     null,
+     "c"
+    ],
+    "param": "__init__.comment",
+    "type": "str | None"
+   }
+  ],
+  "notes": "issue_type 'Allowable values: pb***, ab***, si***, ti***, nd001'; comment is text. external_issue_add stays ungenerated (needs an ExternalIssue).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_245": {
+  "notes": "mixin: get_default_sample reads self.name, which only the host class defines",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_250": {
+  "notes": "framebuf is a framebuffer object the generator cannot build (draft typed it bool)",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_251": {
+  "notes": "framebuf is a framebuffer object the generator cannot build (draft typed it bool)",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_252": {
+  "notes": "framebuf is a framebuffer object the generator cannot build (draft typed it bool)",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_257": {
+  "edits": [
+   {
+    "generate": false,
+    "method": "save"
+   }
+  ],
+  "notes": "save is a pass stub in an override-me service; lookup is kept (UserProfile is defined in the module).",
+  "rule": "R1b",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_272": {
+  "notes": "Django view mixin (self.request.user, super().get_form_kwargs())",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_273": {
+  "notes": "NotImplementedError; inputs are an SQLAlchemy query and a request",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_274": {
+  "edits": [
+   {
+    "hints": [
+     null
+    ],
+    "param": "has_permission.request",
+    "type": "any"
+   },
+   {
+    "hints": [
+     null
+    ],
+    "param": "has_permission.view",
+    "type": "any"
+   },
+   {
+    "hints": [
+     null
+    ],
+    "param": "has_object_permission.request",
+    "type": "any"
+   },
+   {
+    "hints": [
+     null
+    ],
+    "param": "has_object_permission.view",
+    "type": "any"
+   },
+   {
+    "hints": [
+     null
+    ],
+    "param": "has_object_permission.obj",
+    "type": "any"
+   }
+  ],
+  "notes": "request/view/obj are opaque framework objects the reference never reads; the reference returns the constant True and the docstring only fixes the type (bool): detections are disagreement with the reference (D7), not specification violations.",
+  "rule": "R5a",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_275": {
+  "notes": "every method raises NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_276": {
+  "notes": "needs a connection object with query_single",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_278": {
+  "notes": "load raises NotImplementedError; dump needs a record object",
+  "rule": "R1/R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_279": {
+  "notes": "load is docstring-only; record_cls is a class and record a record object",
+  "rule": "R1a/R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_280": {
+  "edits": [
+   {
+    "hints": [
+     null
+    ],
+    "param": "__init__.field",
+    "type": "any"
+   },
+   {
+    "hints": [
+     null
+    ],
+    "param": "__init__.record_cls",
+    "type": "any"
+   }
+  ],
+  "notes": "field and record_cls are only stored and returned: opaque. Weak behavioural evidence (limitation).",
+  "rule": "R5a",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_286": {
+  "notes": "enum mixin (self.value, cls(level) in cls)",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_288": {
+  "notes": "getId returns id(self), which differs between runs; clone returns an own-class copy",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_30": {
+  "notes": "docstring is template text ('Summary', 'Description'); expr is a WeldObject/ndarray; WeldObject is not defined in the reference, so evaluate raises an undocumented NameError",
+  "rule": "R3/R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_302": {
+  "notes": "handle is pass on an ABC",
+  "rule": "R1a",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_304": {
+  "notes": "core input is a callable (command(fn)); same as csn_109",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_305": {
+  "notes": "reads self.resources from the host and an undefined QuotaHealth",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_33": {
+  "edits": [
+   {
+    "hints": [
+     null
+    ],
+    "param": "wants.exc",
+    "type": "any"
+   }
+  ],
+  "notes": "wants is documented to return True for all exceptions; the reference never touches exc (del exc): opaque. handle stays ungenerated ('must be overridden').",
+  "rule": "R5a",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_42": {
+  "notes": "needs a device object (device.shell)",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_45": {
+  "notes": "every method raises NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_46": {
+  "edits": [
+   {
+    "generate": false,
+    "method": "canonical_uri"
+   },
+   {
+    "generate": false,
+    "method": "extract"
+   },
+   {
+    "generate": false,
+    "method": "service_number"
+   }
+  ],
+  "notes": "Only magic() has behaviour; canonical_uri, extract and service_number raise NotImplementedError.",
+  "rule": "R1b",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_48": {
+  "edits": [
+   {
+    "generate": false,
+    "method": "now"
+   }
+  ],
+  "notes": "now() returns the current time: not generated. unpack(data: bytes) kept. pack stays ungenerated: the generator has no datetime type. Bytes hints cannot be stored, so unpack relies on random 12-byte values: the usability check decides.",
+  "rule": "R4/R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_49": {
+  "notes": "all methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_50": {
+  "notes": "tree is an AST and MetPyVisitor is external",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_51": {
+  "edits": [
+   {
+    "hints": [
+     "<I",
+     ">2H",
+     "4B"
+    ],
+    "param": "__init__.fmt",
+    "type": "str"
+   }
+  ],
+  "notes": "ctor fmt is the struct format string (draft: bytes); hint formats of 4 bytes. Bytes hints cannot be stored in a contract (JSON), so buf relies on random bytes: the usability check decides.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_53": {
+  "edits": [
+   {
+    "constraints": {
+     "min": 0
+    },
+    "hints": [],
+    "param": "__init__.num_bits",
+    "type": "int"
+   },
+   {
+    "hints": [],
+    "param": "__call__.val",
+    "type": "int"
+   }
+  ],
+  "notes": "Class doc 'Breaks an integer'; num_bits is a bit count (>= 0; the generator's ints are bounded).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_56": {
+  "notes": "docstring-only stubs in an interface",
+  "rule": "R1a",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_6": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_60": {
+  "edits": [
+   {
+    "add_param": "get_encoding_name.encoding",
+    "hints": [
+     "utf8",
+     "latin1"
+    ],
+    "type": "str"
+   },
+   {
+    "hints": [],
+    "param": "__init__.data",
+    "type": "dict[str, str]"
+   }
+  ],
+  "notes": "get_encoding_name is a staticmethod(encoding) in the reference but the draft has no parameter, so every call raised TypeError; ctor data is the dict get_encoding indexes (inferred).",
+  "rule": "drafter bug",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_63": {
+  "notes": "data_stream is an iterator (next(...)); the generator has no iterator type",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_69": {
+  "notes": "@abstractmethod placeholders; docstring 'Abstract interface'",
+  "rule": "R1a",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_7": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_75": {
+  "notes": "all methods raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_8": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_82": {
+  "edits": [
+   {
+    "generate": false,
+    "method": "complete"
+   },
+   {
+    "param": "relevant_part.original",
+    "type": "str"
+   },
+   {
+    "constraints": {
+     "min": 0
+    },
+    "hints": [],
+    "param": "relevant_part.pos",
+    "type": "int"
+   }
+  ],
+  "notes": "complete is a pass stub on an ABC; relevant_part: original str, pos int >= 0 (typed in complete's docstring).",
+  "rule": "R1b/R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_84": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.title",
+    "type": "str"
+   }
+  ],
+  "notes": "title is written to an XML title element: str. to_xml returns an ET.Element (opaque). add_argument stays ungenerated (Argument object).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_csn_snippet_85": {
+  "notes": "callback and errback only raise NotImplementedError",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_csn_snippet_9": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_csn_snippet_98": {
+  "notes": "all generated methods raise NotImplementedError; extend_partial takes numpy arrays",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_112": {
+  "edits": [
+   {
+    "generate": false,
+    "param": "__init__.log_func"
+   },
+   {
+    "generate": false,
+    "method": "get_reset_info"
+   }
+  ],
+  "notes": "log_func is a callable (default print used); get_reset_info returns time.time() of the reset: both not generated.",
+  "rule": "R4 (parameter level)",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_129": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.client_uid",
+    "type": "str"
+   },
+   {
+    "hints": [],
+    "param": "add_segments.partial_segments",
+    "type": "list[str] | None"
+   },
+   {
+    "hints": [],
+    "param": "add_segments.completed_segments",
+    "type": "list[str] | None"
+   }
+  ],
+  "notes": "Assumption: the string element type is inferred from the reference (it stores and concatenates the lists); the docstring says only 'segments'. client_uid is an id (str).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_132": {
+  "edits": [
+   {
+    "constraints": {
+     "choices": [
+      1,
+      2
+     ]
+    },
+    "hints": [
+     1,
+     2
+    ],
+    "param": "__init__.style",
+    "type": "int"
+   }
+  ],
+  "notes": "style is Literal[1, 2] in the reference signature.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_134": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_14": {
+  "edits": [
+   {
+    "generate": false,
+    "method": "get_A_template"
+   }
+  ],
+  "notes": "get_A_template uses random.choice/random.sample: not generated. get_Q_template kept; low value.",
+  "rule": "R4",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_141": {
+  "notes": "Deterministic f-string templates.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_142": {
+  "edits": [
+   {
+    "generate": false,
+    "method": "enhance_emergency_protocol"
+   }
+  ],
+  "notes": "enhance_emergency_protocol embeds hash(attack), which is salted per process for str: not generated.",
+  "rule": "R4",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_152": {
+  "notes": "undefined dependency: TrieNode is not defined in the module, so the class cannot be constructed",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_153": {
+  "edits": [
+   {
+    "hints": [
+     "ifeq ($(A),1)",
+     "else",
+     "endif",
+     "ifdef X",
+     "all: dep"
+    ],
+    "param": "process_line.line",
+    "type": "str"
+   }
+  ],
+  "notes": "Hint lines reach the conditional branches of the Makefile tracker.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_154": {
+  "edits": [
+   {
+    "hints": [
+     "if [ -f x ]; then",
+     "for i in 1 2; do",
+     "while true; do",
+     "echo hi"
+    ],
+    "param": "is_shell_control_start.line",
+    "type": "str"
+   },
+   {
+    "hints": [
+     "fi",
+     "done;",
+     "esac",
+     "echo hi"
+    ],
+    "param": "is_shell_control_end.line",
+    "type": "str"
+   },
+   {
+    "hints": [
+     "a && b",
+     "ls | wc",
+     "echo hi"
+    ],
+    "param": "contains_shell_operators.line",
+    "type": "str"
+   }
+  ],
+  "notes": "Hint lines reach the shell control branches.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_155": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_159": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_16": {
+  "notes": "add_callback stays ungenerated (callable).",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_165": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_167": {
+  "notes": "print_aggregated_stats writes to stdout, which is not observed.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_173": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_182": {
+  "notes": "write raises NotImplementedError; finalize is an empty stub",
+  "rule": "R1",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_185": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_189": {
+  "notes": "real sleeping and timing; env.sim.render() needs a simulator object",
+  "rule": "R4/R2",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_19": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_194": {
+  "edits": [
+   {
+    "hints": [
+     null
+    ],
+    "param": "next.error",
+    "type": "any"
+   }
+  ],
+  "notes": "Documented: 'Return the fixed delay while attempts remain; otherwise None'; error is never touched: opaque.",
+  "rule": "R5a",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_209": {
+  "notes": "file_contents keys are Path, but the reference uses only .values() (R2 exception).",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_218": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_219": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_22": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_221": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_222": {
+  "notes": "Only get_supported_models (constant list) is generated; low value.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_223": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_225": {
+  "notes": "operation is ignored but annotated str, so it is kept (R5a replaces only invented types); identity functions, low value.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_226": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_227": {
+  "edits": [
+   {
+    "hints": [
+     "hello",
+     "plain text"
+    ],
+    "param": "__init__.user_message",
+    "type": "str | dict[str, str]"
+   },
+   {
+    "hints": [],
+    "param": "__init__.message_index",
+    "type": "int"
+   },
+   {
+    "generate": false,
+    "param": "get_preview.max_length"
+   }
+  ],
+  "notes": "ctor user_message is str or dict (reference _extract_preview); get_preview.max_length is ignored by the reference (always 50) and not promised by the docstring: not generated, default used.",
+  "rule": "R5a/R5b",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_23": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_232": {
+  "notes": "time.perf_counter() elapsed times",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_242": {
+  "notes": "needs a stream object; all behaviour is writes to it",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_243": {
+  "notes": "stdout-only behaviour (not observed); flush is a documented no-op; low value.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_245": {
+  "notes": "core input is a callable (register); same as csn_109 / csn_304",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_249": {
+  "edits": [
+   {
+    "hints": [
+     {
+      "content": "hi",
+      "role": "user"
+     }
+    ],
+    "param": "from_dict.data",
+    "type": "dict[str, str]"
+   },
+   {
+    "own_class": [
+     "role",
+     "content"
+    ]
+   }
+  ],
+  "notes": "from_dict hint reaches the happy path (random dicts raise KeyError); returned Message observed through role, content.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_252": {
+  "notes": "register_frontend is pass; the class doc says plugins must implement it; the input is a callable",
+  "rule": "R1a/R2",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_253": {
+  "notes": "log files, os.makedirs, os.remove, datetime.now()",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_254": {
+  "notes": "reads history files; datetime.now()",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_255": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_256": {
+  "notes": "tool_name is ignored but annotated str, so it is kept.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_264": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_268": {
+  "edits": [
+   {
+    "generate": true,
+    "hints": [],
+    "param": "index.doc",
+    "type": "dict[str, int | str]"
+   },
+   {
+    "generate": true,
+    "hints": [],
+    "param": "remove.doc",
+    "type": "dict[str, int | str]"
+   },
+   {
+    "generate": true,
+    "hints": [],
+    "param": "reindex.old_doc",
+    "type": "dict[str, int | str]"
+   },
+   {
+    "generate": true,
+    "hints": [],
+    "param": "reindex.new_doc",
+    "type": "dict[str, int | str]"
+   },
+   {
+    "param": "query.field",
+    "type": "str"
+   },
+   {
+    "param": "query.value",
+    "type": "int | str"
+   },
+   {
+    "param": "query_in.field",
+    "type": "str"
+   },
+   {
+    "param": "query_in.values",
+    "type": "list[int | str]"
+   }
+  ],
+  "notes": "Docstrings say the document 'should be a dictionary'; index/remove/reindex were left ungenerated, so generated scenarios only queried an empty store.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_280": {
+  "notes": "worker pool and background execution; *args/**kwargs forwarded to an arbitrary function",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_281": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_285": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_286": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_29": {
+  "notes": "files under Path.home()",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_294": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_295": {
+  "edits": [
+   {
+    "generate": false,
+    "param": "select_tools.num_agents"
+   }
+  ],
+  "notes": "select_tools.num_agents not generated: the default None keeps the single-agent path; the multi-agent path uses random.choice.",
+  "rule": "R4 (parameter level)",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_305": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_307": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_308": {
+  "notes": "save returns uuid4 ids and stamps time.time(); load/info need those ids",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_312": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_324": {
+  "notes": "time.time() windows; timing-dependent results",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_325": {
+  "edits": [
+   {
+    "hints": [
+     null,
+     "a.py"
+    ],
+    "param": "__init__.file_path",
+    "type": "str | None"
+   }
+  ],
+  "notes": "file_path is only wrapped in str() by the reference: str or None; module/yaml_document stay None.",
+  "rule": "R2/R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_339": {
+  "edits": [
+   {
+    "generate": false,
+    "method": "write_config"
+   }
+  ],
+  "notes": "write_config writes a file and prints: not generated. generate_config kept.",
+  "rule": "R4",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_340": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.value",
+    "type": "float"
+   }
+  ],
+  "notes": "'fixed state variable in the optimization problem': numeric value (inferred).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_341": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.guess",
+    "type": "float"
+   }
+  ],
+  "notes": "'free state variable': numeric guess (inferred).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_342": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.guess",
+    "type": "float"
+   }
+  ],
+  "notes": "'maximized state variable': numeric guess (inferred).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_343": {
+  "edits": [
+   {
+    "hints": [],
+    "param": "__init__.guess",
+    "type": "float"
+   }
+  ],
+  "notes": "'minimized state variable': numeric guess (inferred).",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_346": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_347": {
+  "notes": "undefined dependency: MessageType is not defined in the module, so every method raises NameError",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_351": {
+  "edits": [
+   {
+    "hints": [
+     null,
+     "a.py"
+    ],
+    "param": "__init__.file_path",
+    "type": "str | None"
+   }
+  ],
+  "notes": "Same as post_325.",
+  "rule": "R2/R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_368": {
+  "notes": "reads prompt files and creates .apm/compiled",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_371": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_374": {
+  "edits": [
+   {
+    "constraints": {
+     "min": 0
+    },
+    "hints": [],
+    "param": "__init__.num_channels",
+    "type": "int"
+   },
+   {
+    "constraints": {
+     "min": 0
+    },
+    "hints": [],
+    "param": "get_channel.index",
+    "type": "int"
+   }
+  ],
+  "notes": "num_channels >= 0 (draft: bool or int); get_channel index >= 0 ('Index of the channel').",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_41": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_42": {
+  "notes": "",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ },
+ "RCE_post_snippet_45": {
+  "notes": "time.time() windows; timing-dependent results",
+  "rule": "R4",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_68": {
+  "edits": [
+   {
+    "generate": true,
+    "hints": [],
+    "param": "set.value",
+    "type": "int | str | list[int] | dict[str, int]"
+   }
+  ],
+  "notes": "set(key, value) was left ungenerated; its docstring states 'must be JSON serializable'.",
+  "rule": "R5",
+  "verdict": "accept with edits"
+ },
+ "RCE_post_snippet_69": {
+  "notes": "*handlers are callables",
+  "rule": "R2",
+  "verdict": "reject"
+ },
+ "RCE_post_snippet_70": {
+  "notes": "stdout-only behaviour (not observed); low value.",
+  "rule": "accepted as drafted",
+  "verdict": "accept"
+ }
+}

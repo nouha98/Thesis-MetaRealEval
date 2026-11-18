@@ -1,0 +1,64 @@
+{
+ "attributes": [],
+ "class_name": "BufferWithSegmentsCollection",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BufferWithSegmentsCollection": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "__len__": {
+   "async": false,
+   "generate": true,
+   "kind": "dunder",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_105",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: all methods raise NotImplementedError",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "43abba3b794cfe98d9e0a0e026ec479d0f81b06ebc2b800f536ccffed4facc1c",
+  "skeleton_sha256": "2f0b7a7c822294a97230c484ee9084e2fdf82807001453de822ba86fa96e7ad9",
+  "tests_sha256": "061d66059c82b7f5f78ee4ec6ecc75daeb8bb0e9d0eb767259ed2aaf4a6879cf"
+ },
+ "support": {
+  "generatable_methods": [
+   "__len__"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: all methods raise NotImplementedError"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_105",
+ "task_id": "RealClassEval/csn/snippet_105"
+}

@@ -1,0 +1,90 @@
+{
+ "attributes": [],
+ "class_name": "IJavaStreamParser",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "IJavaStreamParser": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "dump": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "content",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "run": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_207",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: both methods raise NotImplementedError",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "2ccf4660a514763a2bb07eb92f3948f32c1720d95d676b4d406bbe5ba907ca77",
+  "skeleton_sha256": "f0343ceb397c1c29a160ecfab69c1554735ce0f7ff9138ae5d618fd10b33f185",
+  "tests_sha256": "e3bdc5eec74d9ef140b9518c2f809933821483f792613358ecba44f9802215d8"
+ },
+ "support": {
+  "generatable_methods": [
+   "run",
+   "dump"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: both methods raise NotImplementedError"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_207",
+ "task_id": "RealClassEval/csn/snippet_207"
+}

@@ -1,0 +1,154 @@
+{
+ "attributes": [],
+ "class_name": "BedrockAgentCoreContext",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "BedrockAgentCoreContext": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "get_request_id": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_session_id": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "get_workload_access_token": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  },
+  "set_request_context": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "request_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": [
+      null
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      null
+     ],
+     "kind": "positional",
+     "name": "session_id",
+     "type": {
+      "options": [
+       {
+        "t": "str"
+       },
+       {
+        "t": "none"
+       }
+      ],
+      "t": "union"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "set_workload_access_token": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "token",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_223",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "accepted as drafted",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept"
+ },
+ "sources": {
+  "reference_sha256": "87cafdb0db99981348e896a7250f3a66b848c8bbc6ad408789b97f086a4c86c8",
+  "skeleton_sha256": "2fcff20159e89a623f9e9855d337983d9fbbe38d765a473e99d4feb36ae095c5",
+  "tests_sha256": "473bbd4ae3643239d6df303d1842dc7894ee806f5fcacc7ced0c190984c19d9d"
+ },
+ "support": {
+  "generatable_methods": [
+   "get_request_id",
+   "get_session_id",
+   "get_workload_access_token",
+   "set_request_context",
+   "set_workload_access_token"
+  ],
+  "n_p_scenarios": 1,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_post_snippet_223",
+ "task_id": "RealClassEval/post_cut-off/snippet_223"
+}

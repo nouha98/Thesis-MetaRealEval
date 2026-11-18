@@ -1,0 +1,171 @@
+{
+ "attributes": [],
+ "class_name": "WebVTTCommentBlock",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "WebVTTCommentBlock": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": null,
+    "generate": true,
+    "has_default": false,
+    "hints": [
+     "lP;m2)g@Nl6",
+     null,
+     "(`\n"
+    ],
+    "kind": "positional",
+    "name": "text",
+    "type": {
+     "t": "str"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "format_lines": {
+   "async": false,
+   "generate": true,
+   "kind": "staticmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "lOa&CrcEb_H=D!73s",
+      "%\n"
+     ],
+     "kind": "positional",
+     "name": "lines",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "from_lines": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       "NOTE a comment"
+      ],
+      [
+       "NOTE",
+       "two",
+       "lines"
+      ]
+     ],
+     "kind": "positional",
+     "name": "lines",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "is_valid": {
+   "async": false,
+   "generate": true,
+   "kind": "classmethod",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      [
+       "NOTE a comment"
+      ],
+      [
+       "NOTE",
+       "two",
+       "lines"
+      ]
+     ],
+     "kind": "positional",
+     "name": "lines",
+     "type": {
+      "items": {
+       "t": "str"
+      },
+      "t": "list"
+     },
+     "type_source": "review",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_162",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R5: Hint lines reach the NOTE pattern.",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "accept with edits"
+ },
+ "sources": {
+  "reference_sha256": "e42b1815a02517c015f441fb6155fb06edaa7778efd5cfb39a59ec48e9b00571",
+  "skeleton_sha256": "b732b3cd841a7b873f5ed5c56d5d26010ffe3dee33cb9bdf2f6ae06592de2b08",
+  "tests_sha256": "bad1806fa5f373dfc06d3ca991010da64787f5ffacd950be0fefcabb07a0ed22"
+ },
+ "support": {
+  "generatable_methods": [
+   "format_lines",
+   "from_lines",
+   "is_valid"
+  ],
+  "n_p_scenarios": 3,
+  "properties": [],
+  "reasons": [],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": true
+ },
+ "task": "RCE_csn_snippet_162",
+ "task_id": "RealClassEval/csn/snippet_162"
+}

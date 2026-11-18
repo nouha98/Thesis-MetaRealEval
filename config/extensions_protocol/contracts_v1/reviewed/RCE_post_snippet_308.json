@@ -1,0 +1,212 @@
+{
+ "attributes": [],
+ "class_name": "InMemoryBlobStore",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "InMemoryBlobStore": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [
+   {
+    "constraints": {},
+    "default": [
+     100
+    ],
+    "generate": true,
+    "has_default": true,
+    "hints": [
+     4119,
+     100
+    ],
+    "kind": "positional",
+    "name": "max_size",
+    "type": {
+     "t": "int"
+    },
+    "type_source": "annotation",
+    "why": null
+   }
+  ],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "delete": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "u6.vH?s;4P/%\u000b/U{",
+      "IWf;)"
+     ],
+     "kind": "positional",
+     "name": "blob_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "info": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "blob_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "load": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "v\tg",
+      "6v:&Mg!8}g<wr1j",
+      "Sa\\+4u:JVEAsf>\"=d"
+     ],
+     "kind": "positional",
+     "name": "blob_id",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "save": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      "k'-a^\n5{\t>9nRK-pS",
+      "MB"
+     ],
+     "kind": "positional",
+     "name": "data",
+     "type": {
+      "t": "bytes"
+     },
+     "type_source": "annotation",
+     "why": null
+    },
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      {
+       "MB": 4119,
+       "k'-a^\n5{\t>9nRK-pS": "MB"
+      },
+      {
+       "k'-a^\n5{\t>9nRK-pS": 4119
+      },
+      {
+       "MB": 4119
+      }
+     ],
+     "kind": "positional",
+     "name": "meta",
+     "type": {
+      "keys": {
+       "t": "str"
+      },
+      "t": "dict",
+      "values": {
+       "t": "any"
+      }
+     },
+     "type_source": "annotation",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_308",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R4: save returns uuid4 ids and stamps time.time(); load/info need those ids",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "c67501ad6921cabfcaa97f7fde24667bf532037f66dd74bc7009ab81cf4f6629",
+  "skeleton_sha256": "4eac9a8fbb63b95fb1662bd77ba97495c48d6e88e87f71d3a6f9d1ab0dcc66dd",
+  "tests_sha256": "a0a0f79a1a4a4a497daa4a50a756d9c97a3f56eaf7de49b73ac4c9d6a3ff8bd2"
+ },
+ "support": {
+  "generatable_methods": [
+   "save",
+   "load",
+   "info",
+   "delete"
+  ],
+  "n_p_scenarios": 8,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R4: save returns uuid4 ids and stamps time.time(); load/info need those ids"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_post_snippet_308",
+ "task_id": "RealClassEval/post_cut-off/snippet_308"
+}

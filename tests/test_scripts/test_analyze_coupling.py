@@ -55,8 +55,8 @@ def test_endpoints_run_end_to_end_and_exclude_development_tasks():
     res = ac.endpoints(dets, dev={"T0"})
     assert len(res["per_task"]) == 5
     assert res["power_rule"]["min_tasks"] == 30 and res["power_rule"]["confirmatory"] is False
-    assert set(res["sensitivity"]) == {"perturbed_pool", "pool_size_40", "total_failures_included",
-                                       "unstratified_null", "no_deduplication", "unequalised_max"}
+    assert list(res["sensitivity"]) == ac.SPEC["sensitivity"]     # code and frozen spec list the same analyses
+    assert "p_fail_faults_only" in res["sensitivity"]
 
 
 def test_endpoints_refuse_without_a_frozen_spec(tmp_path, monkeypatch):

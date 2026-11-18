@@ -1,0 +1,64 @@
+{
+ "attributes": [],
+ "class_name": "Cursor",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "Cursor": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": true,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "count": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_169",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1: all methods raise NotImplementedError",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "cf065a59912ca7ba2842dbf63e68957ba613d7d5dadc2df241751d636c01409b",
+  "skeleton_sha256": "86c057224d2980c486c3b6c26bb264e88921fee527bacff4846325d6e42b5ec2",
+  "tests_sha256": "81839fae589174fe50daf259fde374e360c8e8de89dd74ce0f4d8612e9e69a5e"
+ },
+ "support": {
+  "generatable_methods": [
+   "count"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1: all methods raise NotImplementedError"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_169",
+ "task_id": "RealClassEval/csn/snippet_169"
+}

@@ -1,0 +1,149 @@
+{
+ "attributes": [],
+ "class_name": "FileLikeIO",
+ "comparison": {
+  "float_abs_tol": 1e-12,
+  "float_rel_tol": 1e-09,
+  "numeric": "python_eq",
+  "ordered_mappings": false,
+  "own_classes": {
+   "FileLikeIO": {
+    "accessors": [],
+    "attributes": [],
+    "kind": "opaque"
+   }
+  },
+  "strict_container_types": false
+ },
+ "constructor": {
+  "documented": false,
+  "params": [],
+  "raises_documented": []
+ },
+ "drafter": "contracts-v1",
+ "format": 1,
+ "methods": {
+  "exists": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      false
+     ],
+     "kind": "positional",
+     "name": "path",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  },
+  "open": {
+   "async": false,
+   "generate": false,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": false,
+     "has_default": false,
+     "hints": [],
+     "kind": "positional",
+     "name": "path",
+     "type": {
+      "t": "any"
+     },
+     "type_source": "none",
+     "why": "no type and no valid literal hints"
+    },
+    {
+     "constraints": {},
+     "default": [
+      "r"
+     ],
+     "generate": true,
+     "has_default": true,
+     "hints": [
+      "r"
+     ],
+     "kind": "positional",
+     "name": "mode",
+     "type": {
+      "t": "str"
+     },
+     "type_source": "default",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": "a required parameter cannot be generated"
+  },
+  "remove": {
+   "async": false,
+   "generate": true,
+   "kind": "method",
+   "params": [
+    {
+     "constraints": {},
+     "default": null,
+     "generate": true,
+     "has_default": false,
+     "hints": [
+      null,
+      false
+     ],
+     "kind": "positional",
+     "name": "path",
+     "type": {
+      "t": "bool"
+     },
+     "type_source": "p_literals",
+     "why": null
+    }
+   ],
+   "raises_documented": [],
+   "why": null
+  }
+ },
+ "module_name": "snippet_113",
+ "properties": [],
+ "review": {
+  "date": "2026-11-18",
+  "notes": "R1a: exists/remove are docstring-only interface stubs; remove would touch the file system",
+  "reviewer": "Claude (proposal); confirmed by the user",
+  "status": "reviewed",
+  "verdict": "reject"
+ },
+ "sources": {
+  "reference_sha256": "68419da13e4559970ac54fcd8d8fefaa229637b4c6c6bb35ea5057b9150c317c",
+  "skeleton_sha256": "f14833ef51667804d0cccaaef6ad235d9449535c8049fff3357f54128d8ab417",
+  "tests_sha256": "bd73fada7f9a15cce6fc9fad72020bbcd5cc39fb3e72a948f39d7500e9305ebe"
+ },
+ "support": {
+  "generatable_methods": [
+   "exists",
+   "remove"
+  ],
+  "n_p_scenarios": 2,
+  "properties": [],
+  "reasons": [
+   "review: rejected - R1a: exists/remove are docstring-only interface stubs; remove would touch the file system"
+  ],
+  "side_effect_imports": [],
+  "stdlib_only": true,
+  "supported": false
+ },
+ "task": "RCE_csn_snippet_113",
+ "task_id": "RealClassEval/csn/snippet_113"
+}

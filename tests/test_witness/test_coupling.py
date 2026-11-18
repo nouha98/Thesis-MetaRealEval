@@ -104,6 +104,30 @@ def test_cross_model_rule_and_exclusion_order():
     assert _task([op], [S(1, ["x1"], ["B"])])["excluded"] == "no_detected_llm"
 
 
+def test_cross_model_rule_applies_before_deduplication():
+    """Section 9.2: an own-model group with the same K must not make an identical cross-model
+    group ineligible (it would if the rule were applied to deduplicated goals)."""
+    op = M(1, "operator", ["x1", "x2"])
+    own, cross = M(2, "llm_whole", ["x1"], ["A"]), M(3, "llm_whole", ["x1"], ["B"])
+    sols = [S(1, ["x1"], ["A"])]
+    for kw in ({}, {"counts_only": True}):
+        assert _task([op, own, cross], sols, **kw)["excluded"] is None
+    with_own, without = _task([op, own, cross], sols), _task([op, cross], sols)
+    assert with_own["means"] == without["means"]
+    assert with_own["classes"][0]["llm_same_model_max_pc"] == 1.0
+    assert without["classes"][0]["llm_same_model_max_pc"] is None
+
+
+def test_detection_constants_match_the_frozen_spec():
+    """The frozen SPEC states detection levels and run count; detection.py must use exactly those,
+    otherwise the code could drift without changing spec_sha256."""
+    import inspect
+    from meta_real_eval.benchmarks import detection as D
+    assert D.DETECT_LEVELS == {tuple(x) for x in C.SPEC["primary_pool"]["detect_levels"]}
+    for fn in (D.primary_cells, D.perturbed_cells):
+        assert inspect.signature(fn).parameters["runs"].default == C.SPEC["primary_pool"]["runs"]
+
+
 def test_counts_only_computes_no_coupling_value():
     r = _task([M(1, "operator", ["x1"]), M(2, "llm_whole", ["x1"], ["B"])], [S(1, ["x1"])], counts_only=True)
     assert r["excluded"] is None and r["n_contributing"] == 1

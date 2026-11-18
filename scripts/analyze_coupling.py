@@ -19,6 +19,7 @@ import json
 import statistics as st
 import sys
 from pathlib import Path
+from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ext_common as ec  # noqa: E402
@@ -59,7 +60,7 @@ def inputs(det: dict, pool: str = "primary", gen_limit: int | None = None):
     tests = {t: s for t, s in tests.items() if t not in masked}
     muts, sols = [], []
     for p in det["programs"]:
-        if p.get(f"{pool}_error"):                  # never ran in this pool: no cells, not "undetected"
+        if p["kind"] == "reference" or p.get(f"{pool}_error"):   # errored: no cells, not "undetected"
             continue
         cells = p.get(pool) or {"detect": [], "import_error": True}
         detect = {t for t in cells["detect"] if t in tests}
@@ -94,16 +95,39 @@ def stratified_sample(spot: list[dict], n: int) -> list[dict]:
     return out
 
 
+def reference_problems(det: dict) -> Optional[list[str]]:
+    """Gate GC 'reference rows are clean': the reference, run as a program, detects nothing and has
+    no masked cell in either pool, and passes P. None for runs made before the reference row existed."""
+    ref = next((p for p in det["programs"] if p["kind"] == "reference"), None)
+    if ref is None:
+        return None
+    bad = [f"{pool}_error" for pool in ("primary", "perturbed") if ref.get(f"{pool}_error")]
+    for pool in ("primary", "perturbed"):
+        for cell in ("detect", "masked"):
+            if (ref.get(pool) or {}).get(cell):
+                bad.append(f"{pool}.{cell}: {len(ref[pool][cell])}")
+    if ref.get("p_passed_all") is False:
+        bad.append("fails P")
+    return bad
+
+
+def masked_share(det: dict, pool: str) -> Optional[float]:
+    progs = [p for p in det["programs"] if p["kind"] != "reference"]
+    n_cells = len(det["tests"][pool] or []) * len(progs)
+    return sum(len((p.get(pool) or {}).get("masked", [])) for p in progs) / n_cells if n_cells else None
+
+
 def technical(dets: list[dict]) -> dict:
     rows, hist_m, hist_s, fd_num, fd_den, spot, hist_timeouts = [], [0, 0], [0, 0], 0, 0, [], 0
     for det in dets:
         tests, muts, sols, n_masked = inputs(det)
-        n_cells = len(det["tests"]["primary"]) * len(det["programs"])
         r = task_analysis(det["task"], tests, muts, sols, counts_only=True)
         rows.append({"task": det["task"], "supported": det["support"]["supported"], "valid_tests": r["n_tests"],
                      "by_stratum": r["n_tests_by_stratum"], "masked_tests": n_masked,
-                     "masked_cell_share": (sum(len((p["primary"] or {}).get("masked", [])) for p in det["programs"])
-                                           / n_cells if n_cells else None),
+                     "masked_cell_share": masked_share(det, "primary"),
+                     "perturbed_masked_cell_share": masked_share(det, "perturbed"),
+                     "reference_problems": reference_problems(det),
+                     "contract_status": (det.get("contract") or {}).get("status"),
                      "runner_errors": {pl: sum(bool(p.get(f"{pl}_error")) for p in det["programs"])
                                        for pl in ("primary", "perturbed")},
                      "perturbed_pool_error": det.get("perturbed_error"),
@@ -133,11 +157,20 @@ def technical(dets: list[dict]) -> dict:
                 for t, d in (p["primary"] or {}).get("p_details", {}).items():
                     spot.append({"task": det["task"], "solution": p["id"], "test": t, "difference": d})
     valid = [r["valid_tests"] for r in rows if r["supported"]]
-    shares = [r["masked_cell_share"] for r in rows if r["masked_cell_share"] is not None]
+
+    def agreement(key):
+        shares = [r[key] for r in rows if r[key] is not None]
+        return 1 - (sum(shares) / len(shares)) if shares else None
+
     return {
         "tasks": len(rows), "supported_tasks": len(valid),
         "median_valid_tests_supported": st.median(valid) if valid else None,
-        "cell_agreement": 1 - (sum(shares) / len(shares)) if shares else None,
+        "cell_agreement": agreement("masked_cell_share"),
+        "perturbed_cell_agreement": agreement("perturbed_masked_cell_share"),
+        "reference_rows": {"clean": sum(r["reference_problems"] == [] for r in rows),
+                           "not_checked": [r["task"] for r in rows if r["reference_problems"] is None],
+                           "problems": {r["task"]: r["reference_problems"] for r in rows if r["reference_problems"]}},
+        "contract_status": {r["task"]: r["contract_status"] for r in rows if r["supported"]},
         "history_mutants_killed_reproduced": f"{hist_m[0]}/{hist_m[1]}",
         "history_solutions_p_pass_reproduced": f"{hist_s[0]}/{hist_s[1]}",
         "p_whole_suite_timeouts_excluded": hist_timeouts,

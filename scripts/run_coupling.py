@@ -119,6 +119,9 @@ def run_task(label, task, cfg, bench, groups, baseline, gated, workers, perturbe
     except SystemExit:
         contract, crec = None, {"path": None, "status": "missing"}
     excluded = set(task.meta.get("scenarios", {}).get("excluded", {})) if gated else set()
+    p_timeout = cfg.execution.timeout_s if gated else None
+    if p_timeout:          # warm the import cache before the reference pools run (cold-node timeouts)
+        _warm_up(bench, task, p_timeout, label)
     if contract is not None:
         ctx = prepare_primary(task, contract, sp["n_generated"], cfg.extensions.seed + sp["seed_offset"],
                               excluded, gated, sp["timeout_s"], sp["max_calls"])
@@ -132,12 +135,11 @@ def run_task(label, task, cfg, bench, groups, baseline, gated, workers, perturbe
         except Exception as exc:                    # reference pool unrunnable: task has no perturbed tests
             perturbed_error = _err(exc)
             print(f"[{label}] perturbed pool unavailable: {perturbed_error[:200]}", flush=True)
-    progs = mutant_programs(label, task, bench, groups, baseline)
+    # the reference itself is the first program: gate GC requires its row to be clean in every pool
+    progs = [({"kind": "reference", "id": "reference"}, task.reference_code)]
+    progs += mutant_programs(label, task, bench, groups, baseline)
     sols, sol_digest = solution_programs(label, task, bench, baseline)
     progs += sols
-    p_timeout = cfg.execution.timeout_s if gated else None
-    if p_timeout:                                   # cold-cache imports otherwise time out the first batch
-        _warm_up(bench, task, p_timeout, label)
     codes = [c for _, c in progs]
     while True:
         if workers > 1 and len(codes) > 1:

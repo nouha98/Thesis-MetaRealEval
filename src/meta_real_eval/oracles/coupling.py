@@ -79,8 +79,10 @@ def dedup(items: list[dict]) -> list[dict]:
     return sorted(out.values(), key=lambda g: min(g["ids"]))
 
 
-def eligible(goals: list[dict], fault_models: set) -> list[dict]:
-    return [g for g in goals if not (set(g.get("models") or []) & fault_models)]
+def eligible(items: list[dict], fault_models: set) -> list[dict]:
+    """Cross-model rule. Applied to mutant groups BEFORE deduplication (section 9.2): applied to
+    goals instead, one own-model group would make an identical-K cross-model group ineligible."""
+    return [g for g in items if not (set(g.get("models") or []) & fault_models)]
 
 
 # ---------------------------------------------------------------------------
@@ -183,11 +185,12 @@ def task_analysis(task: str, tests: dict[str, str], mutants: list[dict], solutio
         classes = dedup(faults)
     else:
         classes = [{"bits": s["bits"], "ids": [s["id"]], "models": set(s.get("models") or [])} for s in faults]
-    goals = {}
-    for src in SOURCES:
-        det = [m for m in muts if m["source"] == src and m["bits"] != 0]
-        goals[src] = dedup(det) if deduplicate else [
-            {"bits": m["bits"], "ids": [m["id"]], "models": set(m.get("models") or [])} for m in det]
+    def to_goals(groups: list[dict]) -> list[dict]:
+        return dedup(groups) if deduplicate else [
+            {"bits": m["bits"], "ids": [m["id"]], "models": set(m.get("models") or [])} for m in groups]
+
+    detected = {src: [m for m in muts if m["source"] == src and m["bits"] != 0] for src in SOURCES}
+    goals = {src: to_goals(detected[src]) for src in SOURCES}
     out["goals"] = {src: len(g) for src, g in goals.items()}
     out["n_fault_classes"] = len(classes)
     if not classes:
@@ -197,14 +200,16 @@ def task_analysis(task: str, tests: dict[str, str], mutants: list[dict], solutio
     if not goals["llm_whole"]:
         return {**out, "excluded": "no_detected_llm"}
     if counts_only:              # technical pilot: population only, no coupling value is computed
-        n = sum(bool(eligible(goals["llm_whole"], c["models"])) for c in classes)
+        n = sum(bool(eligible(detected["llm_whole"], c["models"])) for c in classes)
         return {**out, "excluded": None if n else "no_cross_model_llm", "n_contributing": n}
     per_class = []
     for c in classes:
         op = goals["operator"]
-        llm = eligible(goals["llm_whole"], c["models"])
-        if not llm:
+        cross = eligible(detected["llm_whole"], c["models"])      # filter first, then deduplicate
+        if not cross:
             continue
+        llm = to_goals(cross)
+        own = [m for m in detected["llm_whole"] if m not in cross]
         k = min(len(op), len(llm)) if equalise else None
         row = {"ids": c["ids"], "models": sorted(c["models"]), "size": c["bits"].bit_count(), "k": k}
         for src, gs in (("operator", op), ("llm_whole", llm)):
@@ -215,8 +220,7 @@ def task_analysis(task: str, tests: dict[str, str], mutants: list[dict], solutio
             v["lift"] = v["pc"] - v["null_pc"]
             v["n_goals"] = len(gb)
             row[src] = v
-        same = [g["bits"] for g in goals["llm_whole"] if g not in llm]     # descriptive: own-model mutants
-        row["llm_same_model_max_pc"] = max(pc(g, c["bits"]) for g in same) if same else None
+        row["llm_same_model_max_pc"] = max(pc(m["bits"], c["bits"]) for m in own) if own else None  # descriptive
         per_class.append(row)
     if not per_class:
         return {**out, "excluded": "no_cross_model_llm"}

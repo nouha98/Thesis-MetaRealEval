@@ -44,16 +44,25 @@ def p_pass(prog: dict):
     return None if prog.get("historical_killed") is None else not prog["historical_killed"]
 
 
+def reference_unstable(det: dict, pool: str) -> set:
+    """Tests on which the reference, run again as a program (later, in a worker), differs from its
+    own baseline: nondeterminism the two back-to-back baseline runs did not reveal (e.g. a
+    seconds-resolution timestamp, RCE_post_snippet_25). Pilot-derived filter, section 9.6."""
+    ref = next((p for p in det["programs"] if p["kind"] == "reference"), None)
+    cells = (ref or {}).get(pool) or {}
+    return set(cells.get("detect", [])) | set(cells.get("masked", []))
+
+
 def inputs(det: dict, pool: str = "primary", gen_limit: int | None = None):
-    """(tests, mutants, solutions) for coupling.task_analysis. A test masked for any program is
-    dropped for the whole task (counted)."""
+    """(tests, mutants, solutions) for coupling.task_analysis. A test masked for any program, or
+    unstable on the reference row, is dropped for the whole task (counted)."""
     if pool == "primary":
         tests = dict(det["tests"]["primary"])
         if gen_limit is not None:
             tests = {t: s for t, s in tests.items() if s != "gen" or int(t.rsplit("_", 1)[1]) < gen_limit}
     else:
         tests = {t: "x" for t in det["tests"]["perturbed"] or []}
-    masked = set()
+    masked = reference_unstable(det, pool)
     for p in det["programs"]:
         if p.get(pool):
             masked |= set(p[pool]["masked"])
@@ -127,6 +136,7 @@ def technical(dets: list[dict]) -> dict:
                      "masked_cell_share": masked_share(det, "primary"),
                      "perturbed_masked_cell_share": masked_share(det, "perturbed"),
                      "reference_problems": reference_problems(det),
+                     "reference_unstable_tests": {pl: len(reference_unstable(det, pl)) for pl in ("primary", "perturbed")},
                      "contract_status": (det.get("contract") or {}).get("status"),
                      "runner_errors": {pl: sum(bool(p.get(f"{pl}_error")) for p in det["programs"])
                                        for pl in ("primary", "perturbed")},
@@ -149,7 +159,8 @@ def technical(dets: list[dict]) -> dict:
                             hist_s[0] += m["stored_p_pass"] == p["p_passed_all"]
                             hist_s[1] += 1
             if p["kind"] == "solution" and p_pass(p) and p.get("perturbed"):
-                orig = [t for t in det["tests"]["perturbed"] or [] if "~p" not in t]
+                unstable = reference_unstable(det, "perturbed")
+                orig = [t for t in det["tests"]["perturbed"] or [] if "~p" not in t and t not in unstable]
                 fd_den += len(orig)
                 fd_num += len(set(p["perturbed"]["detect"]) & set(orig))
         for p in det["programs"]:
@@ -169,7 +180,9 @@ def technical(dets: list[dict]) -> dict:
         "perturbed_cell_agreement": agreement("perturbed_masked_cell_share"),
         "reference_rows": {"clean": sum(r["reference_problems"] == [] for r in rows),
                            "not_checked": [r["task"] for r in rows if r["reference_problems"] is None],
-                           "problems": {r["task"]: r["reference_problems"] for r in rows if r["reference_problems"]}},
+                           "problems": {r["task"]: r["reference_problems"] for r in rows if r["reference_problems"]},
+                           "unstable_tests_dropped": {pl: sum(r["reference_unstable_tests"][pl] for r in rows)
+                                                      for pl in ("primary", "perturbed")}},
         "contract_status": {r["task"]: r["contract_status"] for r in rows if r["supported"]},
         "history_mutants_killed_reproduced": f"{hist_m[0]}/{hist_m[1]}",
         "history_solutions_p_pass_reproduced": f"{hist_s[0]}/{hist_s[1]}",
@@ -263,6 +276,8 @@ def frozen_ok(dets: list[dict]) -> list[str]:
             problems.append(f"{d['task']}: run used a different spec")
         if fz["solution_groups"].get(d["task"]) != d["solution_groups_digest"]:
             problems.append(f"{d['task']}: solution groups differ from the frozen digest")
+        if d["support"]["supported"] and (d.get("contract") or {}).get("status") != "reviewed":
+            problems.append(f"{d['task']}: supported on an unreviewed contract (only reviewed contracts count)")
     return problems
 
 

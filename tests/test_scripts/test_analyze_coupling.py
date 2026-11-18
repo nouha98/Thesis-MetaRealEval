@@ -62,3 +62,34 @@ def test_endpoints_run_end_to_end_and_exclude_development_tasks():
 def test_endpoints_refuse_without_a_frozen_spec(tmp_path, monkeypatch):
     monkeypatch.setattr(ac, "FROZEN", tmp_path / "coupling_v1.json")
     assert ac.frozen_ok([det("T", 0)]) == ["coupling_v1.json is not frozen yet"]
+
+
+def _with_reference(d, primary_detect=(), perturbed_detect=()):
+    d["programs"].insert(0, {"kind": "reference", "id": "reference", "p_passed_all": True,
+                             "primary": {"detect": list(primary_detect), "masked": [], "import_error": False},
+                             "perturbed": {"detect": list(perturbed_detect), "masked": [], "import_error": False}})
+    return d
+
+
+def test_reference_row_is_not_a_program_and_its_unstable_tests_are_dropped():
+    d = _with_reference(det("T", 3), perturbed_detect=["x:test_1"])
+    tests, muts, sols, _ = ac.inputs(d)
+    assert len(muts) == 4 and len(sols) == 5 and all(s["id"] != "reference" for s in sols)
+    ptests, pmuts, *_ = ac.inputs(d, "perturbed")
+    assert "x:test_1" not in ptests and all("x:test_1" not in m["detect"] for m in pmuts)
+    res = ac.technical([d, _with_reference(det("U", 4))])
+    assert res["reference_rows"]["clean"] == 1 and res["reference_rows"]["problems"] == {"T": ["perturbed.detect: 1"]}
+    assert res["reference_rows"]["unstable_tests_dropped"] == {"primary": 0, "perturbed": 1}
+
+
+def test_endpoints_refuse_supported_tasks_on_unreviewed_contracts(tmp_path, monkeypatch):
+    import hashlib
+    import json
+    f = tmp_path / "coupling_v1.json"
+    sha = hashlib.sha256(json.dumps(ac.SPEC, sort_keys=True).encode()).hexdigest()
+    f.write_text(json.dumps({"spec_sha256": sha, "solution_groups": {"T": "d"}}), encoding="utf-8")
+    monkeypatch.setattr(ac, "FROZEN", f)
+    d = det("T", 0) | {"spec_sha256": sha, "contract": {"status": "draft"}}
+    assert any("unreviewed contract" in p for p in ac.frozen_ok([d]))
+    d["contract"]["status"] = "reviewed"
+    assert ac.frozen_ok([d]) == []

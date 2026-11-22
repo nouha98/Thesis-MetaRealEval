@@ -408,6 +408,9 @@ def write_md(results: dict, path: Path) -> None:
         rq4p = res["rq4_population"]
         lab = res["rq3_label_on_extreme_strata"]
         mod = res["moderation"]
+        # built outside the f-string below: nested same-type quotes inside f-strings need Python 3.12 (freia runs 3.11)
+        rq2_terc = ", ".join(f"{k[-2:]} {_num(v)}" for k, v in mod["RQ2"].items())
+        rq3_terc = ", ".join(f"{k} {_num(v['auc'])} (n={v['n']})" for k, v in mod["RQ3"].items())
         L += ["", f"- RQ4 ({rq4p['design']}): {rq4p['population_note']} Eligible tasks outside the "
                   f"baseline-discriminating subset: {len(rq4p['eligible_not_baseline_discriminating'])}.",
               f"- RQ3 label on floor tasks: {lab['floor']['n_positive']}/{lab['floor']['n']} positive; on saturated "
@@ -415,8 +418,7 @@ def write_md(results: dict, path: Path) -> None:
               f"- Moderation by baseline spread: RQ1 ρ = {_num(mod['RQ1']['rho'])} (p_perm {_num(mod['RQ1']['p_perm'], 4)}, "
               f"n={mod['RQ1']['n']}); RQ4 ρ = {_num(mod['RQ4']['rho'])} (p_perm {_num(mod['RQ4']['p_perm'], 4)}, "
               f"n={mod['RQ4']['n']}); Holm {json.dumps(mod['holm'], default=str)}. RQ2 cross-fit gap by spread tercile: "
-              f"{', '.join(f'{k[-2:]} {_num(v)}' for k, v in mod['RQ2'].items())}. RQ3 AUC by spread tercile: "
-              f"{', '.join(f'{k} {_num(v['auc'])} (n={v['n']})' for k, v in mod['RQ3'].items())}.",
+              f"{rq2_terc}. RQ3 AUC by spread tercile: {rq3_terc}.",
               f"- Checks: {sum(c['ok'] for c in res['checks'])}/{len(res['checks'])} OK.", ""]
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(L) + "\n", encoding="utf-8")

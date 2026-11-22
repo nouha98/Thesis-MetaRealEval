@@ -288,6 +288,16 @@ Confirmatory (n = 36, power rule met):
 
 **Exploratory, added after the endpoints (2026-11-22; outside the Holm family, not in the frozen SPEC; `exploratory_post_hoc` in `endpoints.json`):** null-adjusted strict share and coverage (`strict_share_lift`, `fault_coverage_lift`, each minus its null over the same permutations as the primary; the primary null is bit-identical, regression-tested), goal detection-set size (`kill_share`), one-sample tests of lift > 0 per source (`lift_above_null`), the Petrovic RQ3(a) coupling rate (`fault_coupling_rate_unequalised`), and pooled hidden-fault classes. Every comparison also reports a paired rank-biserial effect size (the Cliff's delta in `wilcoxon` treats the lists as independent) and `below_power_rule`. **Wording rule for the thesis:** the strict-share and coverage differences are interpreted only together with their null-adjusted versions.
 
+*Exploratory results (re-run 2026-11-22; every confirmatory number reproduced exactly):*
+- **Both sources are coupled above chance:** mean lift operator 0.091 (31/36 tasks positive, one-sample p < 0.001), LLM 0.117 (24/36 positive, p < 0.001).
+- **LLM mutants are harder to kill:** a goal is detected by 42% of the valid tests for LLM vs 63% for operators (Δ −0.20 [−0.26, −0.15], paired r = −0.95).
+- **That explains the secondaries.** Fault coverage adjusted for chance: Δ +0.006 [−0.042, 0.056], p = 0.88, so the raw −0.26 gap is a detection-set-size effect. Strict share adjusted for chance: Δ +0.073 [−0.030, 0.173], p = 0.07, half the raw +0.15 and no longer significant.
+- **Petrovic RQ3(a):** of 215 contributing fault classes, 45% are strictly coupled to ≥1 operator goal, 46% to ≥1 LLM goal, 54% to either (unequalised).
+- **Availability on tasks with a pool:** operator 453/734 groups detected (62%), LLM 301/627 (48%).
+- **Hidden faults:** 11 classes in 4 tasks (LLM 10, operator 3 strictly coupled); too few to interpret.
+
+**Thesis statement supported by these results:** both mutant sources are coupled to the panel's real faults above chance, and LLM mutants are not more strongly coupled than operator mutants once detection-set size is controlled (primary, n = 36). The two Holm-significant secondaries are reported as found, but they largely reflect that LLM mutants are killed by fewer tests: the coverage gap vanishes and the strict-share gap halves when each is compared with its chance level.
+
 Still to do before the results are final (all descriptive or qualitative; none changes the confirmatory numbers):
 1. the rest of the 9.4 descriptives (per model, per operator, by severity, P-pass vs P-fail, csn / post, P-only vs generated-only PC, redundancy);
 2. the **coupling row of the Note 3 table** (saturation strata), as planned in Part A;

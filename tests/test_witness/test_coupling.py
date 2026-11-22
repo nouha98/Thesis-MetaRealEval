@@ -157,3 +157,46 @@ def test_solution_groups_merge_identical_programs_and_keep_provenance():
     assert len(big["members"]) == 3 and big["models"] == ["A"]                 # docstring-insensitive
     assert {m["stored_p_pass"] for m in big["members"]} == {True, None}       # control has no stored verdict here
     assert digest(g) == digest(build_solution_groups("T", comps, rates, lambda c: c))
+
+
+# --- review 2026-11-22: size-adjusted secondaries (exploratory) -------------------------------
+
+def _old_null_pc(goal_bits, d, k, strata, B, seed):
+    """The frozen implementation, kept here to prove the primary null did not move."""
+    import random
+    from meta_real_eval.oracles.coupling import expected_max, pc, permuted
+    rng = random.Random(seed)
+    return sum(expected_max([pc(g, dd) for g in goal_bits], k)
+               for dd in (permuted(d, strata, rng) for _ in range(B))) / B
+
+
+def test_null_pc_unchanged_by_null_values():
+    import random
+    from meta_real_eval.oracles.coupling import null_pc
+    rng = random.Random(7)
+    T = 60
+    strata = [list(range(0, 20)), list(range(20, T))]
+    for _ in range(20):
+        d = sum(1 << i for i in rng.sample(range(T), 15))
+        goals = [sum(1 << i for i in rng.sample(range(T), rng.randint(1, 30))) for _ in range(5)]
+        assert null_pc(goals, d, 3, strata, 50, 11) == _old_null_pc(goals, d, 3, strata, 50, 11)
+
+
+def test_strict_and_fc_lift_remove_pure_size_effect():
+    """K unrelated to D: raw FC differs by |K| alone, the lift does not."""
+    import random
+    from meta_real_eval.oracles.coupling import null_values, source_values
+    rng = random.Random(0)
+    T, strata = 120, [list(range(120))]
+    rand = lambda n: sum(1 << i for i in rng.sample(range(T), n))
+    raw, lift = {3: [], 30: []}, {3: [], 30: []}
+    for _ in range(150):
+        d = rand(25)
+        for size in (3, 30):
+            goals = [rand(size) for _ in range(6)]
+            v, nv = source_values(goals, d, 6), null_values(goals, d, 6, strata, 50, rng.randrange(1 << 30))
+            raw[size].append(v["fc"])
+            lift[size].append(v["fc"] - nv["fc"])
+    mean = lambda xs: sum(xs) / len(xs)
+    assert mean(raw[30]) - mean(raw[3]) > 0.5          # big raw FC gap from size alone
+    assert abs(mean(lift[30]) - mean(lift[3])) < 0.05  # gone after null adjustment

@@ -2,7 +2,8 @@
 
     python scripts/saturation_rq_table.py [--permutations 10000]
 
-Rows are RQ1-RQ4 (coupling is added after Stage 2b), columns the saturation subsets:
+Rows are RQ1-RQ4 plus, for the Tier 2 runs, Stage 2b coupling (LLM - operator lift per task, read
+from the frozen endpoints' per-task rows), columns the saturation subsets:
 
   All                     every task with a defined per-task effect
   non-extreme             has_base & ~floor & ~ceiling   (models not all at 0, not all at 1)
@@ -46,6 +47,18 @@ RUNS = {
 }
 RESULTS_ROOT = {"tier1": sc.TIER1, "tier2": sc.T2_SCORES}
 SUMMARY = {"tier1": sc.TIER1 / "analysis_summary.json", "tier2": sc.T2_POST / "analysis_summary.json"}
+# Stage 2b endpoints (Tier 2 only; Tier 1 has no coupling run, HumanEval has a single check())
+COUPLING_ENDPOINTS = sc.REPO / "results_tier2_ext" / "coupling" / "full" / "endpoints.json"
+
+
+def coupling_per_task(path: Path = COUPLING_ENDPOINTS):
+    """{task: (LLM lift, operator lift)} for the contributing tasks of the frozen coupling endpoints;
+    None when Stage 2b has not been run here. Read-only; nothing is recomputed."""
+    if not path.exists():
+        return None
+    rows = json.loads(path.read_text(encoding="utf-8"))["per_task"]
+    return {r["task"]: (r["means"]["llm_whole"]["lift"], r["means"]["operator"]["lift"])
+            for r in rows if r.get("excluded") is None}
 
 
 # ---------------------------------------------------------------------------
@@ -243,6 +256,7 @@ def build_run(name: str, ar, n_perm: int, run=None) -> dict:
     rq1 = rq1_per_task(ar, RESULTS_ROOT[tier])
     rq3 = rq3_per_task(RESULTS_ROOT[tier])
     rq4, rq4_meta = rq4_per_task(rq4_source)
+    cpl = coupling_per_task() if tier == "tier2" else None
 
     table: dict = {"RQ1": {}, "RQ2": rq2_cells(sim, cross), "RQ3": {}, "RQ4": {}}
     for col in COLUMNS:
@@ -256,6 +270,9 @@ def build_run(name: str, ar, n_perm: int, run=None) -> dict:
         table["RQ4"][col] = {"tau_drop": mean_cell(drops),
                              "collapse_share_at_0.8": {"share": float(np.mean(coll)) if coll else None,
                                                        "n": len(coll)}}
+        if cpl is not None:
+            labs = [t for t in sorted(cpl) if in_column(strata, t, col)]
+            table.setdefault("Coupling", {})[col] = paired_cell([cpl[t][0] for t in labs], [cpl[t][1] for t in labs])
 
     # moderation by continuous baseline spread (exploratory; Holm across the rows that have a test)
     def spread(t):
@@ -292,14 +309,18 @@ def build_run(name: str, ar, n_perm: int, run=None) -> dict:
             "table": table, "moderation": mod, "rq3_label_on_extreme_strata": label_by_stratum,
             "rq4_population": {**{k: v for k, v in rq4_meta.items() if k != "eligible"},
                                "eligible_not_baseline_discriminating": rq4_not_disc},
-            "checks": checks(name, tier, sim, cross, counts, table, rq4_meta)}
+            "coupling_population": (None if cpl is None else
+                                    {"contributing": len(cpl), "with_saturation_stratum": sum(t in strata for t in cpl),
+                                     "note": "exploratory; the confirmatory coupling result is the unstratified "
+                                             "primary in endpoints.json"}),
+            "checks": checks(name, tier, sim, cross, counts, table, rq4_meta, cpl, strata)}
 
 
 # ---------------------------------------------------------------------------
 # Checks against the stored results (the table must reproduce what is already reported)
 # ---------------------------------------------------------------------------
 
-def checks(name, tier, sim, cross, counts, table, rq4_meta) -> list[dict]:
+def checks(name, tier, sim, cross, counts, table, rq4_meta, cpl=None, strata=None) -> list[dict]:
     out = []
 
     def add(check, ok, detail=""):
@@ -326,6 +347,10 @@ def checks(name, tier, sim, cross, counts, table, rq4_meta) -> list[dict]:
         f"{a_new['auc']} vs {a_stored['auc']}")
     add("RQ4 per-task rows cover the eligible tasks", table["RQ4"]["all"]["tau_drop"]["n"] <= rq4_meta["n_eligible"],
         f"{table['RQ4']['all']['tau_drop']['n']} defined of {rq4_meta['n_eligible']} eligible")
+    if cpl is not None:   # a label mismatch would silently empty every coupling cell
+        missing = sorted(t for t in cpl if t not in (strata or {}))
+        add("every contributing coupling task has a saturation stratum", not missing,
+            f"{len(cpl) - len(missing)}/{len(cpl)}; missing {missing[:5]}")
     return out
 
 
@@ -360,6 +385,8 @@ def table_rows(res: dict) -> list[tuple[str, list[str]]]:
     rows.append(("RQ4 τ_b drop 0.0→0.8", [_ci(T["RQ4"][c]["tau_drop"]) for c in COLUMNS]))
     rows.append(("RQ4 collapse share at 0.8", [f"{_num(T['RQ4'][c]['collapse_share_at_0.8']['share'])}, "
                                                f"n={T['RQ4'][c]['collapse_share_at_0.8']['n']}" for c in COLUMNS]))
+    if "Coupling" in T:
+        rows.append(("Coupling LLM − operator lift", [_ci(T["Coupling"][c]) for c in COLUMNS]))
     return rows
 
 

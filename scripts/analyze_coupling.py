@@ -239,7 +239,44 @@ def compare(rows: list[dict], key: str) -> dict:
         return {"n_tasks": len(rows), "note": "fewer than 2 contributing tasks"}
     return {"n_tasks": len(rows), "mean_llm": st.mean(llm), "mean_operator": st.mean(op),
             "delta": paired_cluster_bootstrap({r["task"]: [a - b] for r, a, b in zip(rows, llm, op)}),
-            "wilcoxon": wilcoxon_test(llm, op), "n_zero_delta": sum(a == b for a, b in zip(llm, op))}
+            "wilcoxon": wilcoxon_test(llm, op), "n_zero_delta": sum(a == b for a, b in zip(llm, op)),
+            # paired effect size (the Cliff's delta inside "wilcoxon" treats the two lists as independent)
+            "rank_biserial_paired": rank_biserial([a - b for a, b in zip(llm, op)]),
+            # section 9.4's 30-task rule, applied to THIS comparison's own population
+            "below_power_rule": len(rows) < SPEC["power_rule_min_tasks"]}
+
+
+def rank_biserial(diffs: list[float]) -> Optional[float]:
+    """Matched-pairs rank-biserial r = (W+ - W-) / (W+ + W-) over the non-zero differences."""
+    from scipy.stats import rankdata
+    nz = [x for x in diffs if x != 0]
+    if not nz:
+        return None
+    ranks = rankdata([abs(x) for x in nz])
+    w_pos = sum(r for r, x in zip(ranks, nz) if x > 0)
+    w_neg = sum(r for r, x in zip(ranks, nz) if x < 0)
+    return float((w_pos - w_neg) / (w_pos + w_neg))
+
+
+def lift_above_null(rows: list[dict]) -> dict:
+    """Per source, one-sample Wilcoxon of the per-task mean lift against 0 (is coupling above chance?)."""
+    from scipy.stats import wilcoxon
+    rows = [r for r in rows if r["excluded"] is None]
+    out = {}
+    for src in SOURCES:
+        lifts = [r["means"][src]["lift"] for r in rows]
+        res = wilcoxon(lifts) if len(lifts) > 1 and any(lifts) else None
+        out[src] = {"n_tasks": len(lifts), "mean_lift": st.mean(lifts) if lifts else None,
+                    "n_positive": sum(x > 0 for x in lifts), "p_value": float(res.pvalue) if res else None}
+    return out
+
+
+def hidden_class_counts(rows: list[dict]) -> dict:
+    """Pooled over tasks (descriptive): hidden fault classes, and per source how many have >= 1
+    strictly coupled P-live goal (un-equalised)."""
+    classes = [c for r in rows if r["excluded"] is None for c in r["classes"]]
+    return {"n_tasks": sum(r["excluded"] is None for r in rows), "n_classes": len(classes),
+            **{src: sum(c[src]["max_pc_unequalised"] == 1.0 for c in classes) for src in SOURCES}}
 
 
 def endpoints(dets: list[dict], dev: set) -> dict:
@@ -253,6 +290,20 @@ def endpoints(dets: list[dict], dev: set) -> dict:
     contributing = [r for r in main if r["excluded"] is None]
     same = [c["llm_same_model_max_pc"] for r in contributing for c in r["classes"] if c["llm_same_model_max_pc"] is not None]
     cross = [c["llm_whole"]["max_pc_unequalised"] for r in contributing for c in r["classes"] if c["llm_same_model_max_pc"] is not None]
+    classes = [c for r in contributing for c in r["classes"]]
+    strict_any = {src: sum(c[src]["max_pc_unequalised"] == 1.0 for c in classes) for src in SOURCES}
+    strict_any["either"] = sum(max(c[s]["max_pc_unequalised"] for s in SOURCES) == 1.0 for c in classes)
+    exploratory = {   # added after the frozen endpoints (2026-11-22): exploratory, outside the Holm family
+        "note": "not in the frozen SPEC; computed after the endpoints to interpret them",
+        "strict_share_lift": compare(main, "strict_lift"),          # strict share minus its null (same permutations)
+        "fault_coverage_lift": compare(main, "fc_lift"),            # FC minus its null
+        "kill_share": compare(main, "kill_share"),                  # mean goal |K| / |T|: how hard each source is to kill
+        "lift_above_null": lift_above_null(main),                   # is each source coupled above chance at all?
+        "fault_coupling_rate_unequalised": {                        # Petrovic RQ3(a): faults with >= 1 strictly coupled goal
+            "n_fault_classes": len(classes), "strictly_coupled": strict_any,
+            "share": {k: v / len(classes) for k, v in strict_any.items()} if classes else None},
+        "hidden_fault_classes_pooled": hidden_class_counts(hidden),
+    }
     fd = perturbed_false_detection(dets)
     perturbed = ({"infeasible": True, "false_detection": fd, "max_false_detection": PERTURBED_MAX_FALSE_DETECTION,
                   "note": "perturbed-P pool dropped: false detection above the 9.6 limit"}
@@ -275,13 +326,22 @@ def endpoints(dets: list[dict], dev: set) -> dict:
                        | {"availability": {src: [sum(r["mutants"][src]["detected"] for r in main),
                                                  sum(r["mutants"][src]["groups"] for r in main)]
                                            for src in (*SOURCES, "mixed")},
+                          # same, over tasks that HAVE a valid pool: on a no_valid_pool task every group counts as
+                          # undetected because there is no test, which deflates the share above
+                          "availability_valid_pool_tasks": {
+                              src: [sum(r["mutants"][src]["detected"] for r in main if r["n_tests"] > 0),
+                                    sum(r["mutants"][src]["groups"] for r in main if r["n_tests"] > 0)]
+                              for src in (*SOURCES, "mixed")},
                           "goals_vs_detected_groups": {src: [sum((r.get("goals") or {}).get(src, 0) for r in main),
                                                              sum(r["mutants"][src]["detected"] for r in main)]
                                                        for src in SOURCES},
                           "same_vs_cross_model_max_pc": {"n_classes": len(same),
                                                           "same_model": st.mean(same) if same else None,
-                                                          "cross_model": st.mean(cross) if cross else None}},
+                                                          "cross_model": st.mean(cross) if cross else None,
+                                                          "note": "not comparable: the cross-model max is taken over "
+                                                                  "more goals, so it is biased upward"}},
         "sensitivity": sens,
+        "exploratory_post_hoc": exploratory,
         "per_task": [{k: v for k, v in r.items() if k != "classes"} for r in main],
     }
 

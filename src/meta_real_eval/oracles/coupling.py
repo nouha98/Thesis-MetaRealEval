@@ -145,10 +145,27 @@ def permuted(d: int, strata: list[list[int]], rng: random.Random) -> int:
     return out
 
 
-def null_pc(goal_bits: list[int], d: int, k: int, strata: list[list[int]], B: int, seed: int) -> float:
+def null_values(goal_bits: list[int], d: int, k: int, strata: list[list[int]], B: int, seed: int) -> dict:
+    """Null means of PC, strict share and FC over the SAME B permutations of D.
+
+    PC is the frozen primary null. Strict share and FC are added post hoc (exploratory): neither is
+    null-adjusted in the frozen SPEC, and both move with |K| alone -- a small K is more often a
+    subset of D (higher strict), a large K covers more of D (higher FC) -- so a source difference
+    in either can be a detection-set-size effect rather than coupling."""
     rng = random.Random(seed)
-    return sum(expected_max([pc(g, dd) for g in goal_bits], k)
-               for dd in (permuted(d, strata, rng) for _ in range(B))) / B
+    acc: dict[str, list[float]] = {"pc": [], "strict": [], "fc": []}
+    for _ in range(B):
+        dd = permuted(d, strata, rng)
+        pcs = [pc(g, dd) for g in goal_bits]
+        acc["pc"].append(expected_max(pcs, k))
+        acc["strict"].append(expected_any([x == 1.0 for x in pcs], k))
+        acc["fc"].append(expected_coverage(goal_bits, dd, k) if dd else 0.0)
+    return {key: sum(v) / B for key, v in acc.items()}   # same RNG stream and summation as the frozen null_pc
+
+
+def null_pc(goal_bits: list[int], d: int, k: int, strata: list[list[int]], B: int, seed: int) -> float:
+    """The frozen primary null (bit-identical to the version used for the endpoints; regression-tested)."""
+    return null_values(goal_bits, d, k, strata, B, seed)["pc"]
 
 
 # ---------------------------------------------------------------------------
@@ -219,8 +236,13 @@ def task_analysis(task: str, tests: dict[str, str], mutants: list[dict], solutio
             gb = [g["bits"] for g in gs]
             kk = k if equalise else len(gb)
             v = source_values(gb, c["bits"], kk)
-            v["null_pc"] = null_pc(gb, c["bits"], kk, strata, B, seed_of(seed, task, min(c["ids"]), src))
+            nv = null_values(gb, c["bits"], kk, strata, B, seed_of(seed, task, min(c["ids"]), src))
+            v["null_pc"] = nv["pc"]
             v["lift"] = v["pc"] - v["null_pc"]
+            # post hoc, exploratory (not in the frozen SPEC): size-adjusted secondaries and goal |K| / |T|
+            v["strict_lift"] = v["strict"] - nv["strict"]
+            v["fc_lift"] = v["fc"] - nv["fc"]
+            v["kill_share"] = sum(g.bit_count() for g in gb) / len(gb) / n_tests
             v["n_goals"] = len(gb)
             row[src] = v
         row["llm_same_model_max_pc"] = max(pc(m["bits"], c["bits"]) for m in own) if own else None  # descriptive
@@ -230,7 +252,8 @@ def task_analysis(task: str, tests: dict[str, str], mutants: list[dict], solutio
     means = {}
     for src in SOURCES:
         means[src] = {key: sum(r[src][key] for r in per_class) / len(per_class)
-                      for key in ("pc", "lift", "strict", "fc", "mean_pc", "max_pc_unequalised", "null_pc")}
+                      for key in ("pc", "lift", "strict", "fc", "mean_pc", "max_pc_unequalised", "null_pc",
+                                  "strict_lift", "fc_lift", "kill_share")}
     return {**out, "excluded": None, "n_contributing": len(per_class), "means": means,
             "delta_lift": means["llm_whole"]["lift"] - means["operator"]["lift"], "classes": per_class}
 

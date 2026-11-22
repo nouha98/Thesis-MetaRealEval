@@ -1,6 +1,6 @@
 # Protocol decisions before freezing (plan rev. 9.1)
 
-*2026-11-12. For review by you and Gordon before any confirmatory run. No model was called and no full evaluation was run.*
+*2026-11-12, updated 2026-11-22. Sections 1–8 were written before any confirmatory run. Section 9 (coupling) has since been frozen, run and analysed; its status is in 9.8.*
 
 ## 1. Stage 1: remaining execution protections (done)
 
@@ -77,6 +77,8 @@ So the H-ready cohort for Stage 5 and RQ5 is likely about **100–145 tasks**, a
 
 The coverage limitation goes into the thesis.
 
+*Update 2026-11-22.* The contract review (rules R1–R6, `contract_prereview_tier{A,B,C}.md`) and the usability check leave **98 evaluation tasks with a reviewed, usable contract** (68 rejected), so the H-ready cohort can be at most about 98 tasks and the estimates above are too high.
+
 ## 5. Compatibility check before reusing historical RQ2 samples: cost and feasibility
 
 **Statistical feasibility.** The original and control arms of RQ2 are two independent 10-sample draws from the same prompt and serving period. They are an exact no-drift benchmark for "fresh 10 vs historical 10" (`results_tier2_ext/compat_check_feasibility.json`; 300 random task subsets each).
@@ -146,9 +148,9 @@ If A3 joins H, per-model Stage 5 and RQ5 results add the leave-one-model-out H s
   - Floats are compared with rel 1e-9 / abs 1e-12 by default. Own-class return values are opaque unless documented properties exist (drafted as accessors, for review).
 - **Witnesses from P scenarios.** A witness found on a gate-valid P scenario through the API serializer is the D3b "attributed suite kill", so no separate per-test P re-run is needed.
 
-## 9. Stage 2b: mutant–fault coupling (D8). DRAFT for discussion with Gordon; nothing frozen
+## 9. Stage 2b: mutant–fault coupling (D8). Frozen 2026-11-19; endpoints computed 2026-11-22 (9.8)
 
-*Added 2026-11-17 for supervisor note 2. No coupling code has run and no coupling value has been computed. The order is: this draft → discussion → technical pilot (blind to the LLM-vs-operator effect) → approval of the final text → freeze `coupling_v1.json` (the SPEC and its sha256, plus the per-task solution-group digests; there is no separate solution-groups file) → confirmatory run.*
+*Added 2026-11-17 for supervisor note 2. Order as carried out: this draft → technical pilot (blind to the LLM-vs-operator effect) → our own decisions, recorded here → freeze `coupling_v1.json` on freia (2026-11-19, commit 06eb6a8, spec 7bafb448185f; the SPEC and its sha256 plus the per-task solution-group digests; there is no separate solution-groups file) → full run C2 (job 5371174) → technical report and decisions (9.6, commit 0fa4983) → endpoints (2026-11-22) → review by Gordon together with the results (changes after his feedback are recorded deviations, and both versions are reported).*
 
 **Question.** Are mutants coupled to the incorrect solutions the panel actually wrote, and are LLM mutants more strongly coupled than operator mutants? We follow the research question of Petrovic et al. (ICSE'21, RQ3), not their procedure, because LLM solutions are not historical buggy/fixed pairs. The measure is Chen et al.'s probabilistic coupling (ASE'20). Behavioural deduplication, size equalisation and the null-adjusted lift are **our** extensions.
 
@@ -269,4 +271,26 @@ Adjustments (N, filters) may use only these technical metrics and are recorded b
 - same-panel circularity is handled only through the cross-model rule;
 - detections are reference-relative: on outputs the docstring leaves open, a "fault" deviates from the reference without being shown to violate the specification (P-fail-only sensitivity in 9.4);
 - the contract population is shaped by review rules R1–R6 (abstract interfaces, framework inputs, template docstrings and concurrency classes are excluded);
-- Tier 1 is out of scope, because HumanEval has a single `check()`.
+- Tier 1 is out of scope, because HumanEval has a single `check()`;
+- strict share and coverage are not null-adjusted: a goal with a small detection set fits inside D more easily (strict) and covers less of D (coverage), so these two secondaries partly reflect how hard each source's mutants are to kill (post-hoc descriptive `kill_share`); only the primary lift controls detection-set size;
+- secondary (c) rests on 4 tasks: with n = 4 a two-sided Wilcoxon cannot reach p < 0.125, so it is uninformative by construction;
+- the perturbed-P sensitivity is infeasible (9.6), so robustness to the pool rests on the pool-size check and the P-fail-only analysis;
+- faults made by every model are excluded: after deduplication such a class has no eligible cross-model LLM goal (no_cross_model_llm). This is why the no-deduplication sensitivity has 53 tasks instead of 36; it gives the same answer;
+- the same-model vs cross-model comparison is biased (unequal numbers of goals) and is not used as evidence against circularity.
+
+### 9.8 Results status (endpoints computed 2026-11-22, `results_tier2_ext/coupling/full/endpoints.json`)
+
+Confirmatory (n = 36, power rule met):
+- **Primary, null-adjusted lift:** LLM 0.117, operator 0.091; Δ = +0.026, 95% CI [−0.018, 0.073], Wilcoxon p = 0.23. No evidence that LLM mutants are more strongly coupled once detection-set size is controlled; this is not evidence of equivalence (9.4).
+- **Secondary (Holm, 3):** strict-coupling share LLM 0.45 vs operator 0.30, Δ = +0.15 [0.06, 0.24], p_Holm = 0.001; fault coverage LLM 0.51 vs operator 0.77, Δ = −0.26 [−0.35, −0.17], p_Holm < 0.001; (c) hidden faults n = 4, p = 0.5.
+- **Sensitivities:** every lift Δ stays within ±0.05 and non-significant (pool-size 40, total failures, P-fail only, unstratified null, no deduplication, unequalised max); perturbed pool infeasible.
+- **Descriptive:** same-model vs cross-model max pc 0.79 vs 0.81 (135 classes). *Not* evidence about circularity: the cross-model maximum is taken over more goals, so it is biased upward (corrected 2026-11-22 after review).
+
+**Exploratory, added after the endpoints (2026-11-22; outside the Holm family, not in the frozen SPEC; `exploratory_post_hoc` in `endpoints.json`):** null-adjusted strict share and coverage (`strict_share_lift`, `fault_coverage_lift`, each minus its null over the same permutations as the primary; the primary null is bit-identical, regression-tested), goal detection-set size (`kill_share`), one-sample tests of lift > 0 per source (`lift_above_null`), the Petrovic RQ3(a) coupling rate (`fault_coupling_rate_unequalised`), and pooled hidden-fault classes. Every comparison also reports a paired rank-biserial effect size (the Cliff's delta in `wilcoxon` treats the lists as independent) and `below_power_rule`. **Wording rule for the thesis:** the strict-share and coverage differences are interpreted only together with their null-adjusted versions.
+
+Still to do before the results are final (all descriptive or qualitative; none changes the confirmatory numbers):
+1. the rest of the 9.4 descriptives (per model, per operator, by severity, P-pass vs P-fail, csn / post, P-only vs generated-only PC, redundancy);
+2. the **coupling row of the Note 3 table** (saturation strata), as planned in Part A;
+3. the **qualitative review (9.5)** of 50 uncoupled fault classes: the Petrovic RQ3 part Gordon pointed to;
+4. the independent recompute of pc, lift and Δ on 3 tasks;
+5. the thesis section and the package for Gordon.

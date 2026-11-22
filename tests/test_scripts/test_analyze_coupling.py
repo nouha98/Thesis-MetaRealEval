@@ -108,3 +108,23 @@ def test_perturbed_pool_is_dropped_above_the_false_detection_limit(monkeypatch):
 def test_false_detection_helper_matches_the_technical_report():
     dets = [det(f"T{i}", i) for i in range(6)]
     assert ac.technical(dets)["perturbed_false_detection_on_p_passing"] == ac.perturbed_false_detection(dets)
+
+
+def test_post_hoc_descriptives_are_consistent():
+    res = ac.endpoints([det(f"T{i}", i) for i in range(6)], dev={"T0"})
+    x = res["exploratory_post_hoc"]
+    rate = x["fault_coupling_rate_unequalised"]
+    s = rate["strictly_coupled"]
+    assert max(s["operator"], s["llm_whole"]) <= s["either"] <= s["operator"] + s["llm_whole"]
+    assert s["either"] <= rate["n_fault_classes"]
+    assert 0 < x["kill_share"]["mean_llm"] <= 1
+    assert set(x["lift_above_null"]) == {"operator", "llm_whole"}
+    assert res["primary_delta_lift"]["below_power_rule"] is True          # 5 tasks < 30
+    assert -1 <= res["primary_delta_lift"]["rank_biserial_paired"] <= 1
+    assert "availability_valid_pool_tasks" in res["descriptive"]
+
+
+def test_rank_biserial_paired():
+    assert ac.rank_biserial([0.1, 0.2, 0.3]) == 1.0
+    assert ac.rank_biserial([-0.1, -0.2]) == -1.0
+    assert ac.rank_biserial([0.0, 0.0]) is None

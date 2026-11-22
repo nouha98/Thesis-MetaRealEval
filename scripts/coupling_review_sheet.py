@@ -143,6 +143,7 @@ def main() -> int:
     per_task = defaultdict(int)
     for c in pop:
         per_task[c["task"]] += 1
+        c["stratum"] = c["models"][0] if len(c["models"]) == 1 else "multi"   # for every class, not only the pool
     print("uncoupled classes per task:", dict(sorted(per_task.items(), key=lambda kv: -kv[1])))
     if args.no_cap:          # the first (frozen) design, kept for reproducibility
         picked = sample(pop, cfg.extensions.seed)
@@ -153,8 +154,9 @@ def main() -> int:
     print("cases per task:", dict(sorted(defaultdict(int, {t: sum(c['task'] == t for c in picked)
                                                           for t in {c['task'] for c in picked}}).items(),
                                          key=lambda kv: -kv[1])))
-    print("strata:", {s: f"{sum(c['stratum'] == s for c in picked)}/{sum(c['stratum'] == s for c in pop)}"
-                      for s in sorted({c['stratum'] for c in pop})})
+    print("strata (sampled/population):", {s: f"{sum(c['stratum'] == s for c in picked)}/"
+                                              f"{sum(c['stratum'] == s for c in pop)}"
+                                           for s in sorted({c['stratum'] for c in pop})})
 
     policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=True)
     policy.activate()

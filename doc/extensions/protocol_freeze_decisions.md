@@ -298,9 +298,11 @@ Confirmatory (n = 36, power rule met):
 
 **Thesis statement supported by these results:** both mutant sources are coupled to the panel's real faults above chance, and LLM mutants are not more strongly coupled than operator mutants once detection-set size is controlled (primary, n = 36). The two Holm-significant secondaries are reported as found, but they largely reflect that LLM mutants are killed by fewer tests: the coverage gap vanishes and the strict-share gap halves when each is compared with its chance level.
 
+**Coupling × saturation (Note 3 table, `doc/saturation/rq_table.md`, 2026-11-22; exploratory; 20/20 table checks OK, all 36 contributing tasks have a stratum):** LLM − operator lift is +0.026 [−0.019, 0.074] on all 36 tasks (same mean as the primary; the CI differs slightly because the table uses its own bootstrap), −0.022 [−0.079, 0.042] on the 16 non-extreme tasks and −0.035 [−0.105, 0.037] on the 14 baseline-discriminating tasks (graded score). Under pass@1 the subsets shrink to 8 tasks (−0.066 [−0.147, −0.003], Wilcoxon p = 0.08). Reading: 20 of the 36 contributing tasks are floor or saturated tasks; the small positive overall difference comes from them, and on the discriminating tasks the sign turns negative. No subset shows an LLM advantage, and all subsets are far below the 30-task rule, so none is interpreted on its own.
+
 Still to do before the results are final (all descriptive or qualitative; none changes the confirmatory numbers):
 1. the rest of the 9.4 descriptives (per model, per operator, by severity, P-pass vs P-fail, csn / post, P-only vs generated-only PC, redundancy);
-2. the **coupling row of the Note 3 table** (saturation strata), as planned in Part A;
+2. ~~the coupling row of the Note 3 table~~ done 2026-11-22 (above);
 3. the **qualitative review (9.5)** of 50 uncoupled fault classes: the Petrovic RQ3 part Gordon pointed to;
 4. the independent recompute of pc, lift and Δ on 3 tasks;
 5. the thesis section and the package for Gordon.

@@ -93,3 +93,18 @@ def test_endpoints_refuse_supported_tasks_on_unreviewed_contracts(tmp_path, monk
     assert any("unreviewed contract" in p for p in ac.frozen_ok([d]))
     d["contract"]["status"] = "reviewed"
     assert ac.frozen_ok([d]) == []
+
+
+def test_perturbed_pool_is_dropped_above_the_false_detection_limit(monkeypatch):
+    dets = [det(f"T{i}", i) for i in range(6)]
+    monkeypatch.setattr(ac, "perturbed_false_detection", lambda d: 0.107)
+    dropped = ac.endpoints(dets, dev={"T0"})["sensitivity"]["perturbed_pool"]
+    assert dropped["infeasible"] is True and dropped["false_detection"] == 0.107
+    monkeypatch.setattr(ac, "perturbed_false_detection", lambda d: 0.01)
+    kept = ac.endpoints(dets, dev={"T0"})["sensitivity"]["perturbed_pool"]
+    assert "infeasible" not in kept and "n_tasks" in kept
+
+
+def test_false_detection_helper_matches_the_technical_report():
+    dets = [det(f"T{i}", i) for i in range(6)]
+    assert ac.technical(dets)["perturbed_false_detection_on_p_passing"] == ac.perturbed_false_detection(dets)

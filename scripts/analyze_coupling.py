@@ -28,6 +28,9 @@ from meta_real_eval.analysis.statistics import holm, paired_cluster_bootstrap, w
 from meta_real_eval.oracles.coupling import SOURCES, SPEC, exclusion_counts, task_analysis  # noqa: E402
 
 FROZEN = ec.PROTOCOL_DIR / "coupling_v1.json"
+# protocol_freeze_decisions.md 9.6: above this rate the perturbed-P pool is dropped and reported as infeasible.
+# Not part of SPEC: SPEC is frozen, and this threshold was written into 9.6 before the freeze.
+PERTURBED_MAX_FALSE_DETECTION = 0.05
 
 
 def load_run(run: Path) -> list[dict]:
@@ -126,8 +129,27 @@ def masked_share(det: dict, pool: str) -> Optional[float]:
     return sum(len((p.get(pool) or {}).get("masked", [])) for p in progs) / n_cells if n_cells else None
 
 
+def whole_suite_timeout(p: dict) -> bool:
+    """A program whose every P test timed out: the machine, not the program (excluded from the P checks)."""
+    outs = list((p.get("p_outcomes") or {}).values())
+    return bool(outs) and all(o == "timeout" for o in outs)
+
+
+def perturbed_false_detection(dets: list[dict]) -> Optional[float]:
+    """Share of unperturbed P scenarios flagged on solutions that pass every P test (gate GC; all tasks)."""
+    num = den = 0
+    for det in dets:
+        unstable = reference_unstable(det, "perturbed")
+        orig = [t for t in det["tests"]["perturbed"] or [] if "~p" not in t and t not in unstable]
+        for p in det["programs"]:
+            if p["kind"] == "solution" and not whole_suite_timeout(p) and p_pass(p) and p.get("perturbed"):
+                den += len(orig)
+                num += len(set(p["perturbed"]["detect"]) & set(orig))
+    return num / den if den else None
+
+
 def technical(dets: list[dict]) -> dict:
-    rows, hist_m, hist_s, fd_num, fd_den, spot, hist_timeouts = [], [0, 0], [0, 0], 0, 0, [], 0
+    rows, hist_m, hist_s, spot, hist_timeouts = [], [0, 0], [0, 0], [], 0
     for det in dets:
         tests, muts, sols, n_masked = inputs(det)
         r = task_analysis(det["task"], tests, muts, sols, counts_only=True)
@@ -145,8 +167,7 @@ def technical(dets: list[dict]) -> dict:
                      "mutants": r["mutants"], "goals": r.get("goals"), "solution_categories": r["solution_categories"],
                      "excluded": r["excluded"]})
         for p in det["programs"]:
-            outs = list((p.get("p_outcomes") or {}).values())
-            if outs and all(o == "timeout" for o in outs):  # whole-suite timeout: machine, not program
+            if whole_suite_timeout(p):
                 hist_timeouts += 1
                 continue
             if p.get("p_passed_all") is not None:          # history reproduction needs the per-test run
@@ -158,11 +179,6 @@ def technical(dets: list[dict]) -> dict:
                         if m["stored_p_pass"] is not None:
                             hist_s[0] += m["stored_p_pass"] == p["p_passed_all"]
                             hist_s[1] += 1
-            if p["kind"] == "solution" and p_pass(p) and p.get("perturbed"):
-                unstable = reference_unstable(det, "perturbed")
-                orig = [t for t in det["tests"]["perturbed"] or [] if "~p" not in t and t not in unstable]
-                fd_den += len(orig)
-                fd_num += len(set(p["perturbed"]["detect"]) & set(orig))
         for p in det["programs"]:
             if p["kind"] == "solution" and p_pass(p):
                 for t, d in (p["primary"] or {}).get("p_details", {}).items():
@@ -189,7 +205,7 @@ def technical(dets: list[dict]) -> dict:
         "p_whole_suite_timeouts_excluded": hist_timeouts,
         "runner_errors_excluded": {pl: sum(r["runner_errors"][pl] for r in rows) for pl in ("primary", "perturbed")},
         "perturbed_pool_unavailable": [r["task"] for r in rows if r["perturbed_pool_error"]],
-        "perturbed_false_detection_on_p_passing": (fd_num / fd_den) if fd_den else None,
+        "perturbed_false_detection_on_p_passing": perturbed_false_detection(dets),
         "primary_p_scenario_detections_on_p_passing_solutions": len(spot),
         "spot_check_by_task": {t: sum(s["task"] == t for s in spot) for t in sorted({s["task"] for s in spot})},
         "spot_check_sample": stratified_sample(spot, 10),
@@ -237,7 +253,12 @@ def endpoints(dets: list[dict], dev: set) -> dict:
     contributing = [r for r in main if r["excluded"] is None]
     same = [c["llm_same_model_max_pc"] for r in contributing for c in r["classes"] if c["llm_same_model_max_pc"] is not None]
     cross = [c["llm_whole"]["max_pc_unequalised"] for r in contributing for c in r["classes"] if c["llm_same_model_max_pc"] is not None]
-    sens = {"perturbed_pool": compare(_row_set(dets, dev, pool="perturbed"), "lift"),
+    fd = perturbed_false_detection(dets)
+    perturbed = ({"infeasible": True, "false_detection": fd, "max_false_detection": PERTURBED_MAX_FALSE_DETECTION,
+                  "note": "perturbed-P pool dropped: false detection above the 9.6 limit"}
+                 if fd is not None and fd > PERTURBED_MAX_FALSE_DETECTION
+                 else compare(_row_set(dets, dev, pool="perturbed"), "lift"))
+    sens = {"perturbed_pool": perturbed,
             "pool_size_40": compare(_row_set(dets, dev, gen_limit=SPEC["pool_size_check_n_generated"]), "lift"),
             "total_failures_included": compare(_row_set(dets, dev, include_total_failures=True), "lift"),
             "p_fail_faults_only": compare(_row_set(dets, dev, fault_filter=lambda s: s["p_pass"] is False), "lift"),

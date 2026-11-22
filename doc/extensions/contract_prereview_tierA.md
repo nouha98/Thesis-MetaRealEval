@@ -57,7 +57,7 @@ this is the only case. It is fixed by the edit in row 48.
 | 31 | csn_240 | ExternalIssue | **accept with edits** | All five ctor parameters are str or None (draft: None only). Evidence: the `__init__` docstring gives URLs, project, ticket ID and date; `submit_date` as str is an inference. |
 | 32 | csn_241 | Issue | **accept with edits** | ctor `issue_type`: str, hints `pb001`, `ab001`, `si001`, `ti001`, `nd001` (docstring "Allowable values"); `comment`: str or None. `external_issue_add` stays ungenerated (needs an ExternalIssue object). |
 | 33 | csn_245 | Sampleable | **reject** (R2) | Mixin: `get_default_sample` reads `self.name`, which only the host class defines, so every call raises. |
-| 34 | csn_257 | UserProfileService | **accept with edits** (R1b) | `save` is a `pass` stub in an override-me service → `generate=false`. Keep `lookup` (`UserProfile` is defined in the module). |
+| 34 | csn_257 | UserProfileService | **reject** (R2), revised 2026-11-19 | Was accept with edits. `lookup` returns `UserProfile(user_id).__dict__` and `UserProfile` is not defined in the module (my check had matched "class UserProfile" inside "class UserProfileService"). `save` is a stub. 1 valid test. |
 | 35 | csn_272 | UserContextFormViewMixin | **reject** (R2) | Django view mixin (`self.request.user`, `super().get_form_kwargs()`). |
 | 36 | csn_276 | QuerySingle | **reject** (R2) | Needs a connection object with `query_single`. |
 | 37 | csn_280 | SystemFieldContext | **accept with edits** | `field` and `record_cls` are a field object and a record class, but the reference only stores and returns them, so the R2 exception applies: opaque (hint None). Low value. |
@@ -74,7 +74,7 @@ this is the only case. It is fixed by the edit in row 48.
 | 48 | csn_60 | CodePageManager | **accept with edits** | Drafter bug: add `encoding: str` to `get_encoding_name` (`return encoding.upper()`). ctor `data`: dict[str, str] (draft: int; `get_encoding` indexes it), inferred from the reference. |
 | 49 | csn_69 | BaseStorage | **reject** (R1a) | `@abstractmethod` placeholders (`return`, `return False`, `return 0`); docstring "Abstract interface". |
 
-**Batch 1 totals:** 27 accepted (12 as drafted, 15 with edits), 22 rejected.
+**Batch 1 totals (as proposed):** 27 accepted (12 as drafted, 15 with edits), 22 rejected. After the 2026-11-19 revision: 26 / 23.
 
 **Pattern added from this batch:** hints for patterned string inputs (rows 13–16, 43). When a method's
 documented input is a structured string or packet (cue timings, binary timestamp), random values never reach the
@@ -110,7 +110,7 @@ Two applications recorded here so that later readers see the same logic:
 | 55 | post_112 | SessionResetHandler | **accept with edits** (R4, parameter level) | ctor `log_func` `generate=false` (a callable; the default `print` is used). `get_reset_info` `generate=false`: it returns `time.time()` of the reset. Keep `check_for_reset_command`, `mark_reset_detected`, `is_reset_pending`, `clear_reset_state`. `find_reset_session_file` stays ungenerated (file system). |
 | 56 | post_132 | Text_background | **accept with edits** | ctor `style` is `Literal[1, 2]`: int, min 1, hints 1, 2 (draft: from the default only). |
 | 57 | post_134 | Text_shadow | **accept as drafted** | |
-| 58 | post_14 | templater | **accept with edits** (R4) | `get_A_template` → `generate=false` (it uses `random.choice` / `random.sample`). Keep `get_Q_template`. Low value. |
+| 58 | post_14 | templater | **reject** (R2), revised 2026-11-19 | Was accept with edits (R4 for `random`). The constructor uses seven names the module never defines (`SHOT_1`, `Q_GENERATE_TEMPLATE`, …), so it raises `NameError`. 0 valid tests. |
 | 59 | post_141 | GoalRedirectionTemplate | **accept as drafted** | Deterministic f-string templates. |
 | 60 | post_142 | SystemOverrideTemplate | **accept with edits** (R4) | `enhance_emergency_protocol` → `generate=false`: it embeds `hash(attack)`, which is salted per process for str. Keep the other five methods. |
 | 61 | post_152 | Trie | **reject** (R2) | Undefined dependency: `TrieNode` is used in `__init__` but not defined in the module, so the class cannot be constructed. |
@@ -129,8 +129,8 @@ Two applications recorded here so that later readers see the same logic:
 | 74 | post_218 | CBlock | **accept as drafted** | |
 | 75 | post_219 | TokenUsageTracker | **accept as drafted** | |
 | 76 | post_22 | DocumentAnalyzer | **accept as drafted** | |
-| 77 | post_221 | GitHubTokenPool | **accept as drafted** | |
-| 78 | post_222 | ModelConfig | **accept as drafted** | The ctor reads environment variables, but only `get_supported_models` (a constant list) is generated. Low value. |
+| 77 | post_221 | GitHubTokenPool | **reject** (R2), revised 2026-11-19 | Was accept as drafted. The constructor calls `logger.info` and `logger` is undefined. 0 valid tests. |
+| 78 | post_222 | ModelConfig | **reject** (R2/R4), revised 2026-11-19 | Was accept as drafted. The constructor raises `ValueError` for a missing `OPENAI_API_KEY` environment variable and reads the environment; `logger` is also undefined. 0 valid tests. |
 | 79 | post_223 | BedrockAgentCoreContext | **accept as drafted** | Class-level `ContextVar`s. |
 | 80 | post_225 | PrecisionPreservingDataHandler | **accept as drafted** | `operation` is ignored, but it is annotated `str`, so it is kept (see above). Identity functions. Low value. |
 | 81 | post_226 | PriceFormatter | **accept as drafted** | |
@@ -174,17 +174,17 @@ Two applications recorded here so that later readers see the same logic:
 | 119 | post_69 | CompositeCallbackHandler | **reject** (R2) | `*handlers` are callables. |
 | 120 | post_70 | PrintingCallbackHandler | **accept as drafted** | Writes to stdout (not observed). Low value. Treated like post_243. |
 
-**Batches 2–3 totals:** 56 accepted (39 as drafted, 17 with edits), 15 rejected.
+**Batches 2–3 totals (as proposed):** 56 accepted (39 as drafted, 17 with edits), 15 rejected. After the 2026-11-19 revision: 53 / 18.
 
 ## Tier A summary
 | | as drafted | with edits | rejected |
 |---|---|---|---|
-| batch 1 (49) | 12 | 15 | 22 |
-| batches 2–3 (71) | 39 | 17 | 15 |
-| **tier A (120)** | **51** | **32** | **37** |
+| batch 1 (49) | 12 | 14 | 23 |
+| batches 2–3 (71) | 37 | 16 | 18 |
+| **tier A (120)** | **49** | **30** | **41** |
 
-**All tiers (166 unreviewed evaluation drafts):** tier C 4 accept / 11 reject; tier B 15 / 16; tier A 83 / 37.
-That is **102 accepted, 64 rejected**, before the usability check.
+**All tiers (166 unreviewed evaluation drafts), after the 2026-11-19 revision:** tier C 4 accept / 11 reject; tier B 15 / 16; tier A 79 / 41.
+That is **98 accepted, 68 rejected** (as proposed: 102 and 64).
 
 ## Decision (user, 2026-11-18)
 - Batches 2–3 confirmed: 56 accept (39 as drafted, 17 with edits), 15 reject. Tier A: 51 / 32 / 37.
@@ -193,3 +193,18 @@ That is **102 accepted, 64 rejected**, before the usability check.
   `review.notes`). Result: 52 accept, 50 accept with edits, 64 reject.
 - Limitation found while writing the edits: contract hints are JSON values, so **bytes hints cannot be stored**.
   The csn_48 `unpack` packet and the csn_51 `buf` bytes rely on random bytes, and the usability check decides them.
+
+## Revision after the usability check (2026-11-19)
+`apply_contract_review.py --check --ungated` ran over all 102 accepted contracts (local, ungated). Median 122 valid
+tests per contract. Three had **no** valid test: post_14, post_221, post_222. A static undefined-name scan, added
+to the check, also found csn_257. The four are rejected under R2 (R2/R4 for post_222); all four were my review
+errors (R2 was not checked for undefined module-level names). Each revised file carries `review.revision`, the
+reviewer string says "awaiting user confirmation", and `review_decisions.json` records the old verdict.
+
+Left in, by the pre-registered rule (at least 1 valid test), and reported:
+- **No generated test, benchmark scenarios only:** csn_231 (1 P-derived pair; float `__len__`), csn_48 (random bytes),
+  post_209 (`BIT_WIDTH_MAP` undefined on the generated paths). With 2–4 tests they can hardly show a near-miss
+  fault and will exclude themselves at analysis.
+- **Fewer than 10 valid tests:** post_325 (4), csn_51 (5), post_16 (5, `logger` undefined on most paths), csn_46 (6),
+  csn_33 (7), csn_135 (8), post_70 (8).
+- **Undefined `logger`, otherwise normal pools:** post_307 (122 valid tests).

@@ -218,6 +218,18 @@ Evidence kept: the diff against the reference, a detecting scenario, and the nea
 
 Procedure: the user classifies all 50; a blind second classification of 15 gives Cohen's κ; disagreements are resolved and recorded.
 
+**Guide FROZEN 2026-11-22 (decided by the user before any sampling; not changed once sampling starts).** It supersedes the guide above.
+- **Categories:**
+  1. reference-specific / not a real fault: the detected difference is on an output that the docstring or contract leaves unspecified, or where the reference contradicts the docstring (e.g. csn_142 returns `''` where the docstring says `None`);
+  2. no applicable operator;
+  3. missing operator;
+  4. weak operator;
+  5. unclear.
+- **Tie-break** when two categories could apply: take the first in the order above (reference-specific → no applicable operator → missing operator → weak operator → unclear).
+- **Population ("uncoupled"):** contributing fault classes with no strictly coupled goal from either source (un-equalised max pc < 1 for operator goals and for cross-model-eligible LLM goals): 98 of 215.
+- **Sample:** 50 classes. Strata = provenance pattern (one per single model; one for classes written by several models); proportional allocation (largest remainder); within a stratum, ordered by sha256(extension seed | "qualitative" | task | class id). `scripts/coupling_review_sheet.py`.
+- **Raters:** the user classifies all 50 first. Only afterwards is it decided whether a human second rater (Gordon or a colleague) blind-rates 15; the fallback is a fresh AI session that receives only the sheet and this guide, reported as an AI rater. The Claude session that built the sheet is not a rater (it has seen every result).
+
 ### 9.6 Technical pilot gate GC (all 24 development tasks; 5 are supported after the dev contract review, which rejected csn_110 and post_309 — the draft contracts had 6; no coupling estimate is computed)
 
 - ≥ 99% of cells agree across the two runs;
@@ -292,17 +304,19 @@ Confirmatory (n = 36, power rule met):
 - **Both sources are coupled above chance:** mean lift operator 0.091 (31/36 tasks positive, one-sample p < 0.001), LLM 0.117 (24/36 positive, p < 0.001).
 - **LLM mutants are harder to kill:** a goal is detected by 42% of the valid tests for LLM vs 63% for operators (Δ −0.20 [−0.26, −0.15], paired r = −0.95).
 - **That explains the secondaries.** Fault coverage adjusted for chance: Δ +0.006 [−0.042, 0.056], p = 0.88, so the raw −0.26 gap is a detection-set-size effect. Strict share adjusted for chance: Δ +0.073 [−0.030, 0.173], p = 0.07, half the raw +0.15 and no longer significant.
-- **Petrovic RQ3(a):** of 215 contributing fault classes, 45% are strictly coupled to ≥1 operator goal, 46% to ≥1 LLM goal, 54% to either (unequalised).
+- **Petrovic RQ3(a):** of 215 contributing fault classes, 45% are strictly coupled to ≥1 operator goal, 46% to ≥1 LLM goal, 54% to either. These rates are *unequalised* (not matched for the number of mutants), and operators have more goals (284 vs 201), so LLM mutants reach the same rate with fewer goals. Descriptive only.
 - **Availability on tasks with a pool:** operator 453/734 groups detected (62%), LLM 301/627 (48%).
 - **Hidden faults:** 11 classes in 4 tasks (LLM 10, operator 3 strictly coupled); too few to interpret.
 
 **Thesis statement supported by these results:** both mutant sources are coupled to the panel's real faults above chance, and LLM mutants are not more strongly coupled than operator mutants once detection-set size is controlled (primary, n = 36). The two Holm-significant secondaries are reported as found, but they largely reflect that LLM mutants are killed by fewer tests: the coverage gap vanishes and the strict-share gap halves when each is compared with its chance level.
 
-**Coupling × saturation (Note 3 table, `doc/saturation/rq_table.md`, 2026-11-22; exploratory; 20/20 table checks OK, all 36 contributing tasks have a stratum):** LLM − operator lift is +0.026 [−0.019, 0.074] on all 36 tasks (same mean as the primary; the CI differs slightly because the table uses its own bootstrap), −0.022 [−0.079, 0.042] on the 16 non-extreme tasks and −0.035 [−0.105, 0.037] on the 14 baseline-discriminating tasks (graded score). Under pass@1 the subsets shrink to 8 tasks (−0.066 [−0.147, −0.003], Wilcoxon p = 0.08). Reading: 20 of the 36 contributing tasks are floor or saturated tasks; the small positive overall difference comes from them, and on the discriminating tasks the sign turns negative. No subset shows an LLM advantage, and all subsets are far below the 30-task rule, so none is interpreted on its own.
+**Coupling × saturation (Note 3 table, `doc/saturation/rq_table.md`, 2026-11-22; exploratory; 20/20 table checks OK, all 36 contributing tasks have a stratum):** LLM − operator lift is +0.026 [−0.019, 0.074] on all 36 tasks (same mean as the primary; the CI differs slightly because the table uses its own bootstrap), −0.022 [−0.079, 0.042] on the 16 non-extreme tasks and −0.035 [−0.105, 0.037] on the 14 baseline-discriminating tasks (graded score). Under pass@1 the subsets shrink to 8 tasks (−0.066 [−0.147, −0.003], Wilcoxon p = 0.08). Composition (graded; produced by `saturation_rq_table.py` as `coupling_population.composition` and printed in `rq_table.md`): the 20 extreme tasks are **16 floor** (mean +0.069) and **4 saturated** (+0.050); under pass@1, 24 floor and 4 saturated. The 4 saturated tasks are csn_53, post_173, post_255 and post_346. **Thesis wording:** *"No saturation stratum shows an LLM advantage (n = 8–16 per stratum, exploratory)."* The only interval that excludes zero is the n = 8 pass@1 subset; with 8 tasks a percentile bootstrap is unreliable (Wilcoxon p = 0.08), so it is not interpreted, and no stratum direction is interpreted.
+
+**Why this split is not neutral for coupling.** The strata come from the same RQ2 solutions that supply the faults. On a floor task the original-prompt solutions all fail P, so its faults are mostly P-fail; on a saturated task they all pass P, so its faults are mostly P-pass (hidden). The split is therefore close to a P-fail vs P-pass split of the faults. It is not exact, because faults come from all three prompt relations (original, control, paraphrase) while the strata use the original prompt only. This matches the P-fail-only sensitivity (Δ +0.043, the most positive), and the P-pass vs P-fail breakdown (9.4) is reported next to this row.
 
 Still to do before the results are final (all descriptive or qualitative; none changes the confirmatory numbers):
 1. the rest of the 9.4 descriptives (per model, per operator, by severity, P-pass vs P-fail, csn / post, P-only vs generated-only PC, redundancy);
 2. ~~the coupling row of the Note 3 table~~ done 2026-11-22 (above);
-3. the **qualitative review (9.5)** of 50 uncoupled fault classes: the Petrovic RQ3 part Gordon pointed to;
-4. the independent recompute of pc, lift and Δ on 3 tasks;
+3. the **qualitative review (9.5)** of 50 uncoupled fault classes: the Petrovic RQ3 part Gordon pointed to (guide frozen; sheet built by `scripts/coupling_review_sheet.py`);
+4. the independent recompute of pc, lift and Δ on 3 tasks (`scripts/coupling_recompute.py`: no project imports, tasks chosen by a fixed structural rule; matches the analysis exactly on synthetic runs, regression-tested);
 5. the thesis section and the package for Gordon.

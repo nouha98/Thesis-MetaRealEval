@@ -79,6 +79,25 @@ def classes_of(det: dict) -> tuple[list[dict], int]:
     return out, n_contrib
 
 
+def hash_key(c: dict, seed: int) -> str:
+    return hashlib.sha256(f"{seed}|qualitative|{c['task']}|{c['class_id']}".encode()).hexdigest()
+
+
+def capped_pool(pop: list[dict], seed: int) -> tuple[list[dict], int]:
+    """Amendment 2026-11-22: the smallest per-task cap that still leaves N_SAMPLE classes; within a task
+    the first `cap` classes in hash order are kept. Each class records its inclusion probability."""
+    by_task = defaultdict(list)
+    for c in pop:
+        by_task[c["task"]].append(c)
+    cap = next(k for k in range(1, len(pop) + 1) if sum(min(len(v), k) for v in by_task.values()) >= N_SAMPLE)
+    pool = []
+    for v in by_task.values():
+        for c in sorted(v, key=lambda c: hash_key(c, seed))[:cap]:
+            c["p_pool"] = min(len(v), cap) / len(v)
+            pool.append(c)
+    return pool, cap
+
+
 def sample(pop: list[dict], seed: int) -> list[dict]:
     strata = defaultdict(list)
     for c in pop:
@@ -88,8 +107,11 @@ def sample(pop: list[dict], seed: int) -> list[dict]:
     alloc = {s: int(q) for s, q in quota.items()}
     for s in sorted(quota, key=lambda s: (-(quota[s] - alloc[s]), s))[:N_SAMPLE - sum(alloc.values())]:
         alloc[s] += 1                                     # largest remainder
-    key = lambda c: hashlib.sha256(f"{seed}|qualitative|{c['task']}|{c['class_id']}".encode()).hexdigest()
-    return [c for s in sorted(strata) for c in sorted(strata[s], key=key)[:alloc[s]]]
+    out = [c for s in sorted(strata) for c in sorted(strata[s], key=lambda c: hash_key(c, seed))[:alloc[s]]]
+    for c in out:   # inclusion probability and design weight (for estimates re-weighted to the population)
+        c["p_inclusion"] = c.get("p_pool", 1.0) * alloc[c["stratum"]] / len(strata[c["stratum"]])
+        c["weight"] = 1.0 / c["p_inclusion"]
+    return out
 
 
 def diff(a: str, b: str, limit: int) -> str:
@@ -102,6 +124,7 @@ def main() -> int:
     ap.add_argument("--config", type=Path, default=Path("config/tier2_extensions.yaml"))
     ap.add_argument("--run", type=Path, default=Path("results_tier2_ext/coupling/full"))
     ap.add_argument("--ungated", action="store_true")
+    ap.add_argument("--no-cap", action="store_true", help="the first design (no per-task cap), written to qualitative_v1/")
     args = ap.parse_args()
     cfg = ec.load_ext_config(args.config)
     dev = set(cfg.extensions.development_tasks)
@@ -117,7 +140,19 @@ def main() -> int:
         pop += u
         n_contrib += n
     print(f"contributing fault classes {n_contrib}; uncoupled {len(pop)} (endpoints: 215 and 215 - 117 = 98)")
-    picked = sample(pop, cfg.extensions.seed)
+    per_task = defaultdict(int)
+    for c in pop:
+        per_task[c["task"]] += 1
+    print("uncoupled classes per task:", dict(sorted(per_task.items(), key=lambda kv: -kv[1])))
+    if args.no_cap:          # the first (frozen) design, kept for reproducibility
+        picked = sample(pop, cfg.extensions.seed)
+    else:
+        pool, cap = capped_pool(pop, cfg.extensions.seed)
+        print(f"per-task cap {cap}: {len(pool)} classes in the capped pool")
+        picked = sample(pool, cfg.extensions.seed)
+    print("cases per task:", dict(sorted(defaultdict(int, {t: sum(c['task'] == t for c in picked)
+                                                          for t in {c['task'] for c in picked}}).items(),
+                                         key=lambda kv: -kv[1])))
     print("strata:", {s: f"{sum(c['stratum'] == s for c in picked)}/{sum(c['stratum'] == s for c in pop)}"
                       for s in sorted({c['stratum'] for c in pop})})
 
@@ -128,7 +163,7 @@ def main() -> int:
     bench, baseline = get_benchmark(cfg), Path(cfg.extensions.baseline_scores)
     groups, _ = load_split(ec.PROTOCOL_DIR / "fault_split_v1.json")
     sp = SPEC["primary_pool"]
-    out_dir = args.run / "qualitative"
+    out_dir = args.run / ("qualitative_v1" if args.no_cap else "qualitative")
     out_dir.mkdir(parents=True, exist_ok=True)
     md = ["# Coupling: qualitative review of uncoupled fault classes (protocol 9.5)", "",
           f"{len(picked)} of {len(pop)} uncoupled classes (of {n_contrib} contributing). Classify in "
@@ -168,9 +203,9 @@ def main() -> int:
     (out_dir / "sample.json").write_text(json.dumps(picked, indent=1), encoding="utf-8")
     with open(out_dir / "classification.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["case", "task", "class_id", "stratum", "category", "note"])
+        w.writerow(["case", "task", "class_id", "stratum", "weight", "category", "note"])
         for c in picked:
-            w.writerow([c["case"], c["task"], c["class_id"], c["stratum"], "", ""])
+            w.writerow([c["case"], c["task"], c["class_id"], c["stratum"], f"{c['weight']:.4f}", "", ""])
     print(f"wrote {out_dir}/sheet.md, sample.json, classification.csv ({len(picked)} cases, {len(by_task)} tasks)")
     return 0
 

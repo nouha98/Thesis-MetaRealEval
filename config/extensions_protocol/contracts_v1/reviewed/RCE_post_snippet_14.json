@@ -120,7 +120,7 @@
  "methods": {
   "get_A_template": {
    "async": false,
-   "generate": false,
+   "generate": true,
    "kind": "method",
    "params": [
     {
@@ -139,7 +139,7 @@
     }
    ],
    "raises_documented": [],
-   "why": "review: not generated"
+   "why": null
   },
   "get_Q_template": {
    "async": false,
@@ -168,11 +168,12 @@
  "module_name": "snippet_14",
  "properties": [],
  "review": {
-  "date": "2026-11-18",
-  "notes": "R4: get_A_template uses random.choice/random.sample: not generated. get_Q_template kept; low value.",
-  "reviewer": "Claude (proposal); confirmed by the user",
+  "date": "2026-11-19",
+  "notes": "R2: undefined dependency: SHOT_1, SHOT_2, COT_SHOT_1, COT_SHOT_2, Q_GENERATE_TEMPLATE, A_GENERATE_TEMPLATE and A_GENERATE_COT_TEMPLATE are not defined in the module, so the constructor raises NameError",
+  "reviewer": "Claude (revision after the usability check); awaiting user confirmation",
+  "revision": "2026-11-19: was 'accept with edits'; the usability check (and a static undefined-name scan) showed the reference cannot be exercised",
   "status": "reviewed",
-  "verdict": "accept with edits"
+  "verdict": "reject"
  },
  "sources": {
   "reference_sha256": "0cf2d7bcc0dad7a09ffa3572c76841b0b14f75812ff208f62b09de86a5091279",
@@ -181,14 +182,17 @@
  },
  "support": {
   "generatable_methods": [
+   "get_A_template",
    "get_Q_template"
   ],
   "n_p_scenarios": 1,
   "properties": [],
-  "reasons": [],
+  "reasons": [
+   "review: rejected - R2: undefined dependency: SHOT_1, SHOT_2, COT_SHOT_1, COT_SHOT_2, Q_GENERATE_TEMPLATE, A_GENERATE_TEMPLATE and A_GENERATE_COT_TEMPLATE are not defined in the module, so the constructor raises NameError"
+  ],
   "side_effect_imports": [],
   "stdlib_only": true,
-  "supported": true
+  "supported": false
  },
  "task": "RCE_post_snippet_14",
  "task_id": "RealClassEval/post_cut-off/snippet_14"

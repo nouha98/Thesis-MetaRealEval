@@ -48,7 +48,7 @@
   },
   "save": {
    "async": false,
-   "generate": false,
+   "generate": true,
    "kind": "method",
    "params": [
     {
@@ -80,17 +80,18 @@
     }
    ],
    "raises_documented": [],
-   "why": "review: not generated"
+   "why": null
   }
  },
  "module_name": "snippet_257",
  "properties": [],
  "review": {
-  "date": "2026-11-18",
-  "notes": "R1b: save is a pass stub in an override-me service; lookup is kept (UserProfile is defined in the module).",
-  "reviewer": "Claude (proposal); confirmed by the user",
+  "date": "2026-11-19",
+  "notes": "R2: undefined dependency: lookup returns UserProfile(user_id).__dict__ and UserProfile is not defined in the module (NameError); save is a pass stub",
+  "reviewer": "Claude (revision after the usability check); awaiting user confirmation",
+  "revision": "2026-11-19: was 'accept with edits'; the usability check (and a static undefined-name scan) showed the reference cannot be exercised",
   "status": "reviewed",
-  "verdict": "accept with edits"
+  "verdict": "reject"
  },
  "sources": {
   "reference_sha256": "a88c42d7d2db2feba8da7e708771ed557f4d9c19f5be9aa3809eede4f7300218",
@@ -99,14 +100,17 @@
  },
  "support": {
   "generatable_methods": [
-   "lookup"
+   "lookup",
+   "save"
   ],
   "n_p_scenarios": 2,
   "properties": [],
-  "reasons": [],
+  "reasons": [
+   "review: rejected - R2: undefined dependency: lookup returns UserProfile(user_id).__dict__ and UserProfile is not defined in the module (NameError); save is a pass stub"
+  ],
   "side_effect_imports": [],
   "stdlib_only": true,
-  "supported": true
+  "supported": false
  },
  "task": "RCE_csn_snippet_257",
  "task_id": "RealClassEval/csn/snippet_257"

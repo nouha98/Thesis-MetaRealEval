@@ -67,11 +67,12 @@
   "pool_size"
  ],
  "review": {
-  "date": "2026-11-18",
-  "notes": "accepted as drafted",
-  "reviewer": "Claude (proposal); confirmed by the user",
+  "date": "2026-11-19",
+  "notes": "R2: undefined dependency: the constructor calls logger.info and logger is not defined in the module, so every construction raises NameError",
+  "reviewer": "Claude (revision after the usability check); awaiting user confirmation",
+  "revision": "2026-11-19: was 'accept'; the usability check (and a static undefined-name scan) showed the reference cannot be exercised",
   "status": "reviewed",
-  "verdict": "accept"
+  "verdict": "reject"
  },
  "sources": {
   "reference_sha256": "c7763ad5bb797d96f490a1d85b1656b7079b90a0522897d84f699cfe9127d61f",
@@ -80,17 +81,19 @@
  },
  "support": {
   "generatable_methods": [
-   "get_current_token",
-   "get_next_token"
+   "get_next_token",
+   "get_current_token"
   ],
   "n_p_scenarios": 2,
   "properties": [
    "pool_size"
   ],
-  "reasons": [],
+  "reasons": [
+   "review: rejected - R2: undefined dependency: the constructor calls logger.info and logger is not defined in the module, so every construction raises NameError"
+  ],
   "side_effect_imports": [],
   "stdlib_only": true,
-  "supported": true
+  "supported": false
  },
  "task": "RCE_post_snippet_221",
  "task_id": "RealClassEval/post_cut-off/snippet_221"

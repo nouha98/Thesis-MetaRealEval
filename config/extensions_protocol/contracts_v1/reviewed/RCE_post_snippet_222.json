@@ -52,11 +52,12 @@
  "module_name": "snippet_222",
  "properties": [],
  "review": {
-  "date": "2026-11-18",
-  "notes": "accepted as drafted: Only get_supported_models (constant list) is generated; low value.",
-  "reviewer": "Claude (proposal); confirmed by the user",
+  "date": "2026-11-19",
+  "notes": "R2/R4: the constructor raises ValueError ('Missing required environment variable: OPENAI_API_KEY') and reads the environment; logger is also undefined",
+  "reviewer": "Claude (revision after the usability check); awaiting user confirmation",
+  "revision": "2026-11-19: was 'accept'; the usability check (and a static undefined-name scan) showed the reference cannot be exercised",
   "status": "reviewed",
-  "verdict": "accept"
+  "verdict": "reject"
  },
  "sources": {
   "reference_sha256": "411c80dc83212c380b6c5ee72d7eb04e9f7b21d3427f2395345dcea3568b496c",
@@ -69,10 +70,12 @@
   ],
   "n_p_scenarios": 1,
   "properties": [],
-  "reasons": [],
+  "reasons": [
+   "review: rejected - R2/R4: the constructor raises ValueError ('Missing required environment variable: OPENAI_API_KEY') and reads the environment; logger is also undefined"
+  ],
   "side_effect_imports": [],
   "stdlib_only": true,
-  "supported": true
+  "supported": false
  },
  "task": "RCE_post_snippet_222",
  "task_id": "RealClassEval/post_cut-off/snippet_222"

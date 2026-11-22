@@ -627,15 +627,10 @@
   "verdict": "reject"
  },
  "RCE_csn_snippet_257": {
-  "edits": [
-   {
-    "generate": false,
-    "method": "save"
-   }
-  ],
-  "notes": "save is a pass stub in an override-me service; lookup is kept (UserProfile is defined in the module).",
-  "rule": "R1b",
-  "verdict": "accept with edits"
+  "notes": "undefined dependency: lookup returns UserProfile(user_id).__dict__ and UserProfile is not defined in the module (NameError); save is a pass stub",
+  "revision": "2026-11-19: was 'accept with edits'; the usability check (and a static undefined-name scan) showed the reference cannot be exercised",
+  "rule": "R2",
+  "verdict": "reject"
  },
  "RCE_csn_snippet_272": {
   "notes": "Django view mixin (self.request.user, super().get_form_kwargs())",
@@ -1029,15 +1024,10 @@
   "verdict": "accept"
  },
  "RCE_post_snippet_14": {
-  "edits": [
-   {
-    "generate": false,
-    "method": "get_A_template"
-   }
-  ],
-  "notes": "get_A_template uses random.choice/random.sample: not generated. get_Q_template kept; low value.",
-  "rule": "R4",
-  "verdict": "accept with edits"
+  "notes": "undefined dependency: SHOT_1, SHOT_2, COT_SHOT_1, COT_SHOT_2, Q_GENERATE_TEMPLATE, A_GENERATE_TEMPLATE and A_GENERATE_COT_TEMPLATE are not defined in the module, so the constructor raises NameError",
+  "revision": "2026-11-19: was 'accept with edits'; the usability check (and a static undefined-name scan) showed the reference cannot be exercised",
+  "rule": "R2",
+  "verdict": "reject"
  },
  "RCE_post_snippet_141": {
   "notes": "Deterministic f-string templates.",
@@ -1199,14 +1189,16 @@
   "verdict": "accept"
  },
  "RCE_post_snippet_221": {
-  "notes": "",
-  "rule": "accepted as drafted",
-  "verdict": "accept"
+  "notes": "undefined dependency: the constructor calls logger.info and logger is not defined in the module, so every construction raises NameError",
+  "revision": "2026-11-19: was 'accept'; the usability check (and a static undefined-name scan) showed the reference cannot be exercised",
+  "rule": "R2",
+  "verdict": "reject"
  },
  "RCE_post_snippet_222": {
-  "notes": "Only get_supported_models (constant list) is generated; low value.",
-  "rule": "accepted as drafted",
-  "verdict": "accept"
+  "notes": "the constructor raises ValueError ('Missing required environment variable: OPENAI_API_KEY') and reads the environment; logger is also undefined",
+  "revision": "2026-11-19: was 'accept'; the usability check (and a static undefined-name scan) showed the reference cannot be exercised",
+  "rule": "R2/R4",
+  "verdict": "reject"
  },
  "RCE_post_snippet_223": {
   "notes": "",

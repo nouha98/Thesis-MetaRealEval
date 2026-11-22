@@ -74,3 +74,13 @@ def test_committed_decisions_match_the_reviewed_contracts():
         c = acr.load_contract(acr.REVIEWED / f"{label}.json")
         assert c["review"]["status"] == "reviewed" and c["review"]["verdict"] == d["verdict"], label
         assert c["support"]["supported"] == (d["verdict"] != "reject"), label
+
+
+def test_undefined_names_finds_missing_module_level_names_only():
+    assert acr.undefined_names("class A:\n    def f(self):\n        return logger.info(1)\n") == ["logger"]
+    ok = "import os\nfrom re import sub\nX = 1\n\ndef helper(a):\n    return a\n\nclass A:\n    def f(self, y):\n        z = [i for i in range(y)]\n        return os.name, X, helper(z), sub, len(z)\n"
+    assert acr.undefined_names(ok) == []
+
+
+def test_revise_refuses_tasks_without_a_reviewed_contract():
+    assert acr.write({"RCE_nope": {"verdict": "reject", "rule": "R2", "notes": "x"}}, ["RCE_nope"]) == 1

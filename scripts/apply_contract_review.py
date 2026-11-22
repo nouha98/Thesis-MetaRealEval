@@ -2,6 +2,7 @@
 
     python scripts/apply_contract_review.py                 # write contracts_v1/reviewed/<task>.json
     python scripts/apply_contract_review.py --check         # usability check of every accepted contract
+    python scripts/apply_contract_review.py --revise TASK   # re-write a reviewed task after its entry changed
 
 ``contracts_v1/review_decisions.json`` holds one entry per reviewed task: verdict (accept, accept with
 edits, reject), the rule applied (doc/extensions/contract_prereview_tier*.md), the evidence note and the
@@ -22,7 +23,9 @@ from __future__ import annotations
 
 import argparse
 import ast
+import builtins
 import json
+import symtable
 import sys
 from pathlib import Path
 
@@ -134,16 +137,49 @@ def build(label: str, d: dict) -> dict:
             raise ValueError(f"{label}: unsupported after the edits: {contract['support']['reasons']}")
     note = f"{d['rule']}: {d['notes']}".strip(": ")
     contract["review"] = {"status": "reviewed", "verdict": d["verdict"], "reviewer": REVIEWER, "date": DATE, "notes": note}
+    if d.get("revision"):       # a correction after the user's confirmation: not confirmed until the user says so
+        contract["review"].update(revision=d["revision"], date=d["revision"][:10],
+                                  reviewer="Claude (revision after the usability check); awaiting user confirmation")
     return contract
 
 
-def write(decisions: dict) -> int:
-    supported_drafts = {p.stem for p in DRAFTS.glob("*.json") if load_contract(p)["support"]["supported"]}
-    todo = {t for t in supported_drafts if not (REVIEWED / f"{t}.json").exists()}
-    missing, extra = sorted(todo - set(decisions)), sorted(set(decisions) - todo)
-    if missing or extra:
-        print(f"ERROR: decisions do not cover the unreviewed supported drafts\n  no decision: {missing}\n  not pending: {extra}")
-        return 1
+def undefined_names(src: str) -> list[str]:
+    """Names the reference uses that its module never defines or imports (nor builtins): NameError when the
+    line runs. A static check, so a name only used on a logging path is reported too (the reviewer decides)."""
+    tree = ast.parse(src)
+    defined = set(dir(builtins)) | {"__file__", "__name__", "__doc__", "__class__", "__builtins__"}
+    for n in ast.walk(tree):
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            defined.add(n.name)
+        elif isinstance(n, (ast.Import, ast.ImportFrom)):
+            defined |= {(a.asname or a.name).split(".")[0] for a in n.names}
+        elif isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store):
+            defined.add(n.id)
+    used: set[str] = set()
+
+    def walk(tab):
+        used.update(s.get_name() for s in tab.get_symbols() if s.is_referenced() and s.is_global())
+        for child in tab.get_children():
+            walk(child)
+    walk(symtable.symtable(src, "m", "exec"))
+    return sorted(used - defined)
+
+
+def write(decisions: dict, revise: list[str]) -> int:
+    if revise:      # re-write named, already reviewed tasks from their (revised) decisions
+        unknown = [t for t in revise if t not in decisions or not (REVIEWED / f"{t}.json").exists()]
+        if unknown:
+            print(f"ERROR: --revise needs an existing reviewed contract and a decision: {unknown}")
+            return 1
+        decisions = {t: decisions[t] for t in revise}
+    else:
+        supported_drafts = {p.stem for p in DRAFTS.glob("*.json") if load_contract(p)["support"]["supported"]}
+        todo = {t for t in supported_drafts if not (REVIEWED / f"{t}.json").exists()}
+        missing, extra = sorted(todo - set(decisions)), sorted(set(decisions) - todo)
+        if missing or extra:
+            print(f"ERROR: decisions do not cover the unreviewed supported drafts\n  no decision: {missing}\n"
+                  f"  not pending: {extra} (to change a reviewed task use --revise)")
+            return 1
     errors = []
     for label in sorted(decisions):
         try:
@@ -161,7 +197,7 @@ def check(cfg, tasks, gated: bool, only: list[str]) -> int:
     from meta_real_eval.benchmarks.detection import prepare_primary
     from meta_real_eval.oracles.coupling import SPEC
     sp = SPEC["primary_pool"]
-    bad = []
+    bad, warn = [], []
     for path in sorted(REVIEWED.glob("*.json")):
         label = path.stem
         c = load_contract(path)
@@ -173,10 +209,15 @@ def check(cfg, tasks, gated: bool, only: list[str]) -> int:
                               sp["timeout_s"], sp["max_calls"])
         n = len(ctx.get("tests", {}))
         by = {"p": sum(s == "p" for s in ctx.get("tests", {}).values()), "gen": sum(s == "gen" for s in ctx.get("tests", {}).values())}
-        print(f"{label}: {n} valid tests {by} supported={ctx['support']['supported']}", flush=True)
+        undef = undefined_names(tasks[label].reference_code)
+        print(f"{label}: {n} valid tests {by} supported={ctx['support']['supported']}"
+              + (f" UNDEFINED-NAMES={undef}" if undef else ""), flush=True)
+        if undef:
+            warn.append(label)
         if not ctx["support"]["supported"] or n < 1:
             bad.append(label)
     print(f"usability check: {len(bad)} contract(s) without a valid test: {bad}")
+    print(f"undefined names in the reference (review each): {warn}")
     return 1 if bad else 0
 
 
@@ -185,10 +226,12 @@ def main() -> int:
     ap.add_argument("--config", type=Path, default=Path("config/tier2_extensions.yaml"))
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--tasks", nargs="*", default=[], help="with --check: only these labels")
+    ap.add_argument("--revise", nargs="+", default=[], metavar="TASK",
+                    help="re-write these already reviewed tasks from their revised entries in review_decisions.json")
     ap.add_argument("--ungated", action="store_true")
     args = ap.parse_args()
     if not args.check:
-        return write(json.loads(DECISIONS.read_text(encoding="utf-8")))
+        return write(json.loads(DECISIONS.read_text(encoding="utf-8")), args.revise)
     cfg = ec.load_ext_config(args.config)
     tasks, gated = ec.load_tasks(cfg, args.ungated)
     return check(cfg, tasks, gated, args.tasks)

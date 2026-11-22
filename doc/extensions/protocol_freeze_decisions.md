@@ -240,6 +240,26 @@ Adjustments (N, filters) may use only these technical metrics and are recorded b
 - **Detections are reference-relative.** D(f) and K(m) use the same oracle, the reference (D7), as in Chen'20 and Just'14. A detection is a deviation from the reference, not a proven specification violation. Splitting detections into "documented" and "underdetermined" cannot be done automatically (contracts describe valid inputs, not correct outputs), so the primary measure stays reference-relative and the P-fail-only sensitivity (9.4) is the assertion-confirmed check.
 - **Contract review.** Rules R1–R6 (`doc/extensions/contract_prereview_tierC.md`) apply to every evaluation task. No verdict uses a detection result.
 
+**Technical report of the full run C2 (freia, job 5371174, 8 shards, 2026-11-22; no coupling value computed):**
+
+| Gate GC criterion | Full-run result |
+|---|---|
+| cell agreement ≥ 99% | primary 1.0; perturbed 0.99998 |
+| reference rows clean | 370 of 375; the 5 others are unsupported tasks (csn_263, csn_36, post_358, post_4 fail P; csn_137: 69 unstable perturbed tests, dropped by the filter) |
+| P reproduces history | mutants 2327/2327; solutions 54672/54680. All 8 mismatches have a per-test `timeout` outcome (csn_271, post_158, post_293, post_47: unsupported tasks), so they are timeouts excepted by the gate and do not touch the primary analysis |
+| median valid tests ≥ 20 | 122 (103 supported tasks: 98 evaluation + 5 development, all `reviewed`) |
+| runner errors, unavailable pools | none |
+| primary pool, 10 P-scenario detections inspected | all 10 genuine (see the decisions); 1530 such detections in 22 tasks |
+| perturbed false detection ≤ 5% | **10.7%** (1025/9605); pilot value was 1.29% |
+| runtime | 60,226 task-seconds; each shard 1h52–2h16 |
+| conditional population | **36** evaluation tasks (38 with the 2 contributing development tasks post_24 and post_64) of 98 supported evaluation tasks; excluded: no_valid_pool 253, no_near_miss_fault 23, no_detected_llm 17, no_cross_model_llm 18, no_detected_operator 4 |
+
+**Decisions recorded before any endpoint is computed (2026-11-22):**
+- **Power rule:** 36 ≥ 30, so the primary and the three secondary comparisons are confirmatory. The margin is thin: the thesis states n = 36.
+- **Spot check:** all 10 sampled detections are genuine under the criterion above (valid input, stable outcome, observable difference, not a timeout or infrastructure error). Several are reference-specific details the P tests do not assert: e.g. csn_142 returns `linker_file: ''` where the class docstring says `None`, so a solution that follows the documentation is "detected". This is the limitation recorded in 9.7, and the reason for the P-fail-only sensitivity.
+- **Perturbed-P pool: dropped as infeasible.** 9.1 keeps the pool "only if it passes the false-detection gate". The pilot passed that gate (1.29%), but the pool is defined for all tasks, so the gate is re-evaluated on the full run, and it fails (10.7% > 5%). `analyze_coupling.py` reports `perturbed_pool` as infeasible (threshold `PERTURBED_MAX_FALSE_DETECTION`, outside the frozen SPEC). Descriptive diagnosis only, not used to rescue the pool: 16 of 182 tasks with perturbed data have any flagged cell, and 3 unsupported tasks (post_111, csn_227, post_189) hold 79% of the flagged cells (2.4% without them). No task is filtered.
+- **P-pass classification:** the 8 solutions above are classed P-fail because of a timeout; they belong to unsupported tasks.
+
 ### 9.7 Limitations to state
 
 - supported subset only, and the conditional population only;

@@ -110,16 +110,21 @@ def main(argv=None) -> int:
     res["authoritative"] = all(r["gated"] for r in results)
     res["contracts"] = sorted({r["contract"]["status"] for r in results})
     (args.witness / "rq1_robustness.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
+    n_tasks = len(results)
     L = ["# RQ1 robustness (witness-confirmed faults, group level)", "",
-         f"*{'authoritative' if res['authoritative'] else 'NON-AUTHORITATIVE local run'}; contracts {res['contracts']}; "
-         f"member kill disagreements {res['member_kill_disagreements']}. Descriptive on a development pilot.*", "",
-         "| population | operator killed/groups | rate | LLM killed/groups | rate | gap (LLM - op) | paired tasks |",
-         "|---|---|---|---|---|---|---|"]
+         f"*{'authoritative' if res['authoritative'] else 'NON-AUTHORITATIVE local run'}; {n_tasks} tasks; "
+         f"contracts {res['contracts']}; member kill disagreements {res['member_kill_disagreements']}. "
+         f"{'Descriptive (development pilot).' if n_tasks <= 24 else 'Wilcoxon on paired per-task kill rates (LLM vs operator).'}*",
+         "", "| population | operator killed/groups | rate | LLM killed/groups | rate | gap (LLM - op) | paired tasks "
+             "| Wilcoxon p | Cliff's delta |",
+         "|---|---|---|---|---|---|---|---|---|"]
     for name, p in res["populations"].items():
         o, l = p["operator"], p["llm_whole"]
         fr = lambda x: "n/a" if x is None else f"{x:.3f}"  # noqa: E731
+        w = p["wilcoxon_paired_task_rates"] or {}
         L.append(f"| {name} | {o['killed']}/{o['groups']} | {fr(o['kill_rate'])} | {l['killed']}/{l['groups']} | "
-                 f"{fr(l['kill_rate'])} | {fr(p['gap_llm_minus_operator'])} | {p['paired_tasks']} |")
+                 f"{fr(l['kill_rate'])} | {fr(p['gap_llm_minus_operator'])} | {p['paired_tasks']} | "
+                 f"{fr(w.get('p_value'))} | {fr(w.get('cliffs_delta'))} |")
     (args.witness / "rq1_robustness.md").write_text("\n".join(L) + "\n", encoding="utf-8")
     print("\n".join(L))
     return 0

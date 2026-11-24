@@ -326,3 +326,28 @@ Still to do before the results are final (all descriptive or qualitative; none c
 3. the **qualitative review (9.5)** of 50 uncoupled fault classes: the Petrovic RQ3 part Gordon pointed to (guide frozen; sheet built by `scripts/coupling_review_sheet.py`);
 4. ~~the independent recompute of pc, lift and Δ on 3 tasks~~ **done 2026-11-22, passed** (`scripts/coupling_recompute.py`: no project imports; tasks chosen by a fixed structural rule before any value was computed): post_351 (fewest goals), post_226 (most faults written by several models: 7), post_295 (most P tests together with generated tests). All 39 recomputed values (n_tests, n_contributing, and pc, strict share, FC, null and lift per source, plus Δ) equal `endpoints.json` to 1e-9, with exact subset enumeration and the specified permutation null for every class. This verifies the data handling (masked and unstable tests, near-miss faults, deduplication, the cross-model rule before deduplication) and the formulas on these 3 tasks, not the other 33; it is a check of the implementation, not of the stored detections;
 5. the thesis section and the package for Gordon.
+
+## 10. Stage 2 (E13) witnesses: gate G2 and the full run (freia, 2026-11-24)
+
+**Changes before the authoritative pilot (plan rev. 9.3).** Only reviewed contracts count: a supported draft is treated as unsupported (the earlier local pilot had used the draft of csn_110, which the dev review rejected). The pilot job no longer re-drafts contracts (the frozen `contracts_v1/` stays untouched). The canary uses the suite timeout and a warm-up, as the coupling runs do. The full run needs a passed G2 record with identical witness settings (`run_witness.py --g2`).
+
+**Gate G2: PASSED** (`results_tier2_ext/witness/dev_pilot_reviewed/G2.json`; authoritative, gate manifest). All checks hold: fixtures, authoritative, all 24 development tasks, reviewed contracts, outcome taxonomy, canary, stored replay, and an **independent replay** of all 38 witnesses in fresh processes from the stored witness and the hash-checked frozen mutant code. Scale: 5/24 development tasks supported; 35 primary confirmed groups of 72 on supported tasks (yield 0.49); of 38 historically "equivalent" groups on supported tasks, 5 have a primary witness.
+
+**Provenance note.** The freia checkout is recorded as `-dirty` only because of untracked, unrelated files under `config/` (old pilot configs); no tracked file differs from the commit, and none of these files is read by the runs (inputs are pinned).
+
+**Full run** (8 array shards, job 5385664, about 4 min each; merge job 5385665; `results_tier2_ext/witness/full/`): 351 evaluation tasks, **98 supported** (= the accepted contracts), 4,993 fault groups (1,365 on supported tasks).
+- **Primary confirmed groups (D3): 735** (origin: generated 673, P scenario 62). Witness replay 881/881.
+- Outcomes: api_value 487, api_exception 248 (valid), api_exception domain-uncertain 37, private-state-only 109, unresolved 479, invalid artifact 5, unsupported 3,628.
+- **L3 evidence:** of 560 historically "equivalent" groups on supported tasks, **119 (21%) have a primary witness**; 407 stay unresolved (never counted as equivalent).
+
+**RQ1 robustness** (`rq1_robustness.md/json`, group level; LLM − operator kill-rate gap):
+
+| population | operator | LLM | gap | paired tasks |
+|---|---|---|---|---|
+| historical | 919/1,387 = 0.663 | 409/809 = 0.506 | −0.157 | 203 |
+| supported, historical | 357/497 = 0.718 | 160/310 = 0.516 | −0.202 | 73 |
+| **primary confirmed (D3)** | 294/392 = 0.750 | 128/225 = 0.569 | **−0.181** | 64 |
+| full trace (sensitivity) | 352/457 = 0.770 | 160/273 = 0.586 | −0.184 | 71 |
+| unresolved counted as survived | 294/605 = 0.486 | 128/493 = 0.260 | −0.226 | 94 |
+
+**Reading:** the RQ1 finding (LLM mutants are killed less often than operator mutants) is not an artefact of the historical equivalence filter: the gap persists, at a similar size, when only replayed, API-visible, valid-domain faults count, and in every sensitivity population. Wilcoxon p-values on paired per-task rates are in `rq1_robustness.json` (`wilcoxon_paired_task_rates`). The support restriction (98 of 351 tasks) is a stated limitation.

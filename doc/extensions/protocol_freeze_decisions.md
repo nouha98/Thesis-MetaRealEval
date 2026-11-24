@@ -457,3 +457,20 @@ Decided on development evidence (10.1) and applied before A2 runs on any evaluat
 **Protocol wording (R7), made explicit.**
 - The **docstring defines what is promised**; the reference is used only as a **consistency check**. `type` asserts the type family the reference returns, and may be used only where that family agrees with the docstring's promise; where the reference contradicts it, the level is `none`.
 - **Constructors** are not classified by level. A constructor step asserts only that construction succeeds and yields an instance of the class, or raises the same documented exception; it promises no ordinary return value.
+
+**R7 evaluation drafts (Claude, 2026-11-24; awaiting the researcher's review).** All 233 public callables of the 98 accepted evaluation contracts have a draft level and reason in `output_spec_v1.json`; none is missing or extra. Sheet: `doc/extensions/output_spec_review_eval.md`.
+
+| | all callables | callables the contract generates (A2 can call) |
+|---|---|---|
+| value | 13 (6%) | 13 |
+| type | 159 (68%) | 140 |
+| none | 61 (26%) | 48 |
+| total | 233 | 201 |
+
+Only **10 of 98 tasks** have at least one generated `value`-level callable. Five drafts carry an "(edge)" flag: the main behaviour is determined, a boundary case is not. **Early signal, stated before any evaluation-task H is built:** under R7, A2 can assert returned values on about a tenth of the tasks. Elsewhere it can assert only kinds, normal returns and documented exceptions. RealClassEval's skeleton docstrings rarely determine return values, so a reference-differential oracle that respects them is weak by construction on most of the benchmark. This is the 10.2 bound, now quantified.
+
+**R7 review checks against the references (2026-11-24).**
+- csn_125 `prefixMin` stays `value`. The reference returns `inf` before updates and the minimum after them. For `a ≥ size` it raises `IndexError`, so those inputs are domain-uncertain (D2) and never asserted; no contract bound is needed. `update` stays `none`, with a recorded risk: for `a ≥ size` the reference silently does nothing, so a completion that raises there fails H by exception rule (b).
+- post_185 `get_count` → `type` and `size` → `type`, decided separately. Both: the reference silently skips non-positive counts (`{"a": 3, "b": -2, "c": 0}` gives size 1). `get_count` also: on ties at `trim_to_m` the reference keeps the earlier-inserted strings. Neither behaviour is in the docstring.
+- post_223 getters stay `value`. The reference returns `None` before any set, and `set_request_context(r)` without a session id sets the session to `None`, as the signature's default says. Order dependence between tests is caught by admission.
+- **Exception rule (b): how it is reported.** The FenwickMin `update` case shows the general risk: a reference that silently accepts an input the docstring leaves meaningless, while a completion raises. Rule (b) stays primary, and its effect is reported as a pre-specified sensitivity. Stage 5 gives P-pass/H-fail with and without the programs that fail only by an unexpected exception (`p_pass_h_fail:exception_only`, already computed by `grade_hidden.py`), and the audit samples those cases.

@@ -1,15 +1,16 @@
 #!/bin/bash
-# CPU job: authoritative Stage 2 development pilot (extensions plan rev. 9.1).
+# CPU job: authoritative Stage 2 development pilot + gate G2 (extensions plan rev. 9.3).
 #   1. verify the frozen protocol artifacts against the gate manifest (freeze_protocol --check)
-#   2. draft contracts for the development tasks (with gate verdicts)
-#   3. witness search on the development tasks (fork mode; the canary requires tree-kill on POSIX)
-#   4. RQ1 robustness summary (descriptive on the pilot)
+#   2. witness search on the 24 development tasks with the FROZEN reviewed contracts
+#      (no re-drafting: contracts_v1/ is frozen; only reviewed contracts count)
+#   3. RQ1 robustness summary (descriptive on the pilot)
+#   4. gate G2 (fixtures, checks, independent replay of every witness) -> <out>/G2.json, G2.md
 #
 # Usage (login node, repo root):
 #   sbatch scripts/slurm/submit_witness_pilot.sh
 #   sbatch scripts/slurm/submit_witness_pilot.sh --out results_tier2_ext/witness/dev_pilot_freia
 #
-# Development tasks only: run_witness.py refuses other tasks before gate G2. No model is called.
+# No model is called. The job exits non-zero if G2 does not pass.
 #
 #SBATCH --job-name=witness_pilot
 #SBATCH --cpus-per-task=16
@@ -38,7 +39,7 @@ echo "Job ${SLURM_JOB_ID}: Stage 2 development pilot -> ${OUT}"
 "${PY}" -c "import hypothesis; assert hypothesis.__version__ == '6.170.15', hypothesis.__version__"
 
 srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" scripts/freeze_protocol.py --config "${CONFIG}" --check
-srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" scripts/draft_contracts.py --config "${CONFIG}" --tasks dev --name dev_freia
 srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" scripts/run_witness.py --config "${CONFIG}" --tasks dev \
     --out "${OUT}" --workers "${SLURM_CPUS_PER_TASK:-8}"
 srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" scripts/analyze_rq1_witness.py --witness "${OUT}"
+srun ${SRUN_ARGS[@]+"${SRUN_ARGS[@]}"} "${PY}" scripts/gate_g2.py --config "${CONFIG}" --pilot "${OUT}"

@@ -1,0 +1,119 @@
+"""run_witness.py guards for the full run (reviewed contracts only, G2 record, task selection) and
+the stored-file checks of gate_g2.py."""
+
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
+sys.path.insert(0, str(SCRIPTS))
+
+import gate_g2 as g2  # noqa: E402
+import run_witness as rw  # noqa: E402
+from meta_real_eval.benchmarks.witness import WitnessSettings  # noqa: E402
+
+DEV = ["A", "B"]
+
+
+def contract(status, supported):
+    return {"review": {"status": status}, "support": {"supported": supported, "reasons": []}}
+
+
+def test_only_reviewed_contracts_count():
+    draft = rw.reviewed_only(contract("draft", True))
+    assert draft["support"]["supported"] is False and "not reviewed" in draft["support"]["reasons"][-1]
+    original = contract("draft", True)
+    rw.reviewed_only(original)
+    assert original["support"]["supported"] is True                      # the input is not modified
+    assert rw.reviewed_only(contract("reviewed", True))["support"]["supported"] is True
+    assert rw.reviewed_only(contract("draft", False))["support"]["reasons"] == []
+
+
+def test_task_selection():
+    assert rw.select_labels(["dev"], ["A", "B", "C", "D"], DEV) == DEV
+    assert rw.select_labels(["eval"], ["D", "A", "C", "B"], DEV) == ["C", "D"]
+    assert rw.select_labels(["C"], ["A", "C"], DEV) == ["C"]
+
+
+def g2_record(tmp_path, **kw):
+    rec = {"passed": True, "gated": True, "witness_settings": vars_of(WitnessSettings()), **kw}
+    p = tmp_path / "G2.json"
+    p.write_text(json.dumps(rec), encoding="utf-8")
+    return p
+
+
+def vars_of(s):
+    import dataclasses
+    return dataclasses.asdict(s)
+
+
+def test_full_run_needs_a_passed_authoritative_g2_with_the_same_settings(tmp_path):
+    s = WitnessSettings()
+    with pytest.raises(SystemExit, match="gate G2 first"):
+        rw.require_g2(None, s, True)
+    with pytest.raises(SystemExit, match="authoritative"):
+        rw.require_g2(g2_record(tmp_path), s, False)
+    with pytest.raises(SystemExit, match="did not pass"):
+        rw.require_g2(g2_record(tmp_path, passed=False), s, True)
+    with pytest.raises(SystemExit, match="settings differ"):
+        rw.require_g2(g2_record(tmp_path), WitnessSettings(pool_size=10), True)
+    ok = rw.require_g2(g2_record(tmp_path), s, True)
+    assert len(ok["sha256"]) == 64
+
+
+def result(task, groups, status="reviewed", supported=True):
+    return {"task": task, "gated": True, "contract": {"status": status, "path": "x"},
+            "support": {"supported": supported, "reasons": [] if supported else ["r"]}, "groups": groups}
+
+
+def group(gid, outcome, **kw):
+    return {"group_id": gid, "outcome": outcome, **kw}
+
+
+MANIFEST = {"settings": {"gated": True}, "checks": {"canary": {"verdict": {"ok": True}}}}
+
+
+def test_static_checks_pass_on_a_clean_pilot():
+    res = [result("A", [group("g1", "distinguished", level="api_visible", domain="valid", replay={"confirmed": True}),
+                        group("g2", "unresolved", reason="no difference within budget (not an equivalence certificate)")]),
+           result("B", [group("g3", "unsupported")], status="draft", supported=False)]
+    checks = g2.static_checks(res, MANIFEST, DEV, [])
+    assert all(c["ok"] for c in checks.values()), checks
+
+
+def test_static_checks_catch_each_failure():
+    res = [result("A", [group("g1", "distinguished", replay={"confirmed": False}),
+                        group("g2", "unresolved", reason="no difference"),
+                        group("g3", "equivalent")], status="draft")]
+    checks = g2.static_checks(res, {"settings": {"gated": False}, "checks": {}}, DEV, ["B"])
+    assert {k for k, c in checks.items() if not c["ok"]} == {
+        "authoritative", "all_dev_tasks", "reviewed_contracts", "taxonomy", "canary", "replay_stored"}
+    assert checks["taxonomy"]["unknown"] == ["equivalent"]
+    assert checks["all_dev_tasks"]["missing"] == ["B"]
+
+
+def test_heldout_populations_and_aggregate():
+    import eval_heldout as eh
+    prim = {"outcome": "distinguished", "level": "api_visible", "domain": "valid", "replay": {"confirmed": True},
+            "origin": "generated", "members": [{"equivalence": "divergence", "killed": False}]}
+    eq = {"outcome": "unresolved", "members": [{"equivalence": "no_divergence", "killed": None}]}
+    assert eh.populations(prim) == ["primary/generated", "stage0_nonequiv"] and eh.populations(eq) == []
+    assert eh.p_killed(prim) is False and eh.p_killed(eq) is None
+    assert eh.hidden_names("def test_h_0():\n    pass\n\ndef helper():\n    pass\ndef test_h_1():\n") == \
+        ["test_h_0", "test_h_1"]
+    rows = [{"task": "A", "populations": ["primary/generated"], "p_killed": False, "h_detected": True},
+            {"task": "A", "populations": ["primary/generated"], "p_killed": True, "h_detected": True},
+            {"task": "B", "populations": ["stage0_nonequiv"], "p_killed": True, "h_detected": False}]
+    agg = eh.aggregate(rows)
+    assert agg["primary"]["groups"] == 2 and agg["primary"]["h_only"] == 1 and agg["primary"]["mean_task_rate_p"] == 0.5
+    assert agg["stage0_nonequiv"]["p_only"] == 1
+
+
+def test_replay_target_restores_nontermination():
+    assert g2.replay_target({"level": "api_visible", "kind": "nontermination", "domain": "valid"}) == \
+        ("nontermination", "valid")
+    assert g2.replay_target({"level": "api_visible", "kind": "api_value", "domain": "valid"}) == ("api_visible", "valid")
+    assert g2.replay_target({"level": "private_state_only", "kind": None, "domain": "valid"}) == \
+        ("private_state_only", "valid")

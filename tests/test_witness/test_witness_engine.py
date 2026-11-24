@@ -66,6 +66,25 @@ def test_invalid_artifacts(ctx):
     assert search_group(ctx, "g", None)["outcome"] == "invalid_artifact"
 
 
+@pytest.mark.parametrize("case", ["state_fault", "mutant_exception", "nontermination", "private_only"])
+def test_stored_witness_replays_independently(ctx, case):
+    """What gate G2 does: rebuild the scenario from the stored witness only and replay it in fresh processes."""
+    import json
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+    from gate_g2 import replay_target
+    from meta_real_eval.benchmarks.witness import _replay
+
+    r = search_group(ctx, "g", MUTANTS[case])
+    stored = json.loads(json.dumps(r, default=str))                                  # as written to witness.json
+    w = stored["witness"]
+    sc = {"scenario_id": w["scenario_id"], "steps": w["steps"], "api_flags": w["api_flags"]}
+    pool = "p" if stored["origin"] == "p_scenario" else "gen"
+    rep = _replay(ctx, pool, sc, replay_target(stored), MUTANTS[case], WitnessSettings(**ctx["settings"]))
+    assert rep["confirmed"], rep
+
+
 def test_unsupported_task_is_reported_per_group():
     task = make_task()
     c = draft_contract(task, {"tasks": {}})

@@ -1,7 +1,18 @@
-"""Stage 2 witness search (plan rev. 9) -- development pilot first.
+"""Stage 2 witness search (plan rev. 9.3) -- development pilot first, full run after gate G2.
 
+    # development pilot (gate G2 input)
     python scripts/run_witness.py --config config/tier2_extensions.yaml --tasks dev \
-        --out results_tier2_ext/witness/dev_pilot [--ungated] [--workers 6]
+        --out results_tier2_ext/witness/dev_pilot_freia [--ungated] [--workers 6]
+    # full run on the 351 evaluation tasks (needs the passed G2 record; SLURM array shards)
+    python scripts/run_witness.py --config config/tier2_extensions.yaml --tasks eval \
+        --g2 results_tier2_ext/witness/dev_pilot_freia/G2.json --out results_tier2_ext/witness/full \
+        --shard 0 --shards 8
+    # merge the shards
+    python scripts/run_witness.py --config config/tier2_extensions.yaml --out results_tier2_ext/witness/full --summarise
+
+Only REVIEWED contracts count (plan D2): a supported draft is treated as unsupported ("contract
+not reviewed"); a rejected contract is stored as reviewed + unsupported. A full run uses exactly
+the witness settings of the G2 pilot. Finished tasks are skipped (rerun the same command to resume).
 
 Per task: load the contract (reviewed if present, else the draft, recorded), build the P and
 generated pools, run the reference twice, then search every fault group of the FROZEN split
@@ -19,10 +30,12 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import hashlib
 import json
 import os
 import sys
 import time
+import traceback
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -49,6 +62,39 @@ def contract_for(label: str) -> tuple[dict, Path]:
     raise SystemExit(f"ERROR: no contract for {label}; run scripts/draft_contracts.py first")
 
 
+def reviewed_only(contract: dict) -> dict:
+    """Only reviewed contracts count (plan D2): a supported draft becomes unsupported. Returns a copy."""
+    if contract["review"]["status"] == "reviewed" or not contract["support"]["supported"]:
+        return contract
+    sup = contract["support"]
+    return {**contract, "support": {**sup, "supported": False,
+                                    "reasons": list(sup["reasons"]) + ["contract not reviewed (only reviewed contracts count)"]}}
+
+
+def require_g2(path, settings: WitnessSettings, gated: bool) -> dict:
+    """The full run needs a passed, authoritative G2 record with the same witness settings."""
+    if path is None:
+        raise SystemExit("ERROR: non-development tasks need --g2 <pilot>/G2.json (scripts/gate_g2.py) -- gate G2 first")
+    if not gated:
+        raise SystemExit("ERROR: a full run must be authoritative (gate manifest); --ungated is for development tasks")
+    raw = Path(path).read_bytes()
+    rec = json.loads(raw)
+    if not (rec.get("passed") and rec.get("gated")):
+        raise SystemExit(f"ERROR: {path}: G2 did not pass (or was not authoritative): {rec.get('failed_checks')}")
+    if rec.get("witness_settings") != dataclasses.asdict(settings):
+        raise SystemExit(f"ERROR: witness settings differ from the G2 pilot:\n  G2   {rec.get('witness_settings')}\n"
+                         f"  now  {dataclasses.asdict(settings)}")
+    return {"path": str(path), "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def select_labels(spec: list[str], all_labels, development) -> list[str]:
+    if spec == ["dev"]:
+        return list(development)
+    if spec == ["eval"]:
+        return sorted(set(all_labels) - set(development))
+    return list(spec)
+
+
 def _search(args):
     ctx, gid, code = args
     return search_group(ctx, gid, code)
@@ -58,7 +104,7 @@ def run_task(label, task, bench, groups, split, baseline, settings, gated, worke
     contract, cpath = contract_for(label)
     excluded = set(task.meta.get("scenarios", {}).get("excluded", {})) if gated else set()
     t0 = time.monotonic()
-    ctx = prepare_task(task, contract, settings, excluded, gated)
+    ctx = prepare_task(task, reviewed_only(contract), settings, excluded, gated)
     prep_s = time.monotonic() - t0
     records = {r["record_id"]: r for r in ec.collect_fault_records(bench, task, baseline)}
     hist = ec.historical_status(label, baseline)
@@ -144,48 +190,76 @@ def write_md(summary: dict, results: list[dict], path: Path) -> None:
     path.write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
+def write_summary(out: Path) -> dict:
+    """Merge every <out>/*/witness.json (all shards) into summary.json / summary.md."""
+    results = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(out.glob("*/witness.json"))]
+    summary = summarise(results)
+    summary["failed_tasks"] = sorted(p.parent.name for p in out.glob("*/error.txt"))
+    (out / "summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
+    write_md(summary, results, out / "summary.md")
+    return summary
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--config", type=Path, required=True)
-    ap.add_argument("--tasks", nargs="+", default=["dev"], help="dev | task labels (full runs come after gate G2)")
+    ap.add_argument("--tasks", nargs="+", default=["dev"],
+                    help="dev | eval (the 351 non-development tasks; needs --g2) | task labels")
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--g2", type=Path, default=None, help="passed G2 record (scripts/gate_g2.py), for non-dev tasks")
     ap.add_argument("--ungated", action="store_true")
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     ap.add_argument("--pool-size", type=int, default=40)
     ap.add_argument("--max-calls", type=int, default=6)
     ap.add_argument("--timeout", type=float, default=5.0)
     ap.add_argument("--budget", type=float, default=300.0)
+    ap.add_argument("--shard", type=int, default=0, help="SLURM array: process labels[shard::shards]")
+    ap.add_argument("--shards", type=int, default=1)
+    ap.add_argument("--force", action="store_true", help="recompute tasks that already have witness.json")
+    ap.add_argument("--summarise", action="store_true", help="only merge <out>/*/witness.json into the summary")
     args = ap.parse_args(argv)
+    if args.summarise:
+        print(json.dumps(write_summary(args.out), indent=1))
+        return 0
     cfg = ec.load_ext_config(args.config)
     pins = ec.pins_ok(cfg)
-    if args.tasks != ["dev"] and not set(args.tasks) <= set(cfg.extensions.development_tasks):
-        raise SystemExit("ERROR: only development tasks before gate G2 (no full run yet)")
-    policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=True)
-    policy.activate()
-    report = canary.require_canary(policy=policy)            # aborts on a leak (and on POSIX a survivor)
-    tasks, gated = ec.load_tasks(cfg, args.ungated)
-    ec.check_development_mapping(cfg, tasks, gated)
-    groups, split = load_split(ec.PROTOCOL_DIR / "fault_split_v1.json")
+    dev = cfg.extensions.development_tasks
     settings = WitnessSettings(pool_size=args.pool_size, max_calls=args.max_calls, timeout_s=args.timeout,
                                mutant_budget_s=args.budget, seed=cfg.extensions.seed)
-    labels = list(cfg.extensions.development_tasks) if args.tasks == ["dev"] else args.tasks
+    policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=True)
+    policy.activate()
+    # aborts on a leak (and on POSIX a surviving descendant); suite timeout + warm-up for cold cluster nodes
+    report = canary.require_canary(policy=policy, timeout_s=cfg.execution.timeout_s, warmup=True)
+    tasks, gated = ec.load_tasks(cfg, args.ungated)
+    ec.check_development_mapping(cfg, tasks, gated)
+    all_labels = select_labels(args.tasks, tasks, dev)
+    g2 = None if set(all_labels) <= set(dev) else require_g2(args.g2, settings, gated)
+    labels = all_labels[args.shard::args.shards]
+    groups, split = load_split(ec.PROTOCOL_DIR / "fault_split_v1.json")
     bench = get_benchmark(cfg)
     baseline = Path(cfg.extensions.baseline_scores)
     args.out.mkdir(parents=True, exist_ok=True)
-    results = []
+    failed = []
     for lab in labels:
+        f = args.out / lab / "witness.json"
+        if f.exists() and not args.force:
+            continue
+        f.parent.mkdir(parents=True, exist_ok=True)
         t = time.monotonic()
-        res = run_task(lab, tasks[lab], bench, groups, split, baseline, settings, gated, args.workers)
-        (args.out / lab).mkdir(parents=True, exist_ok=True)
-        (args.out / lab / "witness.json").write_text(json.dumps(res, indent=1, default=str), encoding="utf-8")
-        results.append(res)
+        try:
+            res = run_task(lab, tasks[lab], bench, groups, split, baseline, settings, gated, args.workers)
+        except Exception:                                  # one task must not stop the others; rerun it later
+            (f.parent / "error.txt").write_text(traceback.format_exc(), encoding="utf-8")
+            print(f"[{lab}] FAILED: see {f.parent / 'error.txt'}", flush=True)
+            failed.append(lab)
+            continue
+        (f.parent / "error.txt").unlink(missing_ok=True)
+        f.write_text(json.dumps(res, indent=1, default=str), encoding="utf-8")
         print(f"[{lab}] supported={res['support']['supported']} groups={len(res['groups'])} "
               f"primary={sum(primary(g) for g in res['groups'])} ({time.monotonic() - t:.0f}s)", flush=True)
-    summary = summarise(results)
-    (args.out / "summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
-    write_md(summary, results, args.out / "summary.md")
     write_run_manifest(
-        args.out, stage="stage2_witness", config_path=args.config,
+        args.out if args.shards == 1 else args.out / "_manifests" / f"shard_{args.shard}",
+        stage="stage2_witness", config_path=args.config,
         inputs={"fault_split": ec.PROTOCOL_DIR / "fault_split_v1.json",
                 "contracts": [p for p in (REVIEWED, DRAFTS) if p.exists()],
                 "stage0": [baseline / "stage0" / lab for lab in labels],
@@ -193,9 +267,13 @@ def main(argv=None) -> int:
                 "benchmark_data": [cfg.benchmark.data_path]},
         seeds={"extension_seed": cfg.extensions.seed}, settings={**dataclasses.asdict(settings), "tasks": labels,
                                                                   "gated": gated, "workers": args.workers},
-        checks={"pins": pins, "canary": report}, argv=sys.argv if argv is None else argv)
-    print(json.dumps(summary, indent=1))
-    return 0
+        checks={"pins": pins, "canary": report, "g2": g2, "failed_tasks": failed},
+        argv=sys.argv if argv is None else argv)
+    if args.shards == 1:
+        print(json.dumps(write_summary(args.out), indent=1))
+    if failed:
+        print(f"{len(failed)} task(s) failed (rerun the same command; finished tasks are skipped): {failed}")
+    return int(bool(failed))
 
 
 if __name__ == "__main__":

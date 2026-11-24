@@ -416,3 +416,25 @@ Decided on development evidence (10.1) and applied before A2 runs on any evaluat
   - an instance of any other class (including the task's own class), an enum member, or a value with an exact representation (e.g. `datetime`) matches **by class name only**: a subclass does not match its base. In this benchmark completions re-implement the skeleton's class, so the name is the stable identity;
   - a class object (a returned type) matches any class object;
   - a value too large to tokenise (digest) gets no type check, only "returns normally".
+
+**R7 development check (freia, 2026-11-24; `results_tier2_ext/a2/dev_k5_r7`, k = 5, the dev drafts):**
+
+| | before R7 (k = 5) | with R7 |
+|---|---|---|
+| H-ready development tasks | 5 / 5 | 5 / 5 |
+| tests kept | 34 | 28 |
+| discovery groups covered | 18 / 18 | 13 / 18 |
+| held-out primary groups detected by P / H / P or H (of 14) | 8 / 11 / 12 | 8 / 9 / 11 |
+| held-out detected only by H | 4 | 3 |
+| mean per-task held-out detection rate, H | 0.69 | 0.38 |
+| P-passing completions failing H (of 148) | 63 | **0** |
+
+**Reading.**
+- R7 removes every P-pass/H-fail case on the development completions (63 → 0), including the 56 on post_24 and 7 on post_64 traced to unspecified outputs.
+- H still adds detection on held-out faults (P or H 11 vs P alone 8), but less than before: 5 discovery groups are only killable through unspecified outputs, and the mean per-task H rate halves. This is the cost of asserting only what the docstrings promise, and it is the expected consequence stated in 10.2.
+- **Limits of this check:** (a) the exception rule (b) is not exercised: no P-passing development completion fails H, so there is no exception-only case to judge; it is measured again in the audit. (b) With 0 P-pass/H-fail on 148, the development completions give no evidence yet that H finds real hidden faults; that question is Stage 5's, on the evaluation cohort. (c) n is small: 5 tasks, 14 held-out groups.
+- `H pass` (491 of 750) exceeds `P pass` (148): H is not a superset of P and is graded separately (P∧H is the combined criterion).
+
+**Status:** R7 is adopted. The development levels become `reviewed` once the researcher confirms them. Next comes the R7 review of the 98 evaluation contracts (233 callables; sheet `doc/extensions/output_spec_review_eval.md`): Claude drafts, the researcher reviews. Then A2 runs on the evaluation tasks.
+
+**R7 addition (2026-11-24, from the development review).** A `type` level asserts the type family the *reference* returns. It may therefore be used only where the reference's return type agrees with the docstring. Where the reference contradicts the docstring, the level is `none`. Case: csn_52 `BitField.__call__` promises "a list", but the reference returns `None` for 0 and a bare string for one set bit (contract review note); its draft changed from `type` to `none`.

@@ -1,32 +1,42 @@
 {
  "format": 1,
- "rule": "R7 (decisions 10.2): per public callable, judged from the skeleton docstrings only (what the coding models saw). value = the docstring determines the returned value for every contract-valid input; type = only the kind of value is promised; none = no return value is promised. Documented exceptions are always asserted. Missing callables default to type (recorded).",
+ "rule": "R7 (decisions 10.2): per public callable, judged from the skeleton docstrings only (what the coding models saw). value = the docstring determines the returned value for every contract-valid input; type = only the kind of value is promised; none = no return value is promised. Documented exceptions are always asserted. Missing callables default to type (recorded). A type level asserts the type family the reference returns, so it may be used only where the reference's return type agrees with the docstring; where it contradicts the docstring, use none.",
  "tasks": {
   "RCE_csn_snippet_12": {
    "status": "draft",
-   "levels": {"gcd": "value", "factorize": "type"},
+   "levels": {
+    "gcd": "value",
+    "factorize": "type"
+   },
    "notes": {
     "gcd": "GCD(a, b) is mathematically determined.",
-    "factorize": "'a tuple containing the two factors p and q': the order of p and q, and the result for an input that is not a product of two primes, are not specified."
+    "factorize": "'a tuple containing the two factors p and q': the order of p and q, and the result for an input that is not a product of two primes, are not specified. Not generated (pq has no generatable type), so no A2 test calls it; the level has no effect on H."
    }
   },
   "RCE_csn_snippet_52": {
    "status": "draft",
-   "levels": {"__call__": "type"},
+   "levels": {
+    "__call__": "none"
+   },
    "notes": {
-    "__call__": "'a list with a string for each True bit': the order of the strings and the string for a bit beyond the named bits are not specified."
+    "__call__": "'a list with a string for each True bit': the docstring promises a list, but the reference returns None for 0 and a bare string for exactly one set bit (contract review note), so a type check would assert the reference's contradicting types; the order and the strings for unnamed bits are not specified either. Revised 2026-11-24 from type."
    }
   },
   "RCE_csn_snippet_54": {
    "status": "draft",
-   "levels": {"__call__": "type"},
+   "levels": {
+    "__call__": "type"
+   },
    "notes": {
     "__call__": "'Map an integer to the string representation': how *args/**kwargs define the mapping, and the result for an unmapped integer, are not specified."
    }
   },
   "RCE_post_snippet_24": {
    "status": "draft",
-   "levels": {"is_local_path": "type", "extract_local_paths": "type"},
+   "levels": {
+    "is_local_path": "type",
+    "extract_local_paths": "type"
+   },
    "notes": {
     "is_local_path": "'判断是否为本地路径' (decide whether it is a local path): no rule says what a local path is.",
     "extract_local_paths": "'从文本中提取本地文件路径' (extract local file paths from text): no rule for what counts as a path or where it ends."
@@ -34,7 +44,13 @@
   },
   "RCE_post_snippet_64": {
    "status": "draft",
-   "levels": {"get_metadata": "type", "set_metadata": "none", "set_custom_output_dir": "none", "set_llm_engine": "none", "execute": "none"},
+   "levels": {
+    "get_metadata": "type",
+    "set_metadata": "none",
+    "set_custom_output_dir": "none",
+    "set_llm_engine": "none",
+    "execute": "none"
+   },
    "notes": {
     "get_metadata": "'a dictionary containing the tool's metadata': the keys and their names are not specified.",
     "set_metadata": "no Returns section.",

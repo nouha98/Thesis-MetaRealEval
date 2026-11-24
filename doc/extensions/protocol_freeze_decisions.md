@@ -474,3 +474,11 @@ Only **10 of 98 tasks** have at least one generated `value`-level callable. Five
 - post_185 `get_count` → `type` and `size` → `type`, decided separately. Both: the reference silently skips non-positive counts (`{"a": 3, "b": -2, "c": 0}` gives size 1). `get_count` also: on ties at `trim_to_m` the reference keeps the earlier-inserted strings. Neither behaviour is in the docstring.
 - post_223 getters stay `value`. The reference returns `None` before any set, and `set_request_context(r)` without a session id sets the session to `None`, as the signature's default says. Order dependence between tests is caught by admission.
 - **Exception rule (b): how it is reported.** The FenwickMin `update` case shows the general risk: a reference that silently accepts an input the docstring leaves meaningless, while a completion raises. Rule (b) stays primary, and its effect is reported as a pre-specified sensitivity. Stage 5 gives P-pass/H-fail with and without the programs that fail only by an unexpected exception (`p_pass_h_fail:exception_only`, already computed by `grade_hidden.py`), and the audit samples those cases.
+
+**R7 evaluation review closed (2026-11-24).** The researcher's four changes were applied, with their reasons corrected against the references:
+- csn_82 `relevant_part` → `none`: the reference returns a 4-tuple where the docstring promises the subword (type-agreement rule).
+- post_153 `are_mutually_exclusive` → `type`: unstated edges for contexts of different length and for empty contexts.
+- post_185 `size` → `type`: non-positive counts are skipped (lazy cleanup does not affect `size`).
+- post_194 `next` → `none`: the meaning of `attempts`, and so the boundary, is ambiguous.
+
+Together with the reference check of post_185 `get_count` → `type`, the final evaluation split is **value 8, type 162, none 63** (233 callables). All 98 evaluation entries are `reviewed`; the five development entries were reviewed earlier. A2 may now run on the evaluation tasks.

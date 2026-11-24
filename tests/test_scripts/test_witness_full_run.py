@@ -117,3 +117,28 @@ def test_replay_target_restores_nontermination():
     assert g2.replay_target({"level": "api_visible", "kind": "api_value", "domain": "valid"}) == ("api_visible", "valid")
     assert g2.replay_target({"level": "private_state_only", "kind": None, "domain": "valid"}) == \
         ("private_state_only", "valid")
+
+
+def test_grade_hidden_compare_lists_only_extra_rejections(tmp_path):
+    import grade_hidden as gh
+
+    def grading(rows):
+        return {"tasks": [{"task": "A", "rows": rows}]}
+    row = lambda gid, p, h: {"group_id": gid, "p_pass": p, "h_pass": h, "members": [{}], "models": ["m"],  # noqa: E731
+                             "differences": {"test_h_0": ["api:s1: 1 != 2"]}, "code": "class C: pass"}
+    small = [row("g1", True, True), row("g2", True, False), row("g3", False, True), row("g4", True, True)]
+    large = [row("g1", True, False), row("g2", True, False), row("g3", False, False), row("g4", True, True)]
+    a, b = tmp_path / "k3" / "grading.json", tmp_path / "k5" / "grading.json"
+    for p, rows in ((a, small), (b, large)):
+        p.parent.mkdir()
+        p.write_text(json.dumps(grading(rows)), encoding="utf-8")
+    out = tmp_path / "cmp.md"
+    gh.compare(a, b, out)
+    text = out.read_text(encoding="utf-8")
+    assert "**1 case(s).**" in text and "program g1" in text and "g2" not in text and "g3" not in text
+
+
+def test_rq1_paired_rank_biserial():
+    import analyze_rq1_witness as ar
+    assert ar.rank_biserial([-0.5, -0.2, 0.0]) == -1.0
+    assert ar.rank_biserial([0.0]) is None

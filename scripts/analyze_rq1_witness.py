@@ -31,6 +31,18 @@ from meta_real_eval.analysis.statistics import wilcoxon_test  # noqa: E402
 EQUIV = ("no_divergence", "no_testable_inputs", "ast_identical")
 
 
+def rank_biserial(diffs: list[float]):
+    """Matched-pairs rank-biserial r = (W+ - W-) / (W+ + W-) over the non-zero differences (as analyze_coupling)."""
+    from scipy.stats import rankdata
+    nz = [x for x in diffs if x != 0]
+    if not nz:
+        return None
+    ranks = rankdata([abs(x) for x in nz])
+    w_pos = sum(r for r, x in zip(ranks, nz) if x > 0)
+    w_neg = sum(r for r, x in zip(ranks, nz) if x < 0)
+    return float((w_pos - w_neg) / (w_pos + w_neg))
+
+
 def group_killed(g: dict):
     ks = [m.get("killed") for m in g["members"] if m.get("killed") is not None]
     if not ks:
@@ -91,6 +103,8 @@ def analyse(results: list[dict]) -> dict:
         paired = [(sum(v["llm_whole"]) / len(v["llm_whole"]), sum(v["operator"]) / len(v["operator"]))
                   for v in per_task.values() if v.get("llm_whole") and v.get("operator")]
         test = wilcoxon_test([a for a, _ in paired], [b for _, b in paired]) if len(paired) >= 6 else None
+        if test is not None:       # the helper's Cliff's delta treats the lists as independent; add the paired effect
+            test["rank_biserial_paired"] = rank_biserial([a - b for a, b in paired])
         out["populations"][name] = {
             s: {"killed": k, "groups": n, "kill_rate": (k / n if n else None)} for s, (k, n) in rows.items()}
         out["populations"][name]["paired_tasks"] = len(paired)
@@ -116,7 +130,7 @@ def main(argv=None) -> int:
          f"contracts {res['contracts']}; member kill disagreements {res['member_kill_disagreements']}. "
          f"{'Descriptive (development pilot).' if n_tasks <= 24 else 'Wilcoxon on paired per-task kill rates (LLM vs operator).'}*",
          "", "| population | operator killed/groups | rate | LLM killed/groups | rate | gap (LLM - op) | paired tasks "
-             "| Wilcoxon p | Cliff's delta |",
+             "| Wilcoxon p | paired rank-biserial |",
          "|---|---|---|---|---|---|---|---|---|"]
     for name, p in res["populations"].items():
         o, l = p["operator"], p["llm_whole"]
@@ -124,7 +138,7 @@ def main(argv=None) -> int:
         w = p["wilcoxon_paired_task_rates"] or {}
         L.append(f"| {name} | {o['killed']}/{o['groups']} | {fr(o['kill_rate'])} | {l['killed']}/{l['groups']} | "
                  f"{fr(l['kill_rate'])} | {fr(p['gap_llm_minus_operator'])} | {p['paired_tasks']} | "
-                 f"{fr(w.get('p_value'))} | {fr(w.get('cliffs_delta'))} |")
+                 f"{fr(w.get('p_value'))} | {fr(w.get('rank_biserial_paired'))} |")
     (args.witness / "rq1_robustness.md").write_text("\n".join(L) + "\n", encoding="utf-8")
     print("\n".join(L))
     return 0

@@ -351,3 +351,21 @@ Still to do before the results are final (all descriptive or qualitative; none c
 | unresolved counted as survived | 294/605 = 0.486 | 128/493 = 0.260 | −0.226 | 94 |
 
 **Reading:** the RQ1 finding (LLM mutants are killed less often than operator mutants) is not an artefact of the historical equivalence filter: the gap persists, at a similar size, when only replayed, API-visible, valid-domain faults count, and in every sensitivity population. Wilcoxon p-values on paired per-task rates are in `rq1_robustness.json` (`wilcoxon_paired_task_rates`). The support restriction (98 of 351 tasks) is a stated limitation.
+
+**Pre-registered RQ1 robustness primary (confirmatory hierarchy):** on primary confirmed groups the LLM − operator kill-rate gap is **−0.181, paired per-task Wilcoxon p = 0.001 (64 tasks)**; every population gives p ≤ 0.001 (historical −0.157, p < 0.001, 203 tasks). Effect sizes in the thesis use the paired rank-biserial (`rank_biserial_paired` in `rq1_robustness.json`, added 2026-11-24); the helper's Cliff's delta treats the lists as independent (−0.146 on the primary row) and is not used.
+
+### 10.1 A2 tuning on development tasks: `cover_k` (2026-11-24)
+
+**Rule, stated before the dev numbers were read:** choose the `cover_k` ∈ {1, 3, 5} with the highest held-out *P or H* detection on the development primary population; the smaller k on ties; at most 20 tests per task (a separate cap, enforced by `max_tests`).
+
+**Dev results** (`results_tier2_ext/a2/dev_k{1,3,5}`; 5 H-ready tasks, 14 held-out primary groups on 4 tasks; admission rejected 0, over-specified 0, control defects 0 at every k):
+
+| k | tests (5 tasks) | P | H | P or H | H only | P only |
+|---|---|---|---|---|---|---|
+| 1 | 6 | 8 | 8 | 10 | 2 | 2 |
+| 3 | 19 | 8 | 10 | 11 | 3 | 1 |
+| 5 | 34 | 8 | 11 | 12 | 4 | 1 |
+
+The rule selects **k = 5**. The margin over k = 3 is one group: the only held-out group confirmed on a P scenario (independent of our generator), on one task. This is a configuration choice on a small sample, not evidence that k = 5 is best in general.
+
+**Safety condition (added before the check is run; the rule above measures detection only):** larger H means more assertions and therefore more chances to assert reference-specific behaviour (24% of the uncoupled faults in the 9.5 review were of that kind). Before k = 5 is frozen, the stored RQ2 completions of the development tasks are graded on both suites (`scripts/grade_hidden.py`; dev completions are allowed for tuning, D5), and every program that passes P and the k = 3 suite but fails the k = 5 suite is judged by the researcher (true fault / erroneous rejection / unclear). **If any is an erroneous rejection, k = 3 is chosen instead**, and the same check is applied to k = 3 against k = 1. The decision and the judged cases are recorded here.

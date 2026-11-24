@@ -1281,11 +1281,28 @@
      "role",
      "content"
     ]
+   },
+   {
+    "param": "__init__.role",
+    "type": "str",
+    "constraints": {
+     "choices": [
+      "system",
+      "user",
+      "assistant"
+     ]
+    },
+    "hints": [
+     "system",
+     "user",
+     "assistant"
+    ]
    }
   ],
   "notes": "from_dict hint reaches the happy path (random dicts raise KeyError); returned Message observed through role, content.",
   "rule": "R5",
-  "verdict": "accept with edits"
+  "verdict": "accept with edits",
+  "revision": "2026-11-24: role is documented as 'system', 'user' or 'assistant': choices constraint added after a scan for documented closed sets prompted by the H audit (post_305). No H outcome of this task had been computed."
  },
  "RCE_post_snippet_252": {
   "notes": "register_frontend is pass; the class doc says plugins must implement it; the input is a callable",
@@ -1406,9 +1423,28 @@
   "verdict": "accept with edits"
  },
  "RCE_post_snippet_305": {
-  "notes": "",
-  "rule": "accepted as drafted",
-  "verdict": "accept"
+  "verdict": "accept with edits",
+  "rule": "R5",
+  "notes": "create_action.action_type is documented as 'end', 'goto' or 'retry': choices constraint (the draft generated any string).",
+  "edits": [
+   {
+    "param": "create_action.action_type",
+    "type": "str",
+    "constraints": {
+     "choices": [
+      "end",
+      "goto",
+      "retry"
+     ]
+    },
+    "hints": [
+     "end",
+     "goto",
+     "retry"
+    ]
+   }
+  ],
+  "revision": "2026-11-24: was 'accept' as drafted; the H audit (round 1, before any verdict) showed that completions validating action_type were rejected on undocumented values. Domain fix only."
  },
  "RCE_post_snippet_307": {
   "notes": "",

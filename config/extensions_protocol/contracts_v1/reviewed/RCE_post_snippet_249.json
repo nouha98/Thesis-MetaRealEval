@@ -25,19 +25,27 @@
   "documented": true,
   "params": [
    {
-    "constraints": {},
+    "constraints": {
+     "choices": [
+      "system",
+      "user",
+      "assistant"
+     ]
+    },
     "default": null,
     "generate": true,
     "has_default": false,
     "hints": [
-     "SyA`M\fqL;IS}$LFZ1"
+     "system",
+     "user",
+     "assistant"
     ],
     "kind": "positional",
     "name": "role",
     "type": {
      "t": "str"
     },
-    "type_source": "annotation",
+    "type_source": "review",
     "why": null
    },
    {
@@ -108,9 +116,10 @@
  "module_name": "snippet_249",
  "properties": [],
  "review": {
-  "date": "2026-11-18",
+  "date": "2026-11-24",
   "notes": "R5: from_dict hint reaches the happy path (random dicts raise KeyError); returned Message observed through role, content.",
-  "reviewer": "Claude (proposal); confirmed by the user",
+  "reviewer": "Claude (revision after the usability check); awaiting user confirmation",
+  "revision": "2026-11-24: role is documented as 'system', 'user' or 'assistant': choices constraint added after a scan for documented closed sets prompted by the H audit (post_305). No H outcome of this task had been computed.",
   "status": "reviewed",
   "verdict": "accept with edits"
  },

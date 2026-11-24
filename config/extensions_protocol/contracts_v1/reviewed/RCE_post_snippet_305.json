@@ -37,17 +37,27 @@
    "kind": "staticmethod",
    "params": [
     {
-     "constraints": {},
+     "constraints": {
+      "choices": [
+       "end",
+       "goto",
+       "retry"
+      ]
+     },
      "default": null,
      "generate": true,
      "has_default": false,
-     "hints": [],
+     "hints": [
+      "end",
+      "goto",
+      "retry"
+     ],
      "kind": "positional",
      "name": "action_type",
      "type": {
       "t": "str"
      },
-     "type_source": "annotation",
+     "type_source": "review",
      "why": null
     },
     {
@@ -92,11 +102,12 @@
  "module_name": "snippet_305",
  "properties": [],
  "review": {
-  "date": "2026-11-18",
-  "notes": "accepted as drafted",
-  "reviewer": "Claude (proposal); confirmed by the user",
+  "date": "2026-11-24",
+  "notes": "R5: create_action.action_type is documented as 'end', 'goto' or 'retry': choices constraint (the draft generated any string).",
+  "reviewer": "Claude (revision after the usability check); awaiting user confirmation",
+  "revision": "2026-11-24: was 'accept' as drafted; the H audit (round 1, before any verdict) showed that completions validating action_type were rejected on undocumented values. Domain fix only.",
   "status": "reviewed",
-  "verdict": "accept"
+  "verdict": "accept with edits"
  },
  "sources": {
   "reference_sha256": "e2fcc9957790eecf143199291b33a49c2f003d7caf26d8e2c04677e82ba94bdd",

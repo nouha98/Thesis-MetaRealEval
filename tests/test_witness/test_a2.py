@@ -115,3 +115,13 @@ def test_control_validation_rejects_a_behaviour_change(built):
                                                          "api_flags": t["api_flags"]} for t in b["tests"]],
                                 A2.witness_settings())
     assert not validate_control(MODULE, MUTANTS["state_fault"], c, entries, A2.witness_settings())["valid"]
+
+
+def test_protocol_builtin_steps_map_to_their_dunder_level():
+    """Regression (audit round 1, post_264): repr(obj) must use the __repr__ level, not the constructor's value."""
+    from meta_real_eval.oracles.regression import level_of, step_name
+    assert step_name("repr(obj)", "module_0", "User") == "__repr__"
+    assert step_name("str(obj)", "module_0", "User") == "__str__"
+    assert step_name("len(obj)", "module_0", "User") == "__len__"
+    assert level_of({"__repr__": "type"}, step_name("repr(obj)", "module_0", "User")) == "type"
+    assert level_of({}, None) == "type" and level_of({}, "__init__") == "value"

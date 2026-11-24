@@ -45,18 +45,26 @@ from .spec import DEFAULT_LEVEL, LEVELS, restrict, spec_diff, type_family  # noq
 
 def step_name(src: str, alias: str, class_name: str) -> Optional[str]:
     """The callable or property a step uses (``step_callable`` plus plain attribute reads)."""
-    name = step_callable(src, alias, class_name)
-    if name is not None:
-        return name
     try:
         node = ast.parse(src, mode="eval").body
     except SyntaxError:
         return None
+    # the strategies call these protocol methods through the builtin (strategies.call_src): repr(obj) etc.
+    if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in _PROTOCOL_BUILTINS
+            and len(node.args) == 1 and not node.keywords):
+        return _PROTOCOL_BUILTINS[node.func.id]
+    name = step_callable(src, alias, class_name)
+    if name is not None:
+        return name
     return node.attr if isinstance(node, ast.Attribute) else None
 
 
+_PROTOCOL_BUILTINS = {"repr": "__repr__", "str": "__str__", "len": "__len__"}
+
+
 def level_of(levels: dict, name: Optional[str]) -> str:
-    if name in (None, "__init__"):
+    """Constructors are ``value``; an unrecognised step gets the default level, never ``value``."""
+    if name == "__init__":
         return "value"
     return levels.get(name, DEFAULT_LEVEL)
 

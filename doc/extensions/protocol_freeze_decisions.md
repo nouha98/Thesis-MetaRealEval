@@ -438,3 +438,22 @@ Decided on development evidence (10.1) and applied before A2 runs on any evaluat
 **Status:** R7 is adopted. The development levels become `reviewed` once the researcher confirms them. Next comes the R7 review of the 98 evaluation contracts (233 callables; sheet `doc/extensions/output_spec_review_eval.md`): Claude drafts, the researcher reviews. Then A2 runs on the evaluation tasks.
 
 **R7 addition (2026-11-24, from the development review).** A `type` level asserts the type family the *reference* returns. It may therefore be used only where the reference's return type agrees with the docstring. Where the reference contradicts the docstring, the level is `none`. Case: csn_52 `BitField.__call__` promises "a list", but the reference returns `None` for 0 and a bare string for one set bit (contract review note); its draft changed from `type` to `none`.
+
+**R7 development rerun after the csn_52 revision (freia, 2026-11-24; `results_tier2_ext/a2/dev_k5_r7b`; the first R7 run `dev_k5_r7` is kept unchanged).** Between the runs, only csn_52's level changed (`type` → `none`); witness input, code and the other four tasks' levels are identical.
+
+| | R7 first run (`dev_k5_r7`) | R7 rerun (`dev_k5_r7b`) |
+|---|---|---|
+| tests kept | 28 | 25 (csn_52: 8 → 5) |
+| discovery groups covered | 13 / 18 | 9 / 18 |
+| held-out primary groups (4 tasks, 14 groups): P / H / P or H | 8 / 9 / 11 | 8 / 3 / 8 |
+| held-out detected only by H | 3 | **0** |
+| P-passing completions failing H (of 148) | 0 | 0 |
+
+**Reading.**
+- The 3 H-only detections of the first R7 run all came from csn_52's type check, which asserted the reference's docstring-contradicting return types (`None` / a bare string where "a list" is promised). Under the corrected rule they are not valid assertions, so they are gone.
+- **On the development tasks, the specification-faithful A2 adds no held-out detection beyond P, and it rejects no P-passing completion.** It is sound, but here it is not stronger than P. The development tasks are mostly one-line docstrings (post_24, csn_52, csn_54), so this is the bound stated in 10.2 at work. Whether H adds detection on the evaluation cohort is an open empirical question for RQ4c and Stage 5. It is not assumed.
+- Five tasks are A2-ready, but only four have held-out primary groups; the fifth contributes no held-out population.
+
+**Protocol wording (R7), made explicit.**
+- The **docstring defines what is promised**; the reference is used only as a **consistency check**. `type` asserts the type family the reference returns, and may be used only where that family agrees with the docstring's promise; where the reference contradicts it, the level is `none`.
+- **Constructors** are not classified by level. A constructor step asserts only that construction succeeds and yields an instance of the class, or raises the same documented exception; it promises no ordinary return value.

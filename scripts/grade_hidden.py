@@ -32,26 +32,43 @@ import ext_common as ec  # noqa: E402
 
 from meta_real_eval.benchmarks import get_benchmark  # noqa: E402
 from meta_real_eval.benchmarks.contracts import api_rules, load_contract  # noqa: E402
-from meta_real_eval.benchmarks.observe import api_diff  # noqa: E402
 from meta_real_eval.benchmarks.witness import GEN_ALIAS, WitnessSettings, _run  # noqa: E402
 from meta_real_eval.oracles.admission import run_tests  # noqa: E402
+from meta_real_eval.oracles.spec import spec_diff  # noqa: E402
 from meta_real_eval.oracles.solution_groups import build_solution_groups  # noqa: E402
 
 
-def differences(module, code, contract, tests: list[dict], failing: list[str]) -> dict:
-    """{test name: [api differences]} for the failing hidden tests, replayed in the scenario runner."""
+def failure_kind(exp, cand) -> str:
+    """Why one expected token is not met (decisions 10.2: the exception rule is measured separately)."""
+    if cand is None:
+        return "stopped_earlier"
+    if cand[0] == "exc" and exp[0] != "exc":
+        return "unexpected_exception"        # raised where the reference returns on a contract-valid input
+    if exp[0] == "exc":
+        return "missing_documented_exception" if cand[0] != "exc" else "other_exception_type"
+    return "type" if exp[0] == "@type" else "value"
+
+
+def differences(module, code, contract, tests: list[dict], failing: list[str]) -> tuple[dict, list[str]]:
+    """({test name: [api differences]}, sorted failure kinds) for the failing hidden tests, replayed."""
     rules = api_rules(contract)
     sel = [t for t in tests if t["name"] in failing]
     if not sel:
-        return {}
+        return {}, []
     scs = [{"scenario_id": t["scenario_id"], "steps": t["steps"], "api_flags": t["api_flags"]} for t in sel]
     traces = _run(module, code, f"import {module} as {GEN_ALIAS}\n", scs, WitnessSettings(), rules)
-    out = {}
+    out, kinds = {}, set()
     for t, tr in zip(sel, traces):
-        diffs = [d for k, v in t["expected"].items()
-                 if (d := api_diff(v, tr["tokens"].get(k), rules, where=k))]
+        diffs = []
+        for k, v in t["expected"].items():
+            cand = tr["tokens"].get(k)
+            if d := spec_diff(v, cand, rules, k):
+                diffs.append(d)
+                kinds.add(failure_kind(v, cand))
+        if not diffs:
+            kinds.add(f"replay_{tr['status']}")
         out[t["name"]] = diffs or [f"no API difference on replay (status {tr['status']})"]
-    return out
+    return out, sorted(kinds - {"stopped_earlier"} or kinds)
 
 
 def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, workers: int) -> dict:
@@ -74,7 +91,7 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
         row = {"group_id": gid, "members": g["members"], "models": g["models"], "h_pass": not failing,
                "failing": failing, "p_pass": p_pass.pop() if len(p_pass) == 1 else None}
         if row["p_pass"] and failing:
-            row["differences"] = differences(task.module_name, code, contract, tests, failing)
+            row["differences"], row["failure_kinds"] = differences(task.module_name, code, contract, tests, failing)
             row["code"] = code
         return row
     with ThreadPoolExecutor(max_workers=workers) as ex:
@@ -88,6 +105,11 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
         c["h_pass"] += r["h_pass"]
         c["p_and_h"] += bool(p) and r["h_pass"]
         c["p_pass_h_fail"] += bool(p) and not r["h_pass"]
+        if p and not r["h_pass"]:
+            for k in r.get("failure_kinds", []):
+                c[f"p_pass_h_fail:{k}"] += 1
+            if r.get("failure_kinds") == ["unexpected_exception"]:
+                c["p_pass_h_fail:exception_only"] += 1      # would pass if exceptions were not asserted
     return {"task": lab, "hidden": str(hidden_dir / lab), "n_tests": len(names), "counts": dict(c),
             "programs": len(rows), "p_pass_h_fail_programs": sum(bool(r["p_pass"]) and not r["h_pass"] for r in rows),
             "rows": rows}

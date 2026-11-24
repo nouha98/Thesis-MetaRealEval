@@ -369,3 +369,50 @@ Still to do before the results are final (all descriptive or qualitative; none c
 The rule selects **k = 5**. The margin over k = 3 is one group: the only held-out group confirmed on a P scenario (independent of our generator), on one task. This is a configuration choice on a small sample, not evidence that k = 5 is best in general.
 
 **Safety condition (added before the check is run; the rule above measures detection only):** larger H means more assertions and therefore more chances to assert reference-specific behaviour (24% of the uncoupled faults in the 9.5 review were of that kind). Before k = 5 is frozen, the stored RQ2 completions of the development tasks are graded on both suites (`scripts/grade_hidden.py`; dev completions are allowed for tuning, D5), and every program that passes P and the k = 3 suite but fails the k = 5 suite is judged by the researcher (true fault / erroneous rejection / unclear). **If any is an erroneous rejection, k = 3 is chosen instead**, and the same check is applied to k = 3 against k = 1. The decision and the judged cases are recorded here.
+
+**Safety check result (freia, 2026-11-24; `results_tier2_ext/a2/dev_k{1,3,5}/grading.json`):** 750 stored RQ2 completions of the 5 H-ready development tasks graded on P (stored) and H. `k3_vs_k5.md` and `k1_vs_k3.md` list **0 extra rejections**: k = 5 rejects nothing that k = 3 accepts. **`cover_k` = 5 is final** (development-stage policy).
+
+| k | P pass | H pass | P∧H | P-pass/H-fail |
+|---|---|---|---|---|
+| 1 | 148 | 145 | 84 | 64 |
+| 3 | 148 | 152 | 85 | 63 |
+| 5 | 148 | 152 | 85 | 63 |
+
+(k = 1 is not a subset of k = 3: its second greedy pick differs, and that test rejects one P-passing csn_12 program the larger suites accept.)
+
+**Finding that blocks A2 on evaluation tasks: erroneous rejection on unspecified outputs.** P-pass/H-fail is concentrated on two tasks: post_24 (56 of 57 P-passing completions) and post_64 (7 of 7), at every k. Inspection:
+- post_24 (`LocalPathExtractor`): the whole specification is "判断是否为本地路径" / "从文本中提取本地文件路径" (decide whether a string is a local path; extract local file paths from text). The A2 tests assert the reference's own regex heuristics (e.g. `'VIUP6o^Ygo3f97.4a'` is extracted from `'VIUP6o^Ygo3f97.4a m'`; `'kZzr%3 DTlykU[J-97z'` is not a local path). Nothing in the docstring determines these values.
+- post_64 (`BaseTool`): `get_metadata()` is documented only as "a dictionary containing the tool's metadata"; the tests assert the reference's exact key set (including `require_llm_engine`, excluding `user_metadata`).
+
+**Why Stage 2 is not affected but H is.** A mutant is derived from the reference, so any behavioural difference from the reference is a change of the program under test: witnesses and RQ1 robustness stay valid. An RQ2 completion is an independent implementation written from the skeleton docstrings only; it can only be held to what those docstrings specify. A reference-differential oracle therefore needs to know which outputs are specified. The contracts (D1/D2) fix inputs and comparison rules but not that.
+
+**Confirmed on the stored data (freia, 2026-11-24).** The recomputed differences of the P-pass/H-fail programs: on post_24 the reference extracts one "path" from a random string where the completions extract none (`length 1 != 0`) and disagrees on `is_local_path`; on post_64 the completions return another metadata key set (no `require_llm_engine`, or extra keys: 7 vs 9 entries). These are erroneous rejections on unspecified outputs.
+
+### 10.2 Rule R7: output specification for hidden assertions (2026-11-24, before any evaluation-task H)
+
+Decided on development evidence (10.1) and applied before A2 runs on any evaluation task. Stored separately in `config/extensions_protocol/output_spec_v1.json`, so the Stage 2 contracts and their hashes stay unchanged.
+
+- **Levels**, per public callable, judged from the **skeleton docstrings only** (what the coding models saw), never from the reference body or any outcome:
+  - `value`: the docstring determines the returned value for every contract-valid input (a rule, a formula, an example, a mathematical definition);
+  - `type`: only the kind of value is promised (e.g. "a dictionary containing metadata", "a list of paths");
+  - `none`: no return value is promised (no Returns section, setters).
+- **What H asserts:** `value` the API token (as before); `type` the type family of the returned value (numbers form one family, containers by kind, objects by class); `none` only that the call returns normally. **Exception tokens are always asserted** (valid-domain exceptions are the documented ones, D2), so a completion that raises where the reference returns is detected at every level. Constructors are always `value`.
+- **Same restriction for selection and assertion:** the A2 kill matrix uses the restricted comparison, so a test is kept only if it kills a discovery group *under what the specification allows*. Witness search and Stage 2 results are unchanged (a mutant is derived from the reference, so every difference is a change of that program).
+- **Review:** Claude drafts the levels with a one-line reason each; the researcher reviews. Development tasks may run on drafts (tuning); evaluation tasks need `status: reviewed` (`build_a2.py` refuses otherwise). A callable missing from an entry defaults to `type` and is recorded (`levels_defaulted`).
+- **Expected consequence, stated in advance:** on weakly specified tasks H shrinks to type and exception checks, or the task is not H-ready (no discovery group is killable under the specification). **The strength of a hidden oracle is bounded by the strength of the specification**; the share of tasks and callables at each level is reported.
+- Development drafts: csn_12 (gcd value, factorize type), csn_52 (`__call__` type), csn_54 (`__call__` type), post_24 (both type), post_64 (get_metadata type, the setters and execute none).
+
+**R7 made explicit (2026-11-24, before the dev re-check):**
+- **`none` is not "no assertion".** It asserts that the call returns normally. A step is only asserted on the reviewed valid domain (D2): contract-valid inputs on which the reference completes, or raises an exception the docstring documents.
+- **Exception rule.** (a) A documented exception the reference raises is asserted by type (`isinstance`, never the message). (b) A completion that raises where the reference returns normally on a contract-valid input fails H, at every level. Rule (b) is the completion counterpart of D2's `api_exception` witness for mutants, and it rests on the contract review having fixed the valid domain. It is a judgement, so it is **measured separately**: `grade_hidden.py` classifies every P-pass/H-fail program by failure kind (`value`, `type`, `unexpected_exception`, `missing_documented_exception`, `other_exception_type`) and counts the programs that fail *only* by an unexpected exception (`exception_only`). If, on development tasks, those cases are erroneous rejections (the docstring arguably allows the input to be refused), rule (b) is relaxed to the `value` level only, before any evaluation-task H.
+- **Type match** (`oracles/spec.py`, `type_family`), fixed:
+  - `None` is its own family (a method that returns `None` where a value is promised, or the reverse, mismatches);
+  - `bool` is its own family;
+  - `int`, `float`, `Decimal`, `Fraction` form one numeric family; `complex` is separate;
+  - `str` and `bytes` are separate families;
+  - `list`, `tuple`, `deque` and `range` are one sequence family;
+  - `set` and `frozenset` are one family;
+  - every `dict`, subclasses included, is the mapping family;
+  - an instance of any other class (including the task's own class), an enum member, or a value with an exact representation (e.g. `datetime`) matches **by class name only**: a subclass does not match its base. In this benchmark completions re-implement the skeleton's class, so the name is the stable identity;
+  - a class object (a returned type) matches any class object;
+  - a value too large to tokenise (digest) gets no type check, only "returns normally".

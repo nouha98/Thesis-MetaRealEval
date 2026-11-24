@@ -19,19 +19,46 @@ For one task:
 
 The emitted code is appended to the P test file for grading (``DegradedSuite(test_code=P+H,
 extra_valid=H, subset=H)``), exactly like RQ4's ``test_ca_<i>``.
+
+**Output specification (rule R7, decisions 10.2).** A completion is written from the skeleton
+docstrings only, so H may assert only what they specify. Each public callable has a reviewed level
+(``config/extensions_protocol/output_spec_v1.json``): ``value`` (the docstring determines the value:
+asserted as before), ``type`` (only the kind is promised: the type family is asserted), ``none``
+(nothing is promised: only "returns normally" is asserted). Exception tokens are always asserted
+(valid-domain exceptions are documented ones, D2), and a completion that raises where the reference
+returns is detected at every level. The restriction applies to the kill matrix (test selection) and
+to the emitted assertions alike. Constructors are always ``value`` (an opaque object or an exception).
 """
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 from dataclasses import asdict, dataclass
 from typing import Optional
 
+from ..benchmarks.contracts import api_rules, step_callable
 from ..benchmarks.strategies import generate_scenarios
-from ..benchmarks.witness import (GEN_ALIAS, WitnessSettings, _masks, _materialise, _run, _size,
-                                  classify_domain, compare)
-from ..benchmarks.contracts import api_rules
+from ..benchmarks.witness import GEN_ALIAS, WitnessSettings, _masks, _materialise, _run, _size, classify_domain
+from .spec import DEFAULT_LEVEL, LEVELS, restrict, spec_diff, type_family  # noqa: F401  (re-exported)
+
+def step_name(src: str, alias: str, class_name: str) -> Optional[str]:
+    """The callable or property a step uses (``step_callable`` plus plain attribute reads)."""
+    name = step_callable(src, alias, class_name)
+    if name is not None:
+        return name
+    try:
+        node = ast.parse(src, mode="eval").body
+    except SyntaxError:
+        return None
+    return node.attr if isinstance(node, ast.Attribute) else None
+
+
+def level_of(levels: dict, name: Optional[str]) -> str:
+    if name in (None, "__init__"):
+        return "value"
+    return levels.get(name, DEFAULT_LEVEL)
 
 
 @dataclass(frozen=True)
@@ -89,30 +116,41 @@ def reference_entries(module: str, reference: str, contract: dict, pool: list[di
     return out
 
 
-def expected_tokens(entry: dict) -> dict:
-    """API tokens a test asserts: flagged valid-prefix steps the reference recorded, minus masked keys."""
+def expected_tokens(entry: dict, levels: Optional[dict] = None, class_name: str = "") -> dict:
+    """API tokens a test asserts: flagged valid-prefix steps the reference recorded, minus masked keys,
+    each restricted by its callable's specification level (``levels=None``: every output is ``value``)."""
     sc, ref, mask = entry["scenario"], entry["ref"]["tokens"], set(entry["api_mask"])
     exp = {}
     for i in range(entry["valid_prefix"]):
         k = f"api:s{i}"
         if sc["api_flags"][i] and k in ref and k not in mask:
-            exp[k] = ref[k]
+            lvl = "value" if levels is None else level_of(levels, step_name(sc["steps"][i]["src"], GEN_ALIAS, class_name))
+            exp[k] = restrict(ref[k], lvl)
     return exp
 
 
+def kills_of(exp: dict, cand: dict, rules: dict) -> bool:
+    """Would the emitted test fail on this candidate trace? (a timeout or import error is not counted)"""
+    if cand["status"] in ("timeout", "import_error"):
+        return False
+    if cand["status"] == "crashed":
+        return True
+    return any(spec_diff(v, cand["tokens"].get(k), rules, where=k) for k, v in exp.items())
+
+
 def kill_matrix(module: str, contract: dict, entries: list[dict], discovery: dict[str, Optional[str]],
-                s: WitnessSettings) -> dict[str, set[str]]:
-    """{scenario_id: discovery group ids it kills} (API difference on a valid step only)."""
+                s: WitnessSettings, levels: Optional[dict] = None) -> dict[str, set[str]]:
+    """{scenario_id: discovery group ids it kills} under the same restricted comparison the test will use."""
     header = f"import {module} as {GEN_ALIAS}\n"
     rules = api_rules(contract)
     kills: dict[str, set[str]] = {e["scenario"]["scenario_id"]: set() for e in entries}
+    exps = {e["scenario"]["scenario_id"]: expected_tokens(e, levels, contract["class_name"]) for e in entries}
     for gid, code in sorted(discovery.items()):
         if code is None or not entries:
             continue
         cands = _run(module, code, header, [e["scenario"] for e in entries], s, rules)
         for e, c in zip(entries, cands):
-            cmp = compare(e, c, rules)
-            if cmp["api"] and cmp["api"]["domain"] == "valid":
+            if kills_of(exps[e["scenario"]["scenario_id"]], c, rules):
                 kills[e["scenario"]["scenario_id"]].add(gid)
     return kills
 
@@ -152,13 +190,13 @@ def emit(task_id: str, module: str, contract: dict, tests: list[dict]) -> str:
             f"    _steps = {_lit(t['steps'])}\n"
             f"    _trace = _h_run(_steps, dict(globals()), api={{'flags': {_lit(t['api_flags'])}, 'rules': _H_RULES}})\n"
             f"    _expected = {_lit(t['expected'])}\n"
-            f"    _diffs = [d for d in (_h_diff(v, _trace.get(k), _H_RULES, where=k) for k, v in _expected.items()) if d]\n"
+            f"    _diffs = [d for d in (_h_diff(v, _trace.get(k), _H_RULES, k) for k, v in _expected.items()) if d]\n"
             f"    assert not _diffs, {('A2 hidden test ' + t['scenario_id'] + ': %r')!r} % _diffs\n")
     head = (f"# A2 hidden tests for {task_id}: reference-differential, API observations only (plan rev. 9.3)\n"
             f"import json as _h_json\n"
             f"import {module} as {GEN_ALIAS}\n"
             f"from meta_real_eval.benchmarks.forkserver import _run_scenario as _h_run\n"
-            f"from meta_real_eval.benchmarks.observe import api_diff as _h_diff\n"
+            f"from meta_real_eval.oracles.spec import spec_diff as _h_diff\n"
             f"_H_RULES = {_lit(rules)}\n\n\n")
     code = head + "\n\n".join(blocks)
     compile(code, "<a2_hidden_tests>", "exec")
@@ -166,18 +204,23 @@ def emit(task_id: str, module: str, contract: dict, tests: list[dict]) -> str:
 
 
 def build_a2(task_id: str, module: str, reference: str, contract: dict, discovery: dict[str, Optional[str]],
-             settings: A2Settings, extension_seed: int, witness_settings: WitnessSettings) -> dict:
-    """Everything A2 decides for one task (before admission)."""
+             settings: A2Settings, extension_seed: int, witness_settings: WitnessSettings,
+             levels: Optional[dict] = None) -> dict:
+    """Everything A2 decides for one task (before admission). ``levels``: the R7 output specification
+    ({callable: value|type|none}); None asserts every output as ``value`` (no specification)."""
     s = settings.witness_settings()
     pool, dropped = a2_pool(contract, settings, extension_seed, witness_settings.pool_size, witness_settings.max_calls)
     entries = reference_entries(module, reference, contract, pool, s)
-    kills = kill_matrix(module, contract, entries, discovery, s)
+    kills = kill_matrix(module, contract, entries, discovery, s, levels)
     chosen = greedy_select(entries, kills, settings.max_tests, settings.cover_k)
     tests = [{"name": f"test_h_{i}", "scenario_id": e["scenario"]["scenario_id"], "steps": e["scenario"]["steps"],
-              "api_flags": e["scenario"]["api_flags"], "expected": expected_tokens(e),
+              "api_flags": e["scenario"]["api_flags"], "expected": expected_tokens(e, levels, contract["class_name"]),
               "kills": sorted(kills[e["scenario"]["scenario_id"]])} for i, e in enumerate(chosen)]
     killable = set().union(*kills.values()) if kills else set()
+    used = {step_name(st["src"], GEN_ALIAS, contract["class_name"]) for t in tests for st in t["steps"]}
+    defaulted = sorted(n for n in used if n not in (None, "__init__") and levels is not None and n not in levels)
     return {"task": task_id, "settings": asdict(settings), "a2_base_seed": a2_base_seed(extension_seed),
+            "output_levels": levels, "levels_defaulted": defaulted,
             "pool": {"generated": len(pool) + dropped, "dropped_in_witness_pool": dropped, "valid": len(entries)},
             "discovery_groups": sorted(discovery), "killed_by_pool": sorted(killable),
             "covered_by_tests": sorted(set().union(*(set(t["kills"]) for t in tests)) if tests else set()),

@@ -70,6 +70,34 @@ def test_admission_and_validated_control(built):
     assert set(run_tests(MODULE, variant, code, names, 30).values()) == {"ordinary_pass"}
 
 
+def test_output_levels_restrict_assertions():
+    from meta_real_eval.oracles.regression import restrict, spec_diff, step_name  # re-exported from oracles.spec
+    v = ["seq", "builtins.list", [["str", "a"]]]
+    assert restrict(v, "value") == v and restrict(v, "type") == ["@type", ["seq"]] and restrict(v, "none") == ["@any"]
+    exc = ["exc", ["builtins.ValueError", "builtins.Exception"]]
+    assert all(restrict(exc, lvl) == exc for lvl in ("value", "type", "none"))     # exceptions always asserted
+    assert spec_diff(["@type", ["seq"]], ["seq", "builtins.tuple", []]) is None      # other content, same kind
+    assert spec_diff(["@type", ["seq"]], ["map", "builtins.dict", []])
+    assert spec_diff(["@type", ["number"]], ["float", "0x1p+0"]) is None            # int vs float: same family
+    assert spec_diff(["@any"], ["str", "x"]) is None and spec_diff(["@any"], exc) and spec_diff(["@any"], None)
+    assert step_name("obj.add(2)", "module_0", "Counter") == "add" and step_name("obj.count", "module_0", "Counter") == "count"
+    assert step_name("module_0.Counter(1)", "module_0", "Counter") == "__init__"
+
+
+def test_type_level_spec_drops_value_only_kills(built):
+    """With `add` at type level the state fault (wrong count) is no longer asserted; the exception fault still is."""
+    task, c, _ = built
+    disc = {"g_state": MUTANTS["state_fault"], "g_exc": MUTANTS["mutant_exception"]}
+    levels = {"add": "type", "half": "type", "ratio": "type"}
+    b = build_a2(task.label, MODULE, REFERENCE, c, disc, A2, SEED, WS, levels)
+    assert "g_exc" in b["covered_by_tests"] and "g_state" not in b["killed_by_pool"]
+    assert all(v[0] in ("@type", "@any", "exc", "opaque") for t in b["tests"] for v in t["expected"].values())
+    code = emit(task.task_id, MODULE, c, b["tests"])
+    names = [t["name"] for t in b["tests"]]
+    assert set(run_tests(MODULE, REFERENCE, code, names, 30).values()) == {"ordinary_pass"}
+    assert set(run_tests(MODULE, MUTANTS["state_fault"], code, names, 30).values()) == {"ordinary_pass"}
+
+
 def test_greedy_multi_cover():
     from meta_real_eval.oracles.regression import greedy_select
     entries = [{"scenario": {"scenario_id": f"s{i}", "steps": [{"src": "x"}] * (i + 1), "api_flags": [True] * (i + 1)},

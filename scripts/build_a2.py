@@ -45,6 +45,18 @@ from meta_real_eval.oracles.fault_groups import load_split  # noqa: E402
 from meta_real_eval.oracles.regression import A2Settings, build_a2, emit, reference_entries  # noqa: E402
 
 RUN_ONLY = ("tasks", "gated", "workers")
+OUTPUT_SPEC = ec.PROTOCOL_DIR / "output_spec_v1.json"
+
+
+def output_levels(spec: dict, label: str, dev: bool) -> tuple:
+    """(levels, reason-if-not-usable) from the R7 output specification. Evaluation tasks need a
+    reviewed entry; development tasks may use a draft (tuning)."""
+    entry = spec.get("tasks", {}).get(label)
+    if entry is None:
+        return None, "no output specification (R7)"
+    if entry.get("status") != "reviewed" and not dev:
+        return None, "output specification not reviewed (R7)"
+    return entry["levels"], None
 
 
 def is_primary(g: dict) -> bool:
@@ -69,16 +81,21 @@ def discovery_codes(wit: dict, task, bench, baseline: Path, split_groups: dict) 
 
 
 def run_task(wit: dict, task, bench, baseline, split_groups, settings: A2Settings, ext_seed: int,
-             wsettings: WitnessSettings, timeout_s: float) -> dict:
+             wsettings: WitnessSettings, timeout_s: float, spec: dict, dev: bool) -> dict:
     base = {"task": wit["task"], "contract": wit["contract"], "ready": False}
     if not wit["support"]["supported"]:
         return {**base, "reason": "unsupported task (Stage 2)"}
+    levels, why = output_levels(spec, wit["task"], dev)
+    if why:
+        return {**base, "reason": why}
+    base["output_spec_status"] = spec["tasks"][wit["task"]].get("status")
     contract = load_contract(ec.REPO / wit["contract"]["path"])
     disc = discovery_codes(wit, task, bench, baseline, split_groups)
     if not disc:
         return {**base, "reason": "no primary-confirmed discovery group"}
     t0 = time.monotonic()
-    b = build_a2(task.label, task.module_name, task.reference_code, contract, disc, settings, ext_seed, wsettings)
+    b = build_a2(task.label, task.module_name, task.reference_code, contract, disc, settings, ext_seed, wsettings,
+                 levels)
     rec = {**base, **b}
     tests = b["tests"]
     if not tests:
@@ -163,6 +180,7 @@ def main(argv=None) -> int:
     labels = (dev if args.tasks == ["dev"] else sorted(set(tasks) - set(dev)) if args.tasks == ["eval"]
               else args.tasks)[args.shard::args.shards]
     split_groups, _ = load_split(ec.PROTOCOL_DIR / "fault_split_v1.json")
+    spec = json.loads(OUTPUT_SPEC.read_text(encoding="utf-8")) if OUTPUT_SPEC.exists() else {"tasks": {}}
     bench = get_benchmark(cfg)
     baseline = Path(cfg.extensions.baseline_scores)
     args.out.mkdir(parents=True, exist_ok=True)
@@ -175,7 +193,7 @@ def main(argv=None) -> int:
         f.parent.mkdir(parents=True, exist_ok=True)
         try:
             res = run_task(json.loads(wf.read_text(encoding="utf-8")), tasks[lab], bench, baseline, split_groups,
-                           settings, cfg.extensions.seed, wsettings, cfg.execution.timeout_s)
+                           settings, cfg.extensions.seed, wsettings, cfg.execution.timeout_s, spec, lab in dev)
         except Exception:
             (f.parent / "error.txt").write_text(traceback.format_exc(), encoding="utf-8")
             print(f"[{lab}] FAILED: see {f.parent / 'error.txt'}", flush=True)
@@ -190,7 +208,7 @@ def main(argv=None) -> int:
     write_run_manifest(
         args.out if args.shards == 1 else args.out / "_manifests" / f"shard_{args.shard}",
         stage="stage4_a2", config_path=args.config,
-        inputs={"fault_split": ec.PROTOCOL_DIR / "fault_split_v1.json",
+        inputs={"fault_split": ec.PROTOCOL_DIR / "fault_split_v1.json", "output_spec": [OUTPUT_SPEC],
                 "witness": [args.witness / lab / "witness.json" for lab in labels if (args.witness / lab / "witness.json").exists()],
                 "contracts": [ec.PROTOCOL_DIR / "contracts_v1" / "reviewed"],
                 "benchmark_data": [cfg.benchmark.data_path]},

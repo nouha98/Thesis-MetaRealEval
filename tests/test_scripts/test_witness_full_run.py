@@ -142,3 +142,15 @@ def test_rq1_paired_rank_biserial():
     import analyze_rq1_witness as ar
     assert ar.rank_biserial([-0.5, -0.2, 0.0]) == -1.0
     assert ar.rank_biserial([0.0]) is None
+
+
+def test_grade_hidden_failure_kinds():
+    import grade_hidden as gh
+    exc = ["exc", ["builtins.ValueError"]]
+    assert gh.failure_kind(["@type", ["seq"]], exc) == "unexpected_exception"
+    assert gh.failure_kind(["@any"], exc) == "unexpected_exception"
+    assert gh.failure_kind(exc, ["none"]) == "missing_documented_exception"
+    assert gh.failure_kind(exc, ["exc", ["builtins.KeyError"]]) == "other_exception_type"
+    assert gh.failure_kind(["@type", ["seq"]], ["map", "builtins.dict", []]) == "type"
+    assert gh.failure_kind(["int", "1"], ["int", "2"]) == "value"
+    assert gh.failure_kind(["int", "1"], None) == "stopped_earlier"

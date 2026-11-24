@@ -154,3 +154,38 @@ def test_grade_hidden_failure_kinds():
     assert gh.failure_kind(["@type", ["seq"]], ["map", "builtins.dict", []]) == "type"
     assert gh.failure_kind(["int", "1"], ["int", "2"]) == "value"
     assert gh.failure_kind(["int", "1"], None) == "stopped_earlier"
+
+
+def test_audit_selection_sampling_and_estimates(tmp_path):
+    import csv as _csv
+    import audit_h as ah
+    a2 = tmp_path / "a2"
+    for lab, ready in (("T1", True), ("T2", False), ("T3", True)):
+        (a2 / lab).mkdir(parents=True)
+        (a2 / lab / "a2.json").write_text(json.dumps({"ready": ready}), encoding="utf-8")
+    assert ah.ready_tasks(a2) == {"T1", "T3"}
+    # the seeded per-task sample is reproducible and task-specific
+    assert ah.task_rng("T1", 7).sample(range(20), 5) == ah.task_rng("T1", 7).sample(range(20), 5)
+    assert ah.task_rng("T1", 7).sample(range(20), 5) != ah.task_rng("T3", 7).sample(range(20), 5)
+    out = tmp_path / "audit"
+    out.mkdir()
+    rows = ([{"id": f"Q1-{i}", "question": "Q1", "task": f"T{i % 4}", "item": "t", "weight": 1.0, "failure_kinds": "",
+              "verdict": "invalid" if i == 0 else "valid"} for i in range(20)]
+            + [{"id": "Q2-1", "question": "Q2", "task": "T1", "item": "p", "weight": 2.0, "failure_kinds": "",
+                "verdict": "unclear"}])
+    with (out / "items.csv").open("w", newline="", encoding="utf-8") as f:
+        w = _csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    ah.estimate(out)
+    est = json.loads((out / "estimates.json").read_text(encoding="utf-8"))
+    assert est["Q1"]["invalid"]["point"] == 0.05 and est["Q1"]["n_tasks"] == 4
+    assert est["Q2"]["erroneous_unclear_as_fault"]["point"] == 0.0
+    assert est["Q2"]["erroneous_unclear_as_erroneous"]["point"] == 1.0 and not est["acceptance"]["accepted"]
+
+
+def test_audit_show_token():
+    import audit_h as ah
+    assert ah.show_token(["@any"]) == "returns normally"
+    assert ah.show_token(["@type", ["seq"]]) == "returns a value of kind seq"
+    assert ah.show_token(["exc", ["builtins.ValueError", "builtins.Exception"]]) == "raises builtins.ValueError"

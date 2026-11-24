@@ -151,6 +151,9 @@ def main(argv=None) -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--after-freeze", action="store_true",
                     help="allow evaluation tasks: only once canonical H v1 is frozen (tag tier2-hidden-v1)")
+    ap.add_argument("--audit-reserved", type=Path, default=None,
+                    help="audit_reserved.json (scripts/audit_h.py select): grade exactly the audit-reserved tasks "
+                         "(allowed before the freeze, decisions 6); the selection is recomputed and must match")
     args = ap.parse_args(argv)
     if args.compare:
         return compare(*args.compare, args.out)
@@ -158,7 +161,17 @@ def main(argv=None) -> int:
         raise SystemExit("ERROR: --config and --hidden are required (or use --compare)")
     cfg = ec.load_ext_config(args.config)
     labels = sorted(p.parent.name for p in args.hidden.glob("*/hidden_tests.py"))
-    if not args.after_freeze and set(labels) - set(cfg.extensions.development_tasks):
+    if args.audit_reserved is not None:
+        import audit_h
+        listed = json.loads(args.audit_reserved.read_text(encoding="utf-8"))["tasks"]
+        cohorts = json.loads((ec.PROTOCOL_DIR / "cohorts_v1.json").read_text(encoding="utf-8"))
+        ready = audit_h.ready_tasks(args.hidden)
+        recomputed = [t for t in cohorts["audit_order"] if t in ready][:audit_h.N_TASKS]
+        if listed != recomputed:
+            raise SystemExit("ERROR: the audit-reserved list differs from the frozen rule (first 20 H-ready tasks of "
+                             "audit_order); rerun audit_h.py select")
+        labels = [lab for lab in labels if lab in set(listed)]
+    elif not args.after_freeze and set(labels) - set(cfg.extensions.development_tasks):
         raise SystemExit("ERROR: grading evaluation-task completions on H only after H is frozen (--after-freeze); "
                          "before that, H outcomes on RQ2 completions must not be seen (plan D5)")
     pins = ec.pins_ok(cfg)

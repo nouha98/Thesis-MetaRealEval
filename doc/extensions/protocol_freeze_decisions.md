@@ -482,3 +482,21 @@ Only **10 of 98 tasks** have at least one generated `value`-level callable. Five
 - post_194 `next` → `none`: the meaning of `attempts`, and so the boundary, is ambiguous.
 
 Together with the reference check of post_185 `get_count` → `type`, the final evaluation split is **value 8, type 162, none 63** (233 callables). All 98 evaluation entries are `reviewed`; the five development entries were reviewed earlier. A2 may now run on the evaluation tasks.
+
+### 10.3 A2 on the evaluation tasks and the audit (2026-11-24)
+
+**A2 build** (freia, array job 5386670, 8 shards of about 3–5 min; merge job 5386671; `results_tier2_ext/a2/full`; `cover_k` = 5, R7 reviewed). Of 351 evaluation tasks:
+- **75 are H-ready**;
+- 253 are unsupported (Stage 2);
+- 10 have no primary-confirmed discovery group;
+- 13 have no pool scenario that kills a discovery group under R7.
+
+There are 391 tests; 195 of 316 discovery groups on ready tasks are covered; admission rejected 1 test; 0 tests are over-specified on a validated control; on 8 tasks the private-rename control failed validation (transform defect; no control used there). No outcome on any RQ2 completion or held-out group has been computed.
+
+**Order deviation (recorded).** Section 7 asks for the A3 inclusion decision on development tasks *before* any evaluation-task H construction. A2 was built on the evaluation tasks first, because A3 does not exist yet. The decision still cannot be influenced: its four conditions use development tasks only, and no evaluation-task H outcome (held-out detection, completion grading) has been computed. If A3 joins H, it is added to the evaluation tasks before the freeze, as section 7 says.
+
+**Audit round 1** (section 6, unchanged). `scripts/audit_h.py`:
+- `select` takes the first 20 H-ready tasks of the frozen `audit_order`; the other 55 H-ready tasks form the evaluation cohort.
+- `grade_hidden.py --audit-reserved` grades exactly those 20 tasks. It recomputes the selection and refuses a list that differs from the frozen rule.
+- `sheet` draws the Q1 sample (seeded, min(5, n) tests per task) and the Q2 sample (min(5, n) P-pass/H-fail programs per task, round-robin over models), with inverse-sampling-fraction weights.
+- `estimate` computes the weighted ratio estimates, the 2,000-replicate task-cluster bootstrap, "unclear" bounded both ways, and the pre-registered acceptance rule.

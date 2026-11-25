@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import json
+import re
 import sys
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -74,8 +75,8 @@ def differences(module, code, contract, tests: list[dict], failing: list[str]) -
 def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, workers: int) -> dict:
     a2 = json.loads((hidden_dir / lab / "a2.json").read_text(encoding="utf-8"))
     h_code = (hidden_dir / lab / "hidden_tests.py").read_text(encoding="utf-8")
-    tests = a2["final_tests"]
-    names = [t["name"] for t in tests]
+    tests = a2["final_tests"]                              # A2 scenario tests (replayable for the differences)
+    names = re.findall(r"^def (test_h_\d+)\(\)", h_code, flags=re.M)   # every hidden test, A3 ones included
     contract = load_contract(ec.REPO / a2["contract"]["path"])
     comps = ec.read_json(baseline / "rq2" / "generate" / lab / "completions.json", {})
     rates = ec.read_json(baseline / "rq2" / "evaluate" / lab / "pass_rates.json", {})
@@ -92,6 +93,10 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
                "failing": failing, "p_pass": p_pass.pop() if len(p_pass) == 1 else None}
         if row["p_pass"] and failing:
             row["differences"], row["failure_kinds"] = differences(task.module_name, code, contract, tests, failing)
+            a3_failing = sorted(set(failing) - {t["name"] for t in tests})
+            if a3_failing:                                 # free-form A3 property tests: no scenario to replay
+                row["differences"].update({n: ["A3 property test failed"] for n in a3_failing})
+                row["failure_kinds"] = sorted(set(row["failure_kinds"]) | {"a3_property"})
             row["code"] = code
         return row
     with ThreadPoolExecutor(max_workers=workers) as ex:

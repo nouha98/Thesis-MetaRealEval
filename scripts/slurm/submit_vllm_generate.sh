@@ -15,6 +15,7 @@
 #   3. host + container preflight (vllm_feasibility.py)
 #   4. vllm serve ... ready (/health and /v1/models)
 # then write_serving_info.py records what served the model (serving_<model>.json).
+# --run "<script> <args>" runs that python script against the server instead of the phases.
 #
 # Runs from the repo root (configs use repo-relative paths). Generation stops
 # MARGIN seconds before the time limit (exit 124); resubmit the same command and
@@ -36,7 +37,7 @@
 set -uo pipefail     # no -e: gates are checked explicitly so cleanup and reporting always run
 
 CONFIG="" MODEL="" MODEL_DIR="" GPUS=1 TP="" MAX_LEN=73728 PARSER="" EXTRA="" IMAGE=""
-TASK_RANGE="" PHASES="rq1,rq2" MARGIN=900
+TASK_RANGE="" PHASES="rq1,rq2" MARGIN=900 RUN=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --config) CONFIG="$2"; shift 2 ;;
@@ -51,6 +52,7 @@ while [[ $# -gt 0 ]]; do
         --task-range) TASK_RANGE="$2"; shift 2 ;;
         --phases) PHASES="$2"; shift 2 ;;
         --margin) MARGIN="$2"; shift 2 ;;
+        --run) RUN="$2"; shift 2 ;;
         *) echo "unknown argument: $1" >&2; exit 2 ;;
     esac
 done
@@ -170,6 +172,16 @@ if [[ "${probe_rc}" == "3" || "${probe_rc}" == "124" ]]; then
     fail_gate probe_hang "vLLM stopped answering on the seeded probe (rc=${probe_rc}); see ${JOB_DIR}/probe_seeds.stdout and server.log"
 elif [[ "${probe_rc}" != "0" ]]; then
     echo "probe_seeds failed rc=${probe_rc} (non-fatal); see ${JOB_DIR}/probe_seeds.stdout"
+fi
+
+# --- or: one script against this server instead of the phases (e.g. the A3 pilot) ---
+if [[ -n "${RUN}" ]]; then
+    read -r -a RUN_ARGS <<< "${RUN}"
+    echo "== run: ${PY} ${RUN} =="
+    "${PY}" "${RUN_ARGS[@]}"
+    rc=$?
+    echo "finished run rc=${rc}"
+    exit "${rc}"
 fi
 
 # --- generate -----------------------------------------------------------------

@@ -13,7 +13,7 @@
 #   scripts/slurm/launch_vllm_generate.sh --config config/tier2_runs/full_vllm-qwen38.yaml \
 #       --model qwen38-27b --model-dir /shared/karouin/models/Qwen3.8-27B --gpus 2 \
 #       --constraint gpumem.141gib --mem 128G --reasoning-parser qwen3 \
-#       [--task-range 0-99] [--phases rq1,rq2] [--time 24:00:00]
+#       [--task-range 0-99] [--phases rq1,rq2] [--time 24:00:00] [--run "<script> <args>"]
 #
 # qwen38 needs --gpus 2: on one H200 (TP=1) vLLM 0.17 stalls on its first request.
 # It also gets --mem 128G: the job's memory limit counts the page cache, and the
@@ -33,7 +33,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${REPO_DIR}"
 
 CONFIG="" MODEL="" MODEL_DIR="" GPUS=1 TP="" MAX_LEN=73728 PARSER="" EXTRA=""
-TASK_RANGE="" PHASES="rq1,rq2" TIME="24:00:00"
+TASK_RANGE="" PHASES="rq1,rq2" TIME="24:00:00" RUN=""
 IMAGE="/shared/karouin/containers/vllm-v0.17.0.sif" CONSTRAINT="gpumem.80gib" MEM="64G"
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -48,6 +48,7 @@ while [[ $# -gt 0 ]]; do
         --task-range) TASK_RANGE="$2"; shift 2 ;;
         --phases) PHASES="$2"; shift 2 ;;
         --time) TIME="$2"; shift 2 ;;
+        --run) RUN="$2"; shift 2 ;;
         --image) IMAGE="$2"; shift 2 ;;
         --constraint) CONSTRAINT="$2"; shift 2 ;;
         --mem) MEM="$2"; shift 2 ;;
@@ -98,5 +99,5 @@ sbatch --parsable \
     --config "${CONFIG}" --model "${MODEL}" --model-dir "${MODEL_DIR}" --gpus "${GPUS}" --tp "${TP}" \
     --max-model-len "${MAX_LEN}" --image "${IMAGE}" \
     --reasoning-parser "${PARSER}" --vllm-extra "${EXTRA}" \
-    --task-range "${TASK_RANGE}" --phases "${PHASES}"
+    --task-range "${TASK_RANGE}" --phases "${PHASES}" --run "${RUN}"
 echo "logs: ${LOG_DIR}"

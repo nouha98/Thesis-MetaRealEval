@@ -537,3 +537,47 @@ H is not changed after the audit: the accepted audit describes the H that is fro
 2. *Audit of A3.* If A3 joins H, its tests on the 20 audit tasks get their own Q1 audit with the section 6 rule (same sampling, same acceptance) before the freeze; the A2 audit above stays as it is.
 
 Five development tasks show whether A3 can add detection, not how large the effect is; the pilot is reported that way. The freeze tooling (`scripts/freeze_h.py`) is built independently of the decision. It refuses to freeze without an accepted audit and the section 7 decision file. It copies the ready tasks into a never-overwritten bundle and writes the committed record `config/extensions_protocol/hidden_v1_freeze.json` (per-file and global sha256, input hashes, git state). `--after-freeze` in `grade_hidden.py` and `eval_heldout.py` now requires the bundle to verify against that record.
+
+### 10.4 A3 pre-check verdicts and the A3 development pilot (2026-11-25)
+
+**Pre-check verdicts (the researcher's; AI pre-pass confirmed without change).** `results_tier2_ext/a3/precheck.md`, 14 groups that A2 misses on 5 development tasks.
+- *Stated* (the fault breaks a property the docstring states): csn_12 dc06f8 ("GCD(a, b)"); csn_52 0bf431, 705dd5, 74ff62, d42bfd ("Return a list with a string for each True bit"); post_64 085188, 350348, 48398f.
+- *No docstring fault*: csn_52 9dfd25 and e5a307 (`[]` for 0 matches the docstring; the reference's `None` breaks it).
+- *Open*: csn_54 31bf7c and ef005f (which integer maps to which positional name is not stated); post_24 e5bfbb ("local path" is undefined, and the result depends on the file system); post_64 a849ad (`require_llm_engine` is not a documented metadata item).
+
+post_64 is the deciding task. The reading is recorded explicitly. The constructor ("Initialize the base tool with optional metadata"), `set_metadata` ("Set the metadata for the tool") and `get_metadata` ("Returns the metadata for the tool") refer to the same metadata. The stated property is therefore a round trip: every value passed in comes back. No key names are assumed, and `user_metadata` may come back nested or merged.
+
+**Result:** 3 tasks (csn_12, csn_52, post_64) meet the pre-check rule, so the A3 pilot runs. It is capped at one week and judged by section 7 conditions 1–4, which are unchanged.
+
+Notes for the record:
+1. *Detection beyond P* is reported separately. P already kills csn_12 dc06f8, csn_52 0bf431/74ff62/d42bfd and post_64 085188. P misses csn_52 705dd5 and post_64 350348. post_64 48398f has no P verdict (`killed = None`): its members are not in the RQ1 kill matrix, because they were filtered before kill scoring, so P never ran on them. It is reported as a third category, not as a P miss.
+2. *Contract gap:* the witness of post_64 350348 (origin `p_scenario`) passes a complex number as `user_metadata`, which is documented as a dict, yet the domain is marked `valid`. The verdict stands, because the fault also shows with a dict. To fix in the next contract round (no change now).
+3. *A3 test inputs:* A3 tests must pass on the reference. For csn_52 that leaves only inputs with ≥ 2 named True bits; for post_64 the round trips need distinctive values (not `''`, `None` or `{}`). The agent is not told this: condition 3 counts what A3 finds by itself.
+4. *Intervals:* invalid 0/97, 95% CI [0, 3.7%] (one-sided upper 3.0%); over-specified 6/97 (exact interval from 2.3%; weighted 0.076).
+
+**A3 pilot design (fixed before any A3 call).** `src/meta_real_eval/oracles/agent.py`, `scripts/build_a3.py`.
+- *Targets:* on each development task with admitted A2 tests, the primary-confirmed discovery groups that no final A2 test kills, in group-id order, at most 3. All three RQ2 models target the same groups, with at most 3 proposals per (model, group). Held-out groups are never shown.
+- *Agent input:* the skeleton (docstrings), the reviewed contract's input domain, the reference, and the target fault's diff.
+  - *Deviation from the plan text:* P is not shown. P's Pynguin assertions fix reference internals (section 10.3), and showing them would push A3 toward the reference-specific assertions that R7 removed.
+- *Task given to the agent:* one `test_a3` that checks only docstring-stated properties, with a `# doc: "..."` quote above every assertion.
+- *Checks (the first failure is fed back to the model):*
+  1. syntax: one function; only imports at top level;
+  2. imports limited to pytest and math;
+  3. no private attribute;
+  4. no `repr`, `vars` or `__dict__`;
+  5. a docstring quote above every assertion;
+  6. passes on the reference 3× and alone;
+  7. fails on the target fault.
+
+  Contract-valid inputs cannot be checked statically, so they are judged in the condition 1 audit.
+- *Sampling:* each model's own profile (temperature from the profile), max_tokens 32,768, seeds derived from (task, group, model, attempt). The responses go to a separate cache under `results_tier2_ext/a3/dev_pilot/runs/<model>/llm_cache`, never the frozen RQ2 caches. The extension exec policy and the canary are active, because model-written code is executed.
+- *Merge:* A3-only and A2 ∪ A3 test files per task. A3 tests are run on the validated private-rename control and flagged, not dropped: condition 2 evaluates the flags. The union is re-admitted on the reference.
+- *Conditions:*
+  - condition 3 is computed by `build_a3.py report` from `eval_heldout` on A3 vs A2;
+  - condition 1 uses the Q1 sheet: every A3 test, plus the seeded A2 sample (min(5, n) per task);
+  - condition 2 uses the controls plus `grade_hidden --compare` (A2 vs A2 ∪ A3) on development RQ2 completions;
+  - condition 4 projects tokens and time per target onto the evaluation targets (counts only).
+- `grade_hidden.py` now takes the test names from the hidden file, so A3 tests are graded too (failure kind `a3_property`).
+- `submit_vllm_generate.sh --run` runs one script against the gated vLLM server instead of the RQ1/RQ2 phases.
+
+Supervisor communication (the researcher's decision): no interim note. One complete update goes to Gordon once the pilot and its decision are done.

@@ -519,3 +519,21 @@ Consequences: Stage 2 is re-run for the two revised tasks (`run_witness.py --for
 Consequence for Stage 5 (stated before the freeze): P∧H can differ from P only on P-passing completions, so tasks with no P-pass carry no Stage 5 signal. Stage 5 reports, descriptively, the number of cohort tasks with ≥1 P-passing completion next to the P vs P∧H result. A2 under R7 asserts less than P on P's own inputs, so a small P∧H effect is expected. P-fail/H-pass is not evidence that P is wrong: H asserts too little to certify a completion.
 
 **A3 condition 3 feasibility (development data only).** D = 5 development tasks with admitted A2 tests (csn_12, csn_52, csn_54, post_24, post_64; 5 tests each). In `dev_k5_r7b/heldout.json` all 5 have ≥1 primary held-out group that A2 misses (1/1, 6/8, 2/2, 1/2, 4/4), and 3 tasks have groups that P also misses (csn_52 3, post_24 1, post_64 2). Condition 3 (≥3 tasks) is therefore not ruled out, so the frozen rule does not exclude an A3 pilot.
+
+**Audit round 1 result (2026-11-25, researcher verdicts, `results_tier2_ext/audit_h/round1/estimates.json`). H is ACCEPTED by the section 6 rule.**
+- Q1: 97 tests on 20 tasks: 91 valid, 6 over-specified, 0 invalid. Invalid share 0.0 [0.0, 0.0]; over-specified 0.076 [0.0, 0.181] (weighted, task-cluster bootstrap).
+- Q2: n = 0, so it is vacuous (no P-pass/H-fail pair).
+
+The over-specified tests sit on two tasks. In both, the assertion is "returns normally" on an input the docstring leaves undefined, so a completion that rejects that input would fail H through exception rule (b):
+- post_185 (3 of 5 sampled): negative `k` in `get_top_k` and negative `m` in the constructor;
+- post_112 (all 3 tests): `log_func` ("Optional logging function") generated as a float.
+
+H is not changed after the audit: the accepted audit describes the H that is frozen. The audited over-specification share is reported with the results. Its consequence in Stage 5 (a completion rejected only for raising on an undefined input) is the same case the exception-only sensitivity of section 10.2 already measures (`p_pass_h_fail:exception_only`), which is reported next to the primary result.
+
+**Reporting correction: the invalid interval.** The task-cluster bootstrap collapses to [0, 0] when no item is invalid, and 0 of 97 cannot rule out a small rate. `estimate` now also reports a Clopper–Pearson interval on the item counts. The pre-registered acceptance rule is unchanged, and it holds under either interval. Reported statement: *0 of 97 tests contradict a docstring; invalid rate ≤ 3.7% (two-sided 95%; one-sided upper bound 3.0%).* This interval ignores task clustering, so it understates the uncertainty somewhat.
+
+**Decision (2026-11-25): option 1, a bounded A3 pilot (at most one week, pass or stop), with two additions fixed before any A3 code:**
+1. *Pre-check* (`scripts/a3_precheck.py`, development data only). Every primary held-out development group that A2 misses is listed with its diff and witness. The researcher judges whether the fault breaks a property the docstring *states* (quoted), or only behaviour the docstring leaves open. Rule: the pilot runs only if ≥ 3 development tasks have ≥ 1 *stated* group (this mirrors section 7 condition 3, which counts every A2-missed group, not only those P also misses). Otherwise A3 cannot meet condition 3 with docstring properties, and H = A2 is frozen.
+2. *Audit of A3.* If A3 joins H, its tests on the 20 audit tasks get their own Q1 audit with the section 6 rule (same sampling, same acceptance) before the freeze; the A2 audit above stays as it is.
+
+Five development tasks show whether A3 can add detection, not how large the effect is; the pilot is reported that way. The freeze tooling (`scripts/freeze_h.py`) is built independently of the decision. It refuses to freeze without an accepted audit and the section 7 decision file. It copies the ready tasks into a never-overwritten bundle and writes the committed record `config/extensions_protocol/hidden_v1_freeze.json` (per-file and global sha256, input hashes, git state). `--after-freeze` in `grade_hidden.py` and `eval_heldout.py` now requires the bundle to verify against that record.

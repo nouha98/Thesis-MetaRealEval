@@ -182,6 +182,8 @@ def test_audit_selection_sampling_and_estimates(tmp_path):
     assert est["Q1"]["invalid"]["point"] == 0.05 and est["Q1"]["n_tasks"] == 4
     assert est["Q2"]["erroneous_unclear_as_fault"]["point"] == 0.0
     assert est["Q2"]["erroneous_unclear_as_erroneous"]["point"] == 1.0 and not est["acceptance"]["accepted"]
+    zero = ah.exact_ci([{"v": "valid"}] * 97, lambda v: v == "invalid")     # 0 of 97: not [0, 0]
+    assert zero["ci95"][0] == 0.0 and abs(zero["ci95"][1] - 0.0373) < 5e-4 and abs(zero["upper95_one_sided"] - 0.0304) < 5e-4
 
 
 def test_audit_show_token():
@@ -189,3 +191,44 @@ def test_audit_show_token():
     assert ah.show_token(["@any"]) == "returns normally"
     assert ah.show_token(["@type", ["seq"]]) == "returns a value of kind seq"
     assert ah.show_token(["exc", ["builtins.ValueError", "builtins.Exception"]]) == "raises builtins.ValueError"
+
+
+def test_freeze_needs_acceptance_and_decision_then_verifies(tmp_path):
+    import freeze_h as fh
+    a2, audit, out = tmp_path / "a2", tmp_path / "audit", tmp_path / "hidden_v1"
+    for lab, ready in (("T1", True), ("T2", False)):
+        (a2 / lab).mkdir(parents=True)
+        (a2 / lab / "a2.json").write_text(json.dumps({"ready": ready}), encoding="utf-8")
+        (a2 / lab / "hidden_tests.py").write_text(f"def test_h_0():\n    assert '{lab}'\n", encoding="utf-8")
+    audit.mkdir()
+    for f in ("items.csv", "audit_reserved.json"):
+        (audit / f).write_text("x", encoding="utf-8")
+    decision, record = tmp_path / "decision.json", tmp_path / "record.json"
+    (audit / "estimates.json").write_text(json.dumps({"acceptance": {"accepted": False}}), encoding="utf-8")
+    with pytest.raises(SystemExit, match="did not accept"):
+        fh.freeze(a2, audit, out, decision, record)
+    (audit / "estimates.json").write_text(json.dumps({"acceptance": {"accepted": True}}), encoding="utf-8")
+    with pytest.raises(SystemExit, match="section 7 decision"):
+        fh.freeze(a2, audit, out, decision, record)
+    decision.write_text(json.dumps({"components": ["A2", "A3"]}), encoding="utf-8")
+    with pytest.raises(SystemExit, match="only H = A2"):
+        fh.freeze(a2, audit, out, decision, record)
+    decision.write_text(json.dumps({"components": ["A2"]}), encoding="utf-8")
+    rec = fh.freeze(a2, audit, out, decision, record)
+    assert rec["tasks"] == ["T1"] and set(rec["files"]) == {"T1/a2.json", "T1/hidden_tests.py"}
+    assert fh.verify(out, record)["global_sha256"] == rec["global_sha256"]
+    with pytest.raises(SystemExit, match="exists"):
+        fh.freeze(a2, audit, tmp_path / "other", decision, record)       # never frozen twice
+    (out / "T1" / "hidden_tests.py").write_text("def test_h_0():\n    pass\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match="differs from the frozen H"):
+        fh.verify(out, record)
+
+
+def test_a3_precheck_keeps_only_a2_missed_primary_dev_groups():
+    import a3_precheck as pc
+    rows = [{"task": "D", "h_detected": False, "populations": ["primary/generated"]},
+            {"task": "D", "h_detected": True, "populations": ["primary/generated"]},
+            {"task": "D", "h_detected": False, "populations": ["stage0_nonequiv"]},
+            {"task": "E", "h_detected": False, "populations": ["primary/p_scenario"]},
+            {"task": "D", "h_detected": None, "populations": ["primary/generated"]}]
+    assert pc.missed_groups(rows, {"D"}) == [rows[0]]

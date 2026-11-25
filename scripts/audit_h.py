@@ -155,6 +155,20 @@ def boot(rows: list[dict], hit) -> list | None:
     return [vals[int(0.025 * len(vals))], vals[min(len(vals) - 1, int(0.975 * len(vals)))]]
 
 
+def exact_ci(rows: list[dict], hit) -> dict | None:
+    """Clopper-Pearson 95% interval on the unweighted item counts (reporting only; the acceptance rule keeps the
+    pre-registered weighted bootstrap). Needed because the bootstrap collapses to [0, 0] when no item is a hit;
+    it ignores task clustering, so it is a lower bound on the real uncertainty."""
+    from scipy.stats import beta
+    n, k = len(rows), sum(bool(hit(r["v"])) for r in rows)
+    if not n:
+        return None
+    lo = 0.0 if k == 0 else float(beta.ppf(0.025, k, n - k + 1))
+    hi = 1.0 if k == n else float(beta.ppf(0.975, k + 1, n - k))
+    one_sided = 1.0 if k == n else float(beta.ppf(0.95, k + 1, n - k))
+    return {"k": k, "n": n, "ci95": [lo, hi], "upper95_one_sided": one_sided}
+
+
 def estimate(out: Path) -> int:
     with (out / "items.csv").open(encoding="utf-8") as f:
         items = list(csv.DictReader(f))
@@ -168,7 +182,8 @@ def estimate(out: Path) -> int:
         rows = [{"task": i["task"], "w": float(i["weight"]), "v": i["verdict"].strip()} for i in items if i["question"] == q]
         res[q] = {"n_items": len(rows), "n_tasks": len({r["task"] for r in rows}),
                   "verdicts": dict(Counter(r["v"] for r in rows)),
-                  **{k: {"point": ratio(rows, h), "ci95": boot(rows, h)} for k, h in hits.items()}}
+                  **{k: {"point": ratio(rows, h), "ci95": boot(rows, h), "exact": exact_ci(rows, h)}
+                     for k, h in hits.items()}}
     inv = res["Q1"]["invalid"]
     err = res["Q2"]["erroneous_unclear_as_erroneous"]          # conservative bound for the acceptance rule
     ok1 = inv["point"] is not None and inv["point"] <= 0.05 and inv["ci95"][1] <= 0.15

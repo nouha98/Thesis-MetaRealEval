@@ -108,6 +108,9 @@ def main(argv=None) -> int:
     if not args.after_freeze and hidden_tasks - set(cfg.extensions.development_tasks):
         raise SystemExit("ERROR: held-out detection on evaluation tasks only after H is frozen (--after-freeze); "
                          "before that it would invite tuning on evaluation tasks (plan D5)")
+    if args.after_freeze:
+        import freeze_h
+        freeze_h.verify(args.hidden)          # only the committed frozen bundle unlocks evaluation tasks
     pins = ec.pins_ok(cfg)
     policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=False)   # grading
     policy.activate()

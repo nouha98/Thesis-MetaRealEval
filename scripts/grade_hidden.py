@@ -174,6 +174,9 @@ def main(argv=None) -> int:
     elif not args.after_freeze and set(labels) - set(cfg.extensions.development_tasks):
         raise SystemExit("ERROR: grading evaluation-task completions on H only after H is frozen (--after-freeze); "
                          "before that, H outcomes on RQ2 completions must not be seen (plan D5)")
+    elif args.after_freeze:
+        import freeze_h
+        freeze_h.verify(args.hidden)          # only the committed frozen bundle unlocks evaluation tasks
     pins = ec.pins_ok(cfg)
     policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=False)   # grading
     policy.activate()

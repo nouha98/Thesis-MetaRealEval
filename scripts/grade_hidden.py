@@ -90,7 +90,8 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
         failing = [n for n, o in outs.items() if o != "ordinary_pass"]
         p_pass = {m["stored_p_pass"] for m in g["members"]}
         row = {"group_id": gid, "members": g["members"], "models": g["models"], "h_pass": not failing,
-               "failing": failing, "p_pass": p_pass.pop() if len(p_pass) == 1 else None}
+               "failing": failing, "h_outcomes": {n: outs[n] for n in failing},
+               "p_pass": p_pass.pop() if len(p_pass) == 1 else None}
         if row["p_pass"] and failing:
             row["differences"], row["failure_kinds"] = differences(task.module_name, code, contract, tests, failing)
             a3_failing = sorted(set(failing) - {t["name"] for t in tests})
@@ -110,6 +111,9 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
         c["h_pass"] += r["h_pass"]
         c["p_and_h"] += bool(p) and r["h_pass"]
         c["p_pass_h_fail"] += bool(p) and not r["h_pass"]
+        if not r["h_pass"] and set(r["h_outcomes"].values()) == {"timeout"}:
+            c["h_fail_timeout_only"] += 1                   # a runner limit, not a verdict: reported separately
+            c["p_pass_h_fail_timeout_only"] += bool(p)
         if p and not r["h_pass"]:
             for k in r.get("failure_kinds", []):
                 c[f"p_pass_h_fail:{k}"] += 1

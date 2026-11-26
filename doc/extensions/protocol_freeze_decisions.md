@@ -611,3 +611,12 @@ Neither limitation is detectable by the admission checks. Both are measured only
 - The fix applies to every task, not only post_223. A uniform rule needs no per-task judgment and costs one process per test.
 
 A regression test (`test_isolated_grading_does_not_leak_class_state`) shows the leak under the shared process and its absence under isolation.
+
+**Isolation re-check on the audit tasks (2026-11-26, `round1/grading_isolated.json`).** P∧H = P still holds (760 P-pass, 0 P-pass/H-fail). H-pass falls from 2,773 to 2,765; all 8 newly failing completions are P-fails. Their cause is checked before the freeze. `grade_hidden` now stores each failing test's outcome (`h_outcomes`) and counts timeout-only H failures separately (`h_fail_timeout_only`, `p_pass_h_fail_timeout_only`), because a per-process timeout is a runner limit, not a verdict.
+
+**Reporting decisions for A3 (2026-11-26, review of the pilot design).**
+- *Incremental arm.* A3 targets only the discovery groups that A2's final tests miss, so it measures what A3 adds to A2, not A3 against A2 as two separate methods. The thesis calls it the incremental arm. RQ4c reports P, A2 and A2 ∪ A3; A3 alone is reported only as the component. This replaces the "A2 vs A3 on the whole cohort" wording of plan rev. 9.3 (deviation recorded).
+- *The `# doc:` check is a traceability check*: every assertion points to a docstring line. It is not a validity check; validity comes only from human review.
+- *Passing on the reference shows repeatability, not correctness or environment independence.* Each run already uses a fresh temporary directory, but that does not help with absolute paths or real file-system state (post_24). Tasks whose reference uses the file system, the clock or randomness are tagged *environment-dependent* and reported separately.
+- *Naming.* The code's check name `reference_fails` means "the test does not pass on the reference". The name is kept, so the pilot records and later records stay consistent, and it is defined that way in the thesis text.
+- *Wording.* A3 is a bounded generate → check → repair loop (LLMutantKiller-style), not a tool-using agent (SWE-agent-style). The result is stated as "failed safety condition 2 on the development pilot (one task, three erroneous rejections)".

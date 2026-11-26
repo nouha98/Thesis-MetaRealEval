@@ -232,3 +232,4 @@ def test_a3_precheck_keeps_only_a2_missed_primary_dev_groups():
             {"task": "E", "h_detected": False, "populations": ["primary/p_scenario"]},
             {"task": "D", "h_detected": None, "populations": ["primary/generated"]}]
     assert pc.missed_groups(rows, {"D"}) == [rows[0]]
+

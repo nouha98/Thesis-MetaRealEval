@@ -201,9 +201,10 @@ def main(argv=None) -> int:
     elif not args.after_freeze and set(labels) - set(cfg.extensions.development_tasks):
         raise SystemExit("ERROR: grading evaluation-task completions on H only after H is frozen (--after-freeze); "
                          "before that, H outcomes on RQ2 completions must not be seen (plan D5)")
-    elif args.after_freeze:
+    frozen_sha = None
+    if args.after_freeze and args.audit_reserved is None:
         import freeze_h
-        freeze_h.verify(args.hidden)          # only the committed frozen bundle unlocks evaluation tasks
+        frozen_sha = freeze_h.verify(args.hidden)["global_sha256"]   # only the committed frozen bundle unlocks them
     pins = ec.pins_ok(cfg)
     policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=False)   # grading
     policy.activate()
@@ -215,7 +216,8 @@ def main(argv=None) -> int:
     total = Counter()
     for r in res:
         total.update(r["counts"])
-    doc = {"authoritative": gated, "hidden": str(args.hidden), "isolation": "per_test_process", "pins": pins,
+    doc = {"authoritative": gated, "hidden": str(args.hidden), "frozen_h_sha256": frozen_sha,
+           "isolation": "per_test_process", "pins": pins,
            "totals": dict(total), "tasks": res}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(doc, indent=1, default=str), encoding="utf-8")

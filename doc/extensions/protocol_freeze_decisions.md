@@ -630,3 +630,94 @@ So the timeouts were caused by machine load, not by the completions. The clean r
 *Rule added before the freeze:* `grade_hidden` re-runs every timed-out hidden test once more, alone and sequentially after the parallel pass (`timeout_rerun` per row; `timeout_reruns` count), as the RQ2 evaluator does for whole-suite timeouts. A timeout that persists counts as an H failure and is reported separately (`h_fail_timeout_only`). Grading runs on compute nodes only.
 
 The same applies to held-out detection. `eval_heldout` re-runs timed-out tests once, alone and sequentially. A timeout that persists is **not a detection**, as in the RQ1 suite veto ("a timeout is never a kill"). Before this fix, any non-pass counted as a detection, so a load timeout could count as H detecting a fault. For completions a persisting timeout is an H failure, because the test did not pass, matching how P scores a completion. Both counts are reported separately.
+
+**Isolation-affected groups on the audit tasks (record, 2026-11-26).** Runner versions and files:
+- *Shared-process runner* (before commit 715146b): `results_tier2_ext/audit_h/round1/grading.json`. H-pass 2,773; P∧H = P.
+- *Isolated runner without timeout re-run* (commit fd1169f), run twice and written to `round1/grading_isolated.json`, overwritten each time:
+  - (i) loaded login node, 16 workers: H-pass 2,765, 17 timeout-only failures;
+  - (ii) quieter: H-pass 2,782, no timeout.
+- *Isolated runner with the sequential timeout re-run* (commit 5af11da), compute node, 12 workers: the final `round1/grading_isolated.json`. H-pass 2,782, `timeout_reruns` 0, P∧H = P.
+
+The intermediate files of (i) and (ii) were overwritten; their totals are recorded here.
+
+In run (i), eight solution groups passed H under the shared runner and failed it under isolation, all with `test_h_0: timeout`, all on RCE_csn_snippet_163, all P-fail, one completion each. Group-id prefixes: 119e016660, 1293b1be39, 1666b5af9e, 16cc322af1, 19a6be7128, 204010eb08, 20b6052657, 221454cf28. The list printed before the session closed may be incomplete; the run counted 17 timeout-only completions. All of them pass H in (ii) and in the final run, so they were load timeouts, not verdicts. The completions that changed in the other direction (H-fail under the shared runner, H-pass under isolation) are listed from the final file in the note below.
+
+### 10.6 A3 v2: pre-registration (2026-11-26; committed before any Stage 5 output is viewed)
+
+The Stage 5 grading job (5397170, frozen H v1) was submitted before this commit. None of its output (`logs/stage5_5397170.out`, `results_tier2_ext/stage5/`) has been opened, and none is opened before this section is committed.
+
+**Scope.** A3 v2 is a separate comparison arm. It never joins H, never changes H v1, and does not replace A3 v1. A3 v1 is kept unchanged: its code, prompt and rules, and its outputs (`results_tier2_ext/a3/dev_pilot`). Stage 5 has priority and finishes first.
+
+**The single experimental change: no access to reference behaviour.** v2 is v1 with only these differences:
+1. The generation prompt contains the skeleton (docstrings), the reviewed contract's input domain and the target discovery fault's diff, **but not the reference implementation**. The diff has no context lines (`-U0`).
+2. All feedback is value-free:
+   - *reference failure:* the status "fails on a correct implementation", the exception type and the failing line in the test;
+   - *fault not detected:* the status only;
+   - *static checks* (syntax, imports, private access, non-API, doc quote): unchanged, because they do not involve the reference.
+
+   No actual reference value, return value or pytest output is shown.
+
+*Remaining exposure, stated explicitly:* the `-U0` diff shows the changed lines (they are the target fault); the exception type in reference-failure feedback may reveal whether the reference raises. Nothing else about the reference is shown. Held-out faults are never shown to v1 or v2.
+
+**Unchanged from v1 (shared):**
+- the checks and their order;
+- at most 3 attempts per (model, target) and 3 targets per task;
+- the three RQ2 models, each with its own sampling profile;
+- max_tokens 32,768.
+
+Seeds are derived from (version, task, group, model, attempt), and each version has its own response cache.
+
+**Targets.** One shared target list for v1 and v2 is computed by v1's rule: per task, the primary-confirmed discovery groups that no final A2 test kills, in group-id order, at most 3. It comes from the frozen H v1 bundle and `results_tier2_ext/witness/full`. It is frozen as `config/extensions_protocol/a3_targets_v1.json` (with sha256) before either evaluation run.
+
+**Population.** The 55-task evaluation cohort: H v1-ready tasks minus the 20 audit-reserved tasks. These are the Stage 5 completions.
+
+**Arms**, on the same population: (1) P; (2) P + A2 (= P∧H v1); (3) P + A2 + A3 v1; (4) P + A2 + A3 v2. Grading uses the isolated runner with the sequential timeout re-run (section 10.5).
+
+**Primary measure: erroneous-rejection share per version.**
+- *Population N_v:* solution groups (distinct programs) that pass P and A2 and fail ≥ 1 A3 vN test.
+- *Sample:* k_v = min(30, N_v) programs, drawn as `random.Random(20261126).sample(sorted(program ids), k_v)` separately for each version.
+- *Verdicts:* each sampled program is judged against the docstrings and contract as true fault / erroneous rejection / unclear.
+- *Always reported:* N_v; k_v; the counts of clearly erroneous and of unclear; the lower share (unclear counted as true fault) and the upper share (unclear counted as erroneous), each with a Clopper–Pearson 95% interval; the estimated erroneous count (share × N_v, with the interval scaled the same way); and completion counts next to program counts.
+- *Small-sample fallback (pre-registered):*
+  - if N_v < 10, the counts are reported descriptively and the main comparative result is the secondary measure (a);
+  - if N_v = 0, the rate is undefined (never reported as 0).
+
+  No precise rate is claimed from small samples, and no v1-vs-v2 significance is claimed unless the intervals separate.
+
+**Secondary measures.**
+- (a) *Detection beyond A2:* primary-confirmed held-out fault groups detected by P + A2 + A3 vN and not by P + A2, as groups and as tasks. A timeout is never a detection.
+- (b) *Test validity:*
+  - Draw a random sample of min(30, T) target groups with `random.Random(20261127)`, where T is the number of targets with ≥ 1 admitted test in either version.
+  - For each sampled target, review each version's own admitted tests (valid / over-specified / invalid). The tests are not paired, and they are not presented as paired.
+  - Report each version's valid share with a Clopper–Pearson interval.
+
+**Also reported:**
+- tests generated and admitted;
+- coverage, defined as the share of targets that receive ≥ 1 admitted test (not code coverage);
+- held-out detection per arm;
+- attempts, tokens and wall time per model.
+
+**Diagnostics (not proof).** Environment-dependence tags: per task, whether the reference uses the file system, the clock or randomness (os, pathlib, open, shutil, tempfile, glob, time, datetime, random, uuid); per test, absolute-path string literals. A missing tag does not show that a test is environment-independent. Leave-own-model-out: per-model results of arms 3 and 4 without the A3 tests written by the same model.
+
+**Order and safeguards.**
+1. Stage 5 analysis.
+2. v2 code, with a test that pins v1's prompt and feedback byte for byte.
+3. v2 on the development tasks: a technical smoke test only. Any change after it must be a documented defect fix, not tuning.
+4. Freeze the target list.
+5. At the start of each evaluation run, record the sha256 of `oracles/agent.py` and `scripts/build_a3.py`, the prompts, model identity and serving info, the configuration and the seeds.
+6. Run v1 and v2 on the cohort (`results_tier2_ext/a3/eval_v1`, `.../eval_v2`).
+7. Grading, the review samples, the report.
+
+Neither version is changed after its evaluation run starts, and nothing is tuned on evaluation outcomes. A better or worse v2 is reported as it is.
+
+**Stage 5 analysis fixed before any Stage 5 output was viewed (2026-11-26, review of `analyze_stage5.py`).**
+- *Cohort from the freeze record:* the graded bundle must verify against `hidden_v1_freeze.json`; the graded task set must equal the frozen set; the audit tasks must lie inside it; and the cohort must have exactly 55 tasks. Otherwise the script stops.
+- *Grading files name their H:* `grade_hidden` now writes `frozen_h_sha256` under `--after-freeze`. Job 5397170 started before this change, so its file has no such field, and the analysis verifies its bundle directly.
+- *τ_b keeps the tie cases:* tasks where P separates the models but P∧H ties them are counted as `ranking_collapsed_to_tie`, never dropped; tasks tied under P are counted, with `tie_broken_by_h`.
+- *Exception-only* is compared as a set.
+- A `run_manifest.json` is written.
+- The tests are in `tests/test_scripts/test_analyze_stage5.py`.
+
+Two review concerns were checked and found not to be bugs, and tests now cover them:
+- the csn/post split matches the real label format `RCE_csn_snippet_<n>`;
+- "timeout-only" already means "every failing test timed out", because `h_outcomes` holds only the failing tests.

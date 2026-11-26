@@ -721,3 +721,8 @@ Neither version is changed after its evaluation run starts, and nothing is tuned
 Two review concerns were checked and found not to be bugs, and tests now cover them:
 - the csn/post split matches the real label format `RCE_csn_snippet_<n>`;
 - "timeout-only" already means "every failing test timed out", because `h_outcomes` holds only the failing tests.
+
+**Record completions (2026-11-26).**
+- *The changes in the other direction, from the final files:* eight solution groups (9 completions) were H-fail under the shared-process runner (`round1/grading.json`) and H-pass under isolation (`round1/grading_isolated.json`, commit 5af11da). All are on RCE_csn_snippet_163 and all are P-fail. Group-id prefixes: 004eb66b87 (2 completions), 0256cabd57, 045444bb44, 0724499dde, 09681b0c8c, 098386a63f, 0a3742189e, 1145887f05. This accounts for the 9-completion difference (2,782 vs 2,773). These completions were rejected only because of state leaked from earlier tests.
+- *Tag:* `tier2-hidden-v1` was first created on 5af11da, the commit before the freeze record. It was moved to 4e4e8ce, the commit that adds `hidden_v1_freeze.json`, and verified on freia (`freeze_h.py verify`: OK, 75 tasks, bf0ec5d2…).
+- *Stage 5 job 5397170 failed at start* (`source: not found`: `sbatch --wrap` runs `/bin/sh`) and produced no output. So no Stage 5 output existed before the section 10.6 commit, and the Stage 5 grading runs after it.

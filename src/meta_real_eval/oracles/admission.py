@@ -36,6 +36,14 @@ def run_tests(module: str, code: str, test_code: str, names: list[str], timeout_
     return _outcomes(module, code, test_code, names, timeout_s) if names else {}
 
 
+def run_tests_isolated(module: str, code: str, test_code: str, names: list[str], timeout_s: float) -> dict[str, str]:
+    """Outcome per hidden test, each in its own pytest process (fresh import, fresh class-level state).
+
+    Grading uses this (decisions 10.5): the expected tokens were computed with every scenario in a fresh
+    forked process, so a test must not see class- or module-level state left by an earlier test."""
+    return {n: _outcomes(module, code, test_code, [n], timeout_s)[n] for n in names}
+
+
 def admit(module: str, reference: str, test_code: str, names: list[str], timeout_s: float,
           repeats: int = 3) -> dict[str, dict]:
     together = [run_tests(module, reference, test_code, names, timeout_s) for _ in range(repeats)]

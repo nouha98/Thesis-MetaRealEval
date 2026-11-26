@@ -73,7 +73,8 @@ def freeze(a2: Path, audit: Path, out: Path, decision_path: Path = DECISION, rec
               "tasks": ready, "n_tasks": len(ready), "global_sha256": global_digest(files), "files": files,
               "inputs": {str(p.relative_to(ec.REPO)) if p.is_relative_to(ec.REPO) else str(p): file_sha256(p)
                          for p in inputs},
-              "audit_acceptance": est["acceptance"], "git": git_state()}
+              "audit_acceptance": est["acceptance"], "grading": "one pytest process per hidden test (decisions 10.5)",
+              "git": git_state()}
     text = json.dumps(record, indent=1)
     (out / "freeze_manifest.json").write_text(text, encoding="utf-8")
     record_path.write_text(text, encoding="utf-8")

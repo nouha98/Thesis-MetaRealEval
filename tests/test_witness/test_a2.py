@@ -125,3 +125,20 @@ def test_protocol_builtin_steps_map_to_their_dunder_level():
     assert step_name("len(obj)", "module_0", "User") == "__len__"
     assert level_of({"__repr__": "type"}, step_name("repr(obj)", "module_0", "User")) == "type"
     assert level_of({}, None) == "type" and level_of({}, "__init__") == "value"
+
+
+def test_isolated_grading_does_not_leak_class_state():
+    """Decisions 10.5 (post_223-style class-level state): expectations are computed in fresh processes,
+    so grading runs each hidden test in its own process; together, the second test sees the first one's state."""
+    from meta_real_eval.oracles.admission import run_tests_isolated
+    module = "ctx_mod"
+    impl = "class Ctx:\n    _rid = None\n    @classmethod\n    def set(cls, r):\n        cls._rid = r\n" \
+           "    @classmethod\n    def get(cls):\n        return cls._rid\n"
+    tests = (f"import {module} as module_0\n\ndef test_h_0():\n    module_0.Ctx.set('a')\n    assert module_0.Ctx.get() == 'a'\n\n"
+             "def test_h_1():\n    assert module_0.Ctx.get() is None\n")
+    ExecPolicy(kill_process_tree=True, isolate_home=True).activate()
+    try:
+        assert run_tests(module, impl, tests, ["test_h_0", "test_h_1"], 30)["test_h_1"] == "ordinary_fail"
+        assert set(run_tests_isolated(module, impl, tests, ["test_h_0", "test_h_1"], 30).values()) == {"ordinary_pass"}
+    finally:
+        exec_policy.deactivate()

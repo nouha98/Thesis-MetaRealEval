@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ext_common as ec  # noqa: E402
 
 from meta_real_eval.benchmarks import get_benchmark  # noqa: E402
-from meta_real_eval.oracles.admission import run_tests  # noqa: E402
+from meta_real_eval.oracles.admission import run_tests_isolated  # noqa: E402
 from meta_real_eval.oracles.fault_groups import load_split  # noqa: E402
 
 EQUIV = ("no_divergence", "no_testable_inputs", "ast_identical")
@@ -141,12 +141,12 @@ def main(argv=None) -> int:
     def run(j):
         if not j["runnable"]:
             return {**j, "h_detected": None, "h_outcomes": None}
-        outs = run_tests(*j["args"], timeout_s=cfg.execution.timeout_s)
+        outs = run_tests_isolated(*j["args"], timeout_s=cfg.execution.timeout_s)   # one process per test (10.5)
         return {**j, "h_detected": any(o != "ordinary_pass" for o in outs.values()), "h_outcomes": outs}
 
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
         rows = [{k: v for k, v in r.items() if k != "args"} for r in ex.map(run, jobs)]
-    res = {"authoritative": gated, "hidden": str(args.hidden), "witness": str(args.witness),
+    res = {"authoritative": gated, "hidden": str(args.hidden), "witness": str(args.witness), "isolation": "per_test_process",
            "pins": pins, "populations": aggregate(rows), "rows": rows}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(res, indent=1, default=str), encoding="utf-8")

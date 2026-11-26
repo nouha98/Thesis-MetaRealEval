@@ -34,7 +34,7 @@ import ext_common as ec  # noqa: E402
 from meta_real_eval.benchmarks import get_benchmark  # noqa: E402
 from meta_real_eval.benchmarks.contracts import api_rules, load_contract  # noqa: E402
 from meta_real_eval.benchmarks.witness import GEN_ALIAS, WitnessSettings, _run  # noqa: E402
-from meta_real_eval.oracles.admission import run_tests  # noqa: E402
+from meta_real_eval.oracles.admission import run_tests_isolated  # noqa: E402
 from meta_real_eval.oracles.spec import spec_diff  # noqa: E402
 from meta_real_eval.oracles.solution_groups import build_solution_groups  # noqa: E402
 
@@ -86,7 +86,7 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
         gid, g = item
         r = g["representative"]
         code = bench.build_solution(task, comps[r["relation"]][r["model"]][r["index"]])
-        outs = run_tests(task.module_name, code, h_code, names, timeout_s)
+        outs = run_tests_isolated(task.module_name, code, h_code, names, timeout_s)   # one process per test (10.5)
         failing = [n for n, o in outs.items() if o != "ordinary_pass"]
         p_pass = {m["stored_p_pass"] for m in g["members"]}
         row = {"group_id": gid, "members": g["members"], "models": g["models"], "h_pass": not failing,
@@ -193,7 +193,8 @@ def main(argv=None) -> int:
     total = Counter()
     for r in res:
         total.update(r["counts"])
-    doc = {"authoritative": gated, "hidden": str(args.hidden), "pins": pins, "totals": dict(total), "tasks": res}
+    doc = {"authoritative": gated, "hidden": str(args.hidden), "isolation": "per_test_process", "pins": pins,
+           "totals": dict(total), "tasks": res}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(doc, indent=1, default=str), encoding="utf-8")
     print(json.dumps({"totals": dict(total), "per_task": {r["task"]: r["counts"] for r in res}}, indent=1))

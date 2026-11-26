@@ -581,3 +581,33 @@ Notes for the record:
 - `submit_vllm_generate.sh --run` runs one script against the gated vLLM server instead of the RQ1/RQ2 phases.
 
 Supervisor communication (the researcher's decision): no interim note. One complete update goes to Gordon once the pilot and its decision are done.
+
+**Section 7 decision (2026-11-26): H = A2.** Recorded in `config/extensions_protocol/canonical_h_decision.json`.
+- *Condition 2 fails.* In the gemma development run (7 targets, 7 admitted), the post_24 A3 test `test_h_5` asserts that `extract_local_paths("... /home/user/test.txt and /tmp/log.txt")` returns a non-empty list. 3 development RQ2 completions pass P and A2 and fail it (programs bf7b38, c185c8, f87dd8). All 3 return only paths that exist (`os.path.exists`).
+- *The researcher's verdict on all 3 is erroneous rejection.* The docstring ("从文本中提取本地文件路径") does not say whether a local path must exist, so the test enforces one reading of an open specification. Its outcome also depends on the file system: the completions pass if `/tmp/log.txt` exists. This is the same question as the pre-check's *open* verdict on e5bfbb. The rule allows 0 such cases.
+- Condition 2 covers every admitted A3 test of every model. The qwen runs can only add rejections, so they cannot change the decision. Conditions 1, 3 and 4 are not needed for it; condition 3 stood at 2 tasks with gemma alone (csn_52, post_24).
+- *Not done:* A3's admission rules are not changed, and the inclusion pilot is not re-run. The qwen runs finish only to complete the pilot report and the cost figures.
+
+**A3 limitations (reported with RQ4c):**
+1. An admitted A3 test can enforce an interpretation that the docstring leaves open. Passing on the reference cannot catch this, because the reference *is* one interpretation.
+2. The docstring-quote check can be gamed. The model put the same generic sentence above every line, so the check proves that a quote is present, not that the assertion follows from it.
+
+Neither limitation is detectable by the admission checks. Both are measured only by human review.
+
+**A3 as the RQ4c comparison arm (option 1; it never enters H; Stage 5 has priority and is not delayed).** Before A3 runs on any evaluation task:
+- *Version.* The pilot version is used unchanged: `oracles/agent.py` prompt, rules and checks; `build_a3.py` targets, attempts, sampling and max_tokens. Its file hashes are recorded at the start of the evaluation run, and the version is not changed once evaluation begins. The development pilot results stay in `results_tier2_ext/a3/dev_pilot` and are not overwritten.
+- *Human review (pre-registered).* From the evaluation-cohort programs that pass P and A2 but fail ≥ 1 A3 test, a simple random sample of min(30, N) programs is drawn with `random.Random(20261126).sample(sorted(program ids), k)`. Each sampled program is judged true fault / erroneous rejection / unclear against the docstrings. Reported: N, k, the seed, all verdicts, and the erroneous share with a Clopper–Pearson 95% interval. *Unclear* is bounded both ways, and the share is extrapolated to N only as an estimate with that interval.
+
+### 10.5 Grading isolation: one process per hidden test (2026-11-26, before the freeze)
+
+*Check requested before the freeze (post_223 `BedrockAgentCoreContext`, class-level `ContextVar` state).* A2's expected tokens are computed with every scenario in a fresh forked process (`forkserver._fork_one`), but grading ran all hidden tests of a task in one pytest process. Class- or module-level state set by one test was therefore visible to the next.
+- Admission ("3× together and once alone") shows that this leak does not change the *reference's* outcomes in source order.
+- A completion can still differ from the reference in a way the docstring leaves open that shows only through leaked state. Example: `set_request_context(rid)` keeping the previous session instead of resetting it to `None`. Such a completion would fail H because of the runner, while it passes each test alone.
+
+**Fix:** `grade_hidden.py` and `eval_heldout.py` run every hidden test in its own pytest process (`admission.run_tests_isolated`, recorded as `isolation: per_test_process` in their outputs). This matches how the expectations were computed.
+- The H files are unchanged, so the accepted audit (Q1 judges the tests' assertions) still describes them. Admission already showed that every test passes alone on the reference.
+- P is graded as before: the historical protocol, all P tests in one process.
+- The audit-task grading is re-run under isolation before the freeze, to confirm that P∧H = P still holds there. The development A2/A3 results computed before this change used the shared process; they are re-run under isolation for the pilot report.
+- The fix applies to every task, not only post_223. A uniform rule needs no per-task judgment and costs one process per test.
+
+A regression test (`test_isolated_grading_does_not_leak_class_state`) shows the leak under the shared process and its absence under isolation.

@@ -1,0 +1,19 @@
+{
+ "decision": "H = A2",
+ "components": ["A2"],
+ "rule": "doc/extensions/protocol_freeze_decisions.md section 7 (unchanged), evaluated on the development tasks only",
+ "decided": "2026-11-26",
+ "decided_by": "researcher (verdicts on the condition 2 cases); AI pre-pass confirmed",
+ "conditions": {
+  "1_validity_non_inferiority": "not evaluated: condition 2 already fails",
+  "2_no_added_erroneous_rejection": {
+   "result": "FAIL",
+   "evidence": "results_tier2_ext/a3/dev_pilot/a2_vs_union.md: 3 development RQ2 completions (RCE_post_snippet_24 programs bf7b38, c185c8, f87dd8) pass P and A2 and fail A3 test_h_5; all 3 judged erroneous rejection (the test enforces one reading of an open specification, 'local path' with or without existence, and its outcome depends on the file system); the rule allows 0",
+   "controls": "no A3 test fails the validated private-rename control"
+  },
+  "3_incremental_detection": "gemma only at decision time: 2 tasks (csn_52, post_24) of the >= 3 required; not decisive",
+  "4_feasibility": "not evaluated: condition 2 already fails"
+ },
+ "a3_role": "RQ4c comparison arm only, never part of H (decisions 10.4)",
+ "notes": "qwen38 / qwen36 development runs (jobs 5392657, 5392658) complete the pilot report and cost figures; they cannot change this decision, because any further A3 rejection can only add to condition 2"
+}

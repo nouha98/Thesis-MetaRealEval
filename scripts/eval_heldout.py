@@ -141,11 +141,18 @@ def main(argv=None) -> int:
     def run(j):
         if not j["runnable"]:
             return {**j, "h_detected": None, "h_outcomes": None}
-        outs = run_tests_isolated(*j["args"], timeout_s=cfg.execution.timeout_s)   # one process per test (10.5)
-        return {**j, "h_detected": any(o != "ordinary_pass" for o in outs.values()), "h_outcomes": outs}
+        return {**j, "h_outcomes": run_tests_isolated(*j["args"], timeout_s=cfg.execution.timeout_s)}  # (10.5)
 
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        rows = [{k: v for k, v in r.items() if k != "args"} for r in ex.map(run, jobs)]
+        done = list(ex.map(run, jobs))
+    for r in done:                      # timed-out tests once more, alone and sequentially (load, 10.5)
+        timed = [n for n, o in (r["h_outcomes"] or {}).items() if o == "timeout"]
+        if timed:
+            r["timeout_rerun"] = run_tests_isolated(*r["args"][:3], timed, timeout_s=cfg.execution.timeout_s)
+            r["h_outcomes"] = {**r["h_outcomes"], **r["timeout_rerun"]}
+        if r["h_outcomes"] is not None:  # a timeout is never a detection (as the RQ1 suite veto)
+            r["h_detected"] = any(o not in ("ordinary_pass", "timeout") for o in r["h_outcomes"].values())
+    rows = [{k: v for k, v in r.items() if k != "args"} for r in done]
     res = {"authoritative": gated, "hidden": str(args.hidden), "witness": str(args.witness), "isolation": "per_test_process",
            "pins": pins, "populations": aggregate(rows), "rows": rows}
     args.out.parent.mkdir(parents=True, exist_ok=True)

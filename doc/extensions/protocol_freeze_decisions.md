@@ -620,3 +620,13 @@ A regression test (`test_isolated_grading_does_not_leak_class_state`) shows the 
 - *Passing on the reference shows repeatability, not correctness or environment independence.* Each run already uses a fresh temporary directory, but that does not help with absolute paths or real file-system state (post_24). Tasks whose reference uses the file system, the clock or randomness are tagged *environment-dependent* and reported separately.
 - *Naming.* The code's check name `reference_fails` means "the test does not pass on the reference". The name is kept, so the pilot records and later records stay consistent, and it is defined that way in the thesis text.
 - *Wording.* A3 is a bounded generate → check → repair loop (LLMutantKiller-style), not a tool-using agent (SWE-agent-style). The result is stated as "failed safety condition 2 on the development pilot (one task, three erroneous rejections)".
+
+**Timeouts under load (2026-11-26).** Two isolated re-grades of the audit tasks with the same code gave different results:
+- the first, on a loaded login node with 16 workers: 17 timeout-only H failures (csn_163 `test_h_0`, P-fail completions), H-pass 2,765;
+- the second: no timeout, H-pass 2,782.
+
+So the timeouts were caused by machine load, not by the completions. The clean run also confirms the isolation fix: 9 more completions pass H than in the shared-process run (2,782 vs 2,773), with 0 new failures. They were rejected only because of leaked state, and all are P-fails, so P∧H = P and the audit acceptance are unaffected.
+
+*Rule added before the freeze:* `grade_hidden` re-runs every timed-out hidden test once more, alone and sequentially after the parallel pass (`timeout_rerun` per row; `timeout_reruns` count), as the RQ2 evaluator does for whole-suite timeouts. A timeout that persists counts as an H failure and is reported separately (`h_fail_timeout_only`). Grading runs on compute nodes only.
+
+The same applies to held-out detection. `eval_heldout` re-runs timed-out tests once, alone and sequentially. A timeout that persists is **not a detection**, as in the RQ1 suite veto ("a timeout is never a kill"). Before this fix, any non-pass counted as a detection, so a load timeout could count as H detecting a fault. For completions a persisting timeout is an H failure, because the test did not pass, matching how P scores a completion. Both counts are reported separately.

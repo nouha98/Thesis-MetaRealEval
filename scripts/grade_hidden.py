@@ -82,26 +82,43 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
     rates = ec.read_json(baseline / "rq2" / "evaluate" / lab / "pass_rates.json", {})
     groups = build_solution_groups(lab, comps, rates, lambda c: bench.build_solution(task, c))
 
+    codes = {}
+
+    def finish(row, outs):
+        failing = [n for n, o in outs.items() if o != "ordinary_pass"]
+        row.update(h_pass=not failing, failing=failing, h_outcomes={n: outs[n] for n in failing})
+        return row
+
     def one(item):
         gid, g = item
         r = g["representative"]
-        code = bench.build_solution(task, comps[r["relation"]][r["model"]][r["index"]])
+        code = codes[gid] = bench.build_solution(task, comps[r["relation"]][r["model"]][r["index"]])
         outs = run_tests_isolated(task.module_name, code, h_code, names, timeout_s)   # one process per test (10.5)
-        failing = [n for n, o in outs.items() if o != "ordinary_pass"]
         p_pass = {m["stored_p_pass"] for m in g["members"]}
-        row = {"group_id": gid, "members": g["members"], "models": g["models"], "h_pass": not failing,
-               "failing": failing, "h_outcomes": {n: outs[n] for n in failing},
-               "p_pass": p_pass.pop() if len(p_pass) == 1 else None}
-        if row["p_pass"] and failing:
-            row["differences"], row["failure_kinds"] = differences(task.module_name, code, contract, tests, failing)
-            a3_failing = sorted(set(failing) - {t["name"] for t in tests})
+        return finish({"group_id": gid, "members": g["members"], "models": g["models"],
+                       "p_pass": p_pass.pop() if len(p_pass) == 1 else None}, outs)
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        rows = list(ex.map(one, groups.items()))
+    # a timeout under parallel load is a runner limit: re-run each timed-out test once, alone and sequentially
+    # (as the RQ2 evaluator does); a timeout that persists is an H failure, counted separately (10.5)
+    for row in rows:
+        timed = [n for n, o in row["h_outcomes"].items() if o == "timeout"]
+        if timed:
+            again = run_tests_isolated(task.module_name, codes[row["group_id"]], h_code, timed, timeout_s)
+            row["timeout_rerun"] = again
+            finish(row, {**{n: "ordinary_pass" for n in names}, **row["h_outcomes"], **again})
+
+    def explain(row):
+        if row["p_pass"] and row["failing"]:
+            code = codes[row["group_id"]]
+            row["differences"], row["failure_kinds"] = differences(task.module_name, code, contract, tests, row["failing"])
+            a3_failing = sorted(set(row["failing"]) - {t["name"] for t in tests})
             if a3_failing:                                 # free-form A3 property tests: no scenario to replay
                 row["differences"].update({n: ["A3 property test failed"] for n in a3_failing})
                 row["failure_kinds"] = sorted(set(row["failure_kinds"]) | {"a3_property"})
             row["code"] = code
-        return row
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        rows = list(ex.map(one, groups.items()))
+        list(ex.map(explain, rows))
     members = [(m, r) for r in rows for m in r["members"]]
     c = Counter()
     for m, r in members:
@@ -111,6 +128,7 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
         c["h_pass"] += r["h_pass"]
         c["p_and_h"] += bool(p) and r["h_pass"]
         c["p_pass_h_fail"] += bool(p) and not r["h_pass"]
+        c["timeout_reruns"] += "timeout_rerun" in r
         if not r["h_pass"] and set(r["h_outcomes"].values()) == {"timeout"}:
             c["h_fail_timeout_only"] += 1                   # a runner limit, not a verdict: reported separately
             c["p_pass_h_fail_timeout_only"] += bool(p)

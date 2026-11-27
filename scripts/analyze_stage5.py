@@ -99,7 +99,8 @@ def leaderboard(pt: dict, ph: dict, models: list[str]) -> dict:
     tasks = sorted({t for t, _ in pt})
     mean = lambda tab, m: rate([tab.get((t, m)) for t in tasks])  # noqa: E731
     def ranks(tab):                                  # 1 = best; tied models share the rank (method "min")
-        r = rankdata([-(mean(tab, m) or 0) for m in models], method="min")
+        # rounded: two equal scores summed in another order differ by ~1e-17 and must still tie
+        r = rankdata([-round(mean(tab, m) or 0, 12) for m in models], method="min")
         return {m: int(x) for m, x in zip(models, r)}
     rank_p, rank_ph = ranks(pt), ranks(ph)
     taus, changed, undefined, collapsed, tied_p, broken = [], 0, 0, 0, 0, 0

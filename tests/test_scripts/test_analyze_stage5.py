@@ -51,6 +51,14 @@ def test_collapse_to_tie_is_counted_not_dropped():
     assert lb["tau_b_tasks"] == 1 and lb["tau_b_mean"] == 1.0
 
 
+def test_equal_means_tie_despite_float_summation_order():
+    """0.1 + 0.2 + 0.3 != 0.3 + 0.2 + 0.1 in floats: equal scores must still share a rank."""
+    pt = {("T", "a"): 0.1, ("U", "a"): 0.2, ("V", "a"): 0.3, ("T", "b"): 0.3, ("U", "b"): 0.2, ("V", "b"): 0.1}
+    assert (0.1 + 0.2 + 0.3) != (0.3 + 0.2 + 0.1)
+    lb = s5.leaderboard(pt, dict(pt), ["a", "b"])
+    assert lb["rank_p"] == {"a": 1, "b": 1} and not lb["order_changed"]
+
+
 def test_cohort_comes_from_the_freeze_record(tmp_path):
     bundle = tmp_path / "hidden_v1"
     for lab in ("RCE_csn_snippet_1", "RCE_post_snippet_2", "RCE_post_snippet_9"):

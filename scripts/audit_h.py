@@ -31,6 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ext_common as ec  # noqa: E402
+import freeze_h  # noqa: E402
 
 N_TASKS, PER_TASK, B, SEED_BOOT = 20, 5, 2000, 20261124
 Q1 = ("valid", "over-specified", "invalid")
@@ -154,7 +155,10 @@ def review(cfg_path: Path, grading_path: Path, hidden: Path, audit_path: Path, o
     tasks, _ = ec.load_tasks(cfg, ungated)
     grading = json.loads(grading_path.read_text(encoding="utf-8"))
     audit = set(json.loads(audit_path.read_text(encoding="utf-8"))["tasks"])
-    spec = json.loads((ec.PROTOCOL_DIR / "output_spec_v1.json").read_text(encoding="utf-8"))["tasks"]
+    rec = freeze_h.verify(hidden)                    # the bundle is the frozen one; its version picks the spec shown
+    if grading.get("frozen_h_sha256") != rec["global_sha256"]:
+        raise SystemExit(f"ERROR: {grading_path} was not graded on the frozen H in {hidden} ({rec['version']})")
+    spec = json.loads((ec.PROTOCOL_DIR / freeze_h.SPECS[rec["version"]]).read_text(encoding="utf-8"))["tasks"]
     items, L = [], ["# Stage 5 validity review: P-pass/H-fail programs on the evaluation cohort (decisions 10.7)", "",
                     "Judge only against the **skeleton docstrings** and the contract, never the reference. Per program: "
                     "*true fault* (the completion breaks something the docstring states) / *erroneous rejection* (the "

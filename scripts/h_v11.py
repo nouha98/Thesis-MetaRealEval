@@ -33,6 +33,7 @@ from meta_real_eval.oracles.spec import type_family  # noqa: E402
 
 SPEC_V1 = ec.PROTOCOL_DIR / "output_spec_v1.json"
 SPEC_V11 = ec.PROTOCOL_DIR / "output_spec_v1_1.json"
+FIXB = ec.PROTOCOL_DIR / "output_spec_v1_1_fixb.json"      # Fix B decisions + verdicts, committed with the spec
 PROTOCOL_RETURNS = {"__str__": {"str"}, "__repr__": {"str"}, "__format__": {"str"}, "__len__": {"number"},
                     "__bool__": {"bool"}, "__hash__": {"number"}, "__bytes__": {"bytes"}}   # defined by the language
 _SEQ = {"List", "list", "Sequence", "MutableSequence", "Tuple", "tuple", "Deque", "deque"}
@@ -192,12 +193,26 @@ def types(args, cfg) -> int:
                       "Verdict (keep / none): ______", ""]
             rows.append(row)
     args.out.mkdir(parents=True, exist_ok=True)
+    items_path = args.out / "fixb_items.csv"
+    keep_verdicts = False
+    if items_path.is_file():                 # never overwrite the researcher's verdicts
+        with items_path.open(encoding="utf-8") as f:
+            old = list(csv.DictReader(f))
+        if any(r.get("verdict", "").strip() for r in old):
+            key = lambda rs: [(r["id"], r["task"], r["callable"]) for r in rs]  # noqa: E731
+            if key(old) != key(items):
+                raise SystemExit(f"ERROR: {items_path} holds verdicts for a different item list; move it away first")
+            keep_verdicts = True
     (args.out / "fixb.json").write_text(json.dumps(rows, indent=1), encoding="utf-8")
     (args.out / "fixb_sheet.md").write_text("\n".join(L) + "\n", encoding="utf-8")
-    with (args.out / "fixb_items.csv").open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["id", "task", "callable", "reference_family", "seen_in_stage5_review", "verdict"])
-        w.writeheader()
-        w.writerows(items)
+    if not keep_verdicts:
+        with items_path.open("w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=["id", "task", "callable", "reference_family", "seen_in_stage5_review",
+                                              "verdict"])
+            w.writeheader()
+            w.writerows(items)
+    else:
+        print(f"existing verdicts kept (same {len(items)} items): {items_path}")
     mech = [r for r in rows if r["decision"] != "review"]
     print(f"type entries: {len(rows)}; mechanical {len(mech)} (to none: {sum(r['decision'] == 'none' for r in mech)}); "
           f"blind review {len(items)} -> {args.out / 'fixb_sheet.md'}")
@@ -225,8 +240,14 @@ def spec_v11(args) -> int:
     spec["version"] = "output_spec_v1_1"
     spec["note"] = ("H v1.1 (decisions 10.8): output_spec_v1 with Fix B applied to every type entry an H v1 test asserts; "
                     "a labelled post-hoc correction")
+    from meta_real_eval.core.provenance import file_sha256
+    # the spec is derived from these two files: their hashes here, their content in the committed FIXB record
+    spec["sources"] = {"fixb.json": file_sha256(args.out / "fixb.json"),
+                       "fixb_items.csv": file_sha256(args.out / "fixb_items.csv"), "output_spec_v1.json": file_sha256(SPEC_V1)}
+    FIXB.write_text(json.dumps({"rows": rows, "verdicts": verdicts, "sources": spec["sources"]}, indent=1,
+                               ensure_ascii=False), encoding="utf-8")
     SPEC_V11.write_text(json.dumps(spec, indent=1, ensure_ascii=False), encoding="utf-8")
-    print(f"{len(rows)} entries checked, {changes} level change(s) -> {SPEC_V11}")
+    print(f"{len(rows)} entries checked, {changes} level change(s) -> {SPEC_V11} (+ {FIXB.name})")
     return 0
 
 

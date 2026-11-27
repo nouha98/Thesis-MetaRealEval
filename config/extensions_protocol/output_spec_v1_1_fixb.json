@@ -1,0 +1,1566 @@
+{
+ "rows": [
+  {
+   "task": "RCE_csn_snippet_108",
+   "callable": "all",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-1"
+  },
+  {
+   "task": "RCE_csn_snippet_115",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_142",
+   "callable": "get_project_template",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-2"
+  },
+  {
+   "task": "RCE_csn_snippet_147",
+   "callable": "hexdigest",
+   "defaulted": false,
+   "families": [
+    [
+     "none"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-3"
+  },
+  {
+   "task": "RCE_csn_snippet_151",
+   "callable": "to_dict",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-4"
+  },
+  {
+   "task": "RCE_csn_snippet_151",
+   "callable": "to_json",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-5"
+  },
+  {
+   "task": "RCE_csn_snippet_159",
+   "callable": "text",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-6"
+  },
+  {
+   "task": "RCE_csn_snippet_160",
+   "callable": "from_lines",
+   "defaulted": false,
+   "families": [
+    [
+     "object",
+     "snippet_160.SBVCueBlock"
+    ]
+   ],
+   "annotation": "'SBVCueBlock'",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['class:SBVCueBlock']; reference shows ['object/snippet_160.SBVCueBlock']"
+  },
+  {
+   "task": "RCE_csn_snippet_160",
+   "callable": "is_valid",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_csn_snippet_162",
+   "callable": "format_lines",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "typing.List[str]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_csn_snippet_162",
+   "callable": "from_lines",
+   "defaulted": false,
+   "families": [
+    [
+     "object",
+     "snippet_162.WebVTTCommentBlock"
+    ]
+   ],
+   "annotation": "'WebVTTCommentBlock'",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['class:WebVTTCommentBlock']; reference shows ['object/snippet_162.WebVTTCommentBlock']"
+  },
+  {
+   "task": "RCE_csn_snippet_162",
+   "callable": "is_valid",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_csn_snippet_163",
+   "callable": "format_lines",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "typing.List[str]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_csn_snippet_163",
+   "callable": "is_valid",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_csn_snippet_17",
+   "callable": "__str__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_172",
+   "callable": "get_things",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-7"
+  },
+  {
+   "task": "RCE_csn_snippet_178",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_178",
+   "callable": "__str__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_184",
+   "callable": "encode",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-8"
+  },
+  {
+   "task": "RCE_csn_snippet_193",
+   "callable": "__str__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_193",
+   "callable": "flags2text",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-9"
+  },
+  {
+   "task": "RCE_csn_snippet_193",
+   "callable": "to_dict",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-10"
+  },
+  {
+   "task": "RCE_csn_snippet_199",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_2",
+   "callable": "measure_words_matched",
+   "defaulted": false,
+   "families": [
+    [
+     "number"
+    ]
+   ],
+   "annotation": "float",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['number']; reference shows ['number']"
+  },
+  {
+   "task": "RCE_csn_snippet_217",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_217",
+   "callable": "__str__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_218",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_220",
+   "callable": "from_dict",
+   "defaulted": false,
+   "families": [
+    [
+     "object",
+     "snippet_220.RateLimitsInfo"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-11"
+  },
+  {
+   "task": "RCE_csn_snippet_220",
+   "callable": "from_headers",
+   "defaulted": false,
+   "families": [
+    [
+     "object",
+     "snippet_220.RateLimitsInfo"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-12"
+  },
+  {
+   "task": "RCE_csn_snippet_240",
+   "callable": "payload",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-13"
+  },
+  {
+   "task": "RCE_csn_snippet_241",
+   "callable": "payload",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-14"
+  },
+  {
+   "task": "RCE_csn_snippet_274",
+   "callable": "has_object_permission",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-15"
+  },
+  {
+   "task": "RCE_csn_snippet_274",
+   "callable": "has_permission",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-16"
+  },
+  {
+   "task": "RCE_csn_snippet_280",
+   "callable": "field",
+   "defaulted": false,
+   "families": [
+    [
+     "none"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-17"
+  },
+  {
+   "task": "RCE_csn_snippet_280",
+   "callable": "record_cls",
+   "defaulted": false,
+   "families": [
+    [
+     "none"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-18"
+  },
+  {
+   "task": "RCE_csn_snippet_51",
+   "callable": "__call__",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-19"
+  },
+  {
+   "task": "RCE_csn_snippet_53",
+   "callable": "__call__",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-20"
+  },
+  {
+   "task": "RCE_csn_snippet_6",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_7",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_8",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_csn_snippet_84",
+   "callable": "to_xml",
+   "defaulted": false,
+   "families": [
+    [
+     "object",
+     "xml.etree.ElementTree.Element"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-21"
+  },
+  {
+   "task": "RCE_csn_snippet_9",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_112",
+   "callable": "check_for_reset_command",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_post_snippet_132",
+   "callable": "export_json",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_134",
+   "callable": "export_json",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_141",
+   "callable": "enhance_ambiguous_framing",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_141",
+   "callable": "enhance_constraint_confusion",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_141",
+   "callable": "enhance_goal_drift",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_141",
+   "callable": "enhance_priority_shifting",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_141",
+   "callable": "enhance_scope_expansion",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_142",
+   "callable": "enhance_machine_identity",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_142",
+   "callable": "enhance_maintenance_mode",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_142",
+   "callable": "enhance_trusted_integration",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_153",
+   "callable": "are_mutually_exclusive",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_post_snippet_153",
+   "callable": "process_line",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "tuple",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_post_snippet_154",
+   "callable": "contains_shell_operators",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_post_snippet_154",
+   "callable": "is_shell_control_end",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_post_snippet_154",
+   "callable": "is_shell_control_start",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_post_snippet_155",
+   "callable": "contains_assignment",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_post_snippet_155",
+   "callable": "get_conditional_indent_level",
+   "defaulted": false,
+   "families": [
+    [
+     "number"
+    ]
+   ],
+   "annotation": "int",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['number']; reference shows ['number']"
+  },
+  {
+   "task": "RCE_post_snippet_155",
+   "callable": "is_conditional_directive",
+   "defaulted": false,
+   "families": [
+    [
+     "bool"
+    ]
+   ],
+   "annotation": "bool",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['bool']; reference shows ['bool']"
+  },
+  {
+   "task": "RCE_post_snippet_165",
+   "callable": "get_searched_queries",
+   "defaulted": false,
+   "families": [
+    [
+     "set"
+    ]
+   ],
+   "annotation": "List[str]",
+   "basis": "annotation",
+   "decision": "none",
+   "reason": "annotation allows ['seq']; reference shows ['set']"
+  },
+  {
+   "task": "RCE_post_snippet_165",
+   "callable": "get_visited_urls",
+   "defaulted": false,
+   "families": [
+    [
+     "set"
+    ]
+   ],
+   "annotation": "List[str]",
+   "basis": "annotation",
+   "decision": "none",
+   "reason": "annotation allows ['seq']; reference shows ['set']"
+  },
+  {
+   "task": "RCE_post_snippet_167",
+   "callable": "get_aggregated_stats",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, float]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_167",
+   "callable": "update",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, float]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_173",
+   "callable": "now_ns",
+   "defaulted": false,
+   "families": [
+    [
+     "number"
+    ]
+   ],
+   "annotation": "int",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['number']; reference shows ['number']"
+  },
+  {
+   "task": "RCE_post_snippet_173",
+   "callable": "now_s",
+   "defaulted": false,
+   "families": [
+    [
+     "number"
+    ]
+   ],
+   "annotation": "float",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['number']; reference shows ['number']"
+  },
+  {
+   "task": "RCE_post_snippet_185",
+   "callable": "get_count",
+   "defaulted": false,
+   "families": [
+    [
+     "number"
+    ]
+   ],
+   "annotation": "int",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['number']; reference shows ['number']"
+  },
+  {
+   "task": "RCE_post_snippet_185",
+   "callable": "get_top_k",
+   "defaulted": false,
+   "families": [
+    [
+     "set"
+    ]
+   ],
+   "annotation": "Set[str]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['set']; reference shows ['set']"
+  },
+  {
+   "task": "RCE_post_snippet_19",
+   "callable": "clean_markdown",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_218",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_218",
+   "callable": "__str__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_218",
+   "callable": "value",
+   "defaulted": false,
+   "families": [
+    [
+     "none"
+    ]
+   ],
+   "annotation": "str | None",
+   "basis": "annotation",
+   "decision": "none",
+   "reason": "annotation allows ['none', 'str']; reference shows ['none']; several kinds allowed: a one-kind assertion over-specifies"
+  },
+  {
+   "task": "RCE_post_snippet_219",
+   "callable": "get_stats",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_22",
+   "callable": "analyze_document_type",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "Tuple[str, float]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_post_snippet_22",
+   "callable": "detect_segmentation_strategy",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_225",
+   "callable": "preserve_calculation_precision",
+   "defaulted": false,
+   "families": [
+    [
+     "number"
+    ]
+   ],
+   "annotation": "float",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['number']; reference shows ['number']"
+  },
+  {
+   "task": "RCE_post_snippet_225",
+   "callable": "validate_system_precision",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_226",
+   "callable": "format_currency",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_227",
+   "callable": "get_preview",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-22"
+  },
+  {
+   "task": "RCE_post_snippet_23",
+   "callable": "extract_github_urls",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "List[str]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_post_snippet_23",
+   "callable": "infer_repo_name",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_249",
+   "callable": "from_dict",
+   "defaulted": false,
+   "families": [
+    [
+     "object",
+     "snippet_249.Message"
+    ]
+   ],
+   "annotation": "'Message'",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['class:Message']; reference shows ['object/snippet_249.Message']"
+  },
+  {
+   "task": "RCE_post_snippet_249",
+   "callable": "to_dict",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, str]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_255",
+   "callable": "agent_health_key",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_255",
+   "callable": "alerts_key",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_255",
+   "callable": "ports_key",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_255",
+   "callable": "processes_key",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_255",
+   "callable": "vulnerabilities_key",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_256",
+   "callable": "analyze_prompt",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_264",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_285",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_286",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": "str",
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_295",
+   "callable": "filter_by_keywords",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "List[Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_post_snippet_295",
+   "callable": "filter_by_roles",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, List[Any]]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_295",
+   "callable": "select_by_names",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "List[Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_post_snippet_305",
+   "callable": "build_default_components",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_305",
+   "callable": "create_action",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_312",
+   "callable": "search_notes",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "List[Dict[str, Any]]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_post_snippet_340",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_341",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_342",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_343",
+   "callable": "__repr__",
+   "defaulted": false,
+   "families": [
+    [
+     "str"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['str']; reference shows ['str']"
+  },
+  {
+   "task": "RCE_post_snippet_346",
+   "callable": "extract_target_info",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "tuple[Optional[str], bool]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_post_snippet_346",
+   "callable": "normalize_event_data",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": "Dict[str, Any]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['map']; reference shows ['map']"
+  },
+  {
+   "task": "RCE_post_snippet_374",
+   "callable": "__len__",
+   "defaulted": false,
+   "families": [
+    [
+     "number"
+    ]
+   ],
+   "annotation": null,
+   "basis": "protocol",
+   "decision": "type",
+   "reason": "protocol allows ['number']; reference shows ['number']"
+  },
+  {
+   "task": "RCE_post_snippet_374",
+   "callable": "get_channel",
+   "defaulted": false,
+   "families": [
+    [
+     "map"
+    ]
+   ],
+   "annotation": null,
+   "basis": null,
+   "decision": "review",
+   "item": "B-23"
+  },
+  {
+   "task": "RCE_post_snippet_41",
+   "callable": "create_header",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "list[str]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  },
+  {
+   "task": "RCE_post_snippet_42",
+   "callable": "create_full_screen_layout",
+   "defaulted": false,
+   "families": [
+    [
+     "seq"
+    ]
+   ],
+   "annotation": "list[str]",
+   "basis": "annotation",
+   "decision": "type",
+   "reason": "annotation allows ['seq']; reference shows ['seq']"
+  }
+ ],
+ "verdicts": {
+  "B-1": "keep",
+  "B-2": "none",
+  "B-3": "none",
+  "B-4": "keep",
+  "B-5": "keep",
+  "B-6": "keep",
+  "B-7": "keep",
+  "B-8": "keep",
+  "B-9": "keep",
+  "B-10": "keep",
+  "B-11": "keep",
+  "B-12": "keep",
+  "B-13": "keep",
+  "B-14": "keep",
+  "B-15": "keep",
+  "B-16": "keep",
+  "B-17": "none",
+  "B-18": "none",
+  "B-19": "keep",
+  "B-20": "keep",
+  "B-21": "keep",
+  "B-22": "keep",
+  "B-23": "keep"
+ },
+ "sources": {
+  "fixb.json": "b1c74035daacebaa65c9e8fea5ab4674d963ec89f7073abeaa7a308ed0914569",
+  "fixb_items.csv": "82624d6647bc89da8ca03bc46dfad54e7a28e24845fe501c6dbd47d6d32a44c9",
+  "output_spec_v1.json": "cca25fec3e3a91d19ef279c1187be677eda8222589bdf6bea9a6c1429058d48d"
+ }
+}

@@ -866,7 +866,7 @@ The exception rule explains little of the drop. Causes A and B explain most of i
 **Stage 5 under H v1.1 (2026-11-27; frozen `tier2-hidden-v1.1`, commit 1d42220; `results_tier2_ext/stage5_v1_1/`).** The build kept all 386 tests on the 75 tasks (0 dropped). The 14 tasks whose assertions became weaker are the ones Fix A or Fix B touches. Only the aggregate report has been viewed; no v1.1 case has been opened.
 - P pass 2,374 (unchanged); P∧H pass 2,312; **P-pass/H-fail 62** (2.6% of P-pass; v1: 778, 32.8%), on **4 tasks**: csn_220, csn_82, post_223, post_68. The other five v1 tasks (csn_119, csn_120, csn_147, csn_240, post_165) have none left.
 - Failure kinds of the 62: stopped earlier 31, unexpected exception 25, value 6. 56 are exception-caused (cluster C). All 6 value cases are outside the `original` relation.
-- pass@1 drop (`original`, P − P∧H): gemma 0.002 [0.000, 0.006], qwen36 0.004 [0.000, 0.011], qwen38 0.015 [0.000, 0.044] (v1: 0.073 to 0.106).
+- pass@1 drop (`original`, P − P∧H): gemma 0.002 [0.000, 0.006], qwen36 0.004 [0.000, 0.011], qwen38 0.015 [0.000, 0.044] (v1: 0.075 to 0.106).
 - Cluster C sensitivity (`original`): with the exception-caused rejections counted as passes, P∧H = P for every model. Under v1.1, everything H adds to P on the `original` relation is a completion that raises or stops where the reference does not.
 - Ranking: qwen36 is first under P and under P∧H. The gemma–qwen38 order is not established under either (gap −0.013 [−0.093, +0.071] under P; 0.000 [−0.073, +0.076] under P∧H).
 - Timeout-only H failures: 0.
@@ -874,3 +874,33 @@ The exception rule explains little of the drop. Causes A and B explain most of i
 Whether the 62 are true faults or invalid inputs (an input outside the documented contract, where the reference happens not to raise) is what the pre-registered v1.1 review decides.
 
 **Two tooling fixes before the v1.1 review (no effect on any grading).** `analyze_stage5.py` rounds the mean scores to 12 decimals before ranking: two equal means summed in another order differ by about 1e-17, and the report showed a gemma/qwen38 rank change with a gap of +0.0000. `audit_h.py review` checks the bundle against its freeze record and the grading against that record's digest, and it shows the R7 levels of the bundle's own spec (`output_spec_v1_1.json` for v1.1; it always showed v1's before). The v1 review sheet was built on v1, so it is not affected.
+
+**Review of H v1.1 (2026-11-27; `results_tier2_ext/stage5_v1_1/review/`, seed tag `stage5-review-v1.1`).** The pre-registered rule drew 19 programs on the 4 tasks. The AI pre-pass was checked and accepted item by item by the researcher: **9 erroneous rejection, 10 unclear, 0 true fault.**
+- *Not fully a fresh sample.* On csn_220 (2 programs), csn_82 (1) and post_223 (6), every program was drawn, so these 9 are the same programs as in the v1 review. They were judged the same way as in v1. Only the 10 post_68 programs are new (none of them was in the v1 sample).
+- *The patterns:*
+  - csn_82 `relevant_part('', 442)`: a position past the end of the string, which the docstring leaves undefined. Erroneous rejection.
+  - post_68, 8 programs: `AgentState({'': ...})` is rejected because the empty key is treated as invalid. `set` documents "ValueError if key is invalid" and does not define invalid. Erroneous rejection.
+  - post_68, 2 programs: `get('')` raises, while `get` documents no exception and "None if not found". Unclear.
+  - post_223, 6 programs: after `set_request_context(id)` without a session, the old session id is kept, where H expects None. Unclear: the docstring does not say whether a new request context clears the session.
+  - csn_220, 2 programs: the completion adds a required-argument `__init__`, so `RateLimitsInfo()` fails. The skeleton shows no `__init__`, but construction is not documented. Kept unclear as in v1. Calling these true faults would be a post-hoc change in H's favour; the upper and lower bounds below cover both readings.
+- *Estimate (`estimates.json`):*
+  - erroneous share among the P-pass/H-fail programs, unclear counted as a true fault: **0.683**, task-cluster bootstrap [0.0, 0.804] (4 clusters only);
+  - with unclear counted as erroneous: **1.0**;
+  - Clopper–Pearson on the unweighted counts: 9/19 [0.244, 0.711] and 19/19 [0.824, 1.0]. The weighted point lies near the upper end of the unweighted interval because the post_68 items carry weight 4.4;
+  - weighted by completions: 0.729 (lower) and 1.0 (upper);
+  - section 6's limit (≤ 10%, upper ≤ 25%) is exceeded.
+
+**H v1 and H v1.1 side by side (evaluation cohort, 55 tasks, `original` relation unless stated).**
+
+| | H v1 (primary) | H v1.1 (post-hoc sensitivity) |
+|---|---|---|
+| P-pass/H-fail completions (all relations) | 778 (32.8% of P-pass), 9 tasks | 62 (2.6%), 4 tasks |
+| exception-caused among them | 56 | 56 |
+| pass@1 drop P − P∧H | 0.075 to 0.106 | 0.002 to 0.015 (every CI includes 0) |
+| drop with exception-caused counted as passes | 0.073 to 0.091 | 0 |
+| reviewed programs | 49 on 9 tasks | 19 on 4 tasks (9 shared with v1) |
+| verdicts | 39 erroneous, 10 unclear, 0 true fault | 9 erroneous, 10 unclear, 0 true fault |
+| erroneous share, lower / upper | 0.854 / 1.0 | 0.683 / 1.0 |
+| order of the three models | qwen36 first; under P∧H gemma ahead of qwen38 (0.200 vs 0.182) | qwen36 first; gemma and qwen38 tied under P∧H (gap 0.000 [−0.073, +0.076]) |
+
+**What is concluded.** Neither version gives evidence that H finds faults that P misses on the evaluation cohort. No program in either sample was judged a true fault; the unclear programs (10 in each) are the only candidates. Under v1, nearly all of the drop is H rejecting acceptable completions. Under v1.1, that drop is almost entirely gone. What remains is small, at least two thirds erroneous by the lower bound, and, on the `original` relation, entirely exception-caused. As pre-registered, v1 stays the primary result and is reported as not validated; v1.1 is the last revision, and no v1.2 follows. For the thesis: on this benchmark, a reference-differential hidden suite either over-specifies (v1) or, once restricted to the specified outputs, adds almost nothing to P (v1.1).

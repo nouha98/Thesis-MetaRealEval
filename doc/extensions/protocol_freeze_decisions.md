@@ -726,3 +726,46 @@ Two review concerns were checked and found not to be bugs, and tests now cover t
 - *The changes in the other direction, from the final files:* eight solution groups (9 completions) were H-fail under the shared-process runner (`round1/grading.json`) and H-pass under isolation (`round1/grading_isolated.json`, commit 5af11da). All are on RCE_csn_snippet_163 and all are P-fail. Group-id prefixes: 004eb66b87 (2 completions), 0256cabd57, 045444bb44, 0724499dde, 09681b0c8c, 098386a63f, 0a3742189e, 1145887f05. This accounts for the 9-completion difference (2,782 vs 2,773). These completions were rejected only because of state leaked from earlier tests.
 - *Tag:* `tier2-hidden-v1` was first created on 5af11da, the commit before the freeze record. It was moved to 4e4e8ce, the commit that adds `hidden_v1_freeze.json`, and verified on freia (`freeze_h.py verify`: OK, 75 tasks, bf0ec5d2…).
 - *Stage 5 job 5397170 failed at start* (`source: not found`: `sbatch --wrap` runs `/bin/sh`) and produced no output. So no Stage 5 output existed before the section 10.6 commit, and the Stage 5 grading runs after it.
+
+### 10.7 Stage 5 first results and the post-freeze validity review (2026-11-27)
+
+**Run.** Grading job 5397182 (frozen H v1 `bf0ec5d2…`, isolated runner with the timeout re-run), followed by `analyze_stage5.py`. Only the aggregate report has been viewed so far; no individual P-pass/H-fail case has been opened.
+
+**Aggregate (cohort of 55 tasks, 8,070 completions, all relations):**
+- P pass 2,374; P∧H pass 1,596; **P-pass/H-fail 778** (32.8% of P-pass), on **9 tasks**: csn_119, csn_120, csn_147, csn_220, csn_240, csn_82, post_165, post_223, post_68.
+- Failure kinds: value 456, type 266, unexpected exception 25 (exception-only 25), stopped earlier 31. No timeout-only case; 0 completions without a P verdict.
+- 28 tasks have at least one P-passing completion (26 in `original`).
+- pass@1 (`original`), P vs P∧H:
+  - gemma 0.275 → 0.200 (−0.075 [0.018, 0.147]);
+  - qwen36 0.356 → 0.262 (−0.095 [0.022, 0.171]);
+  - qwen38 0.287 → 0.182 (−0.106 [0.033, 0.189]).
+- Ranks: P qwen36 > qwen38 > gemma; P∧H qwen36 > gemma > qwen38.
+
+**Corrections to the analysis made after this report was seen (labelled as such).**
+1. *τ_b "below 1" count:* the report said "mean 1.0, below 1 on 5", which is impossible. `kendalltau` returns 1 − ε for identical rankings, so the comparison now uses a 1e-9 tolerance. No τ value changes; only the count does.
+2. *Pairwise model gaps with intervals:* the plan asks for the leaderboard "with n and intervals", and a rank change between two close models (gemma 0.200 vs qwen38 0.182 under P∧H) cannot be read without them. Every model pair's mean score gap under P and under P∧H is now reported, paired by task, with a task-cluster bootstrap interval. It is an addition, and no earlier number changes.
+
+**Why a further review is needed.** The audit's Q2 (erroneous rejection) was empty, because the 20 audit tasks had no P-pass/H-fail case (section 10.3). The accepted audit therefore says nothing about whether these 778 rejections are real faults. Q1 judged sampled tests on the audit tasks only, not on these 9 tasks. Until reviewed, the 778 are operational disagreements between P and H (D7), not confirmed faults. H is not changed whatever the review finds: it measures H, it does not tune it.
+
+**Post-freeze validity review (pre-registered here, before any case is opened).**
+- *Population:* every P-pass/H-fail solution group (program) on the 55 cohort tasks.
+- *Sample:* per task, a seeded random min(10, n) of its programs (`audit_h.review_sample`: ids sorted, `random.Random(sha256(f"{seed}|stage5-review|{task}"))`, seed = the extension seed). At most 90 programs on 9 tasks.
+- *Verdict per program*, against the skeleton docstrings and the contract only, never the reference: true fault / erroneous rejection / unclear.
+- *Estimates* (`audit_h.py estimate`):
+  - the erroneous share among P-pass/H-fail programs, as a ratio estimate weighted by n/k per task, with a task-cluster bootstrap (B = 2,000) and a Clopper–Pearson interval on the counts;
+  - *unclear* bounded both ways;
+  - the same estimate weighted by completions.
+- *Reading:*
+  - against section 6's limits (erroneous ≤ 10% point, ≤ 25% upper bound);
+  - within the limits: P-pass/H-fail is reported as H rejections that are mostly real faults, with the estimate and interval;
+  - beyond the limits: the Stage 5 drop is reported as not validated (H rejects many acceptable completions), and the P vs P∧H numbers are shown only with the correction bounds (P∧H with the estimated erroneous rejections added back).
+- *Reported in any case:* per-task results (the 778 are concentrated on 9 tasks, so the bootstrap has only 9 clusters and its interval is wide), the failure kinds of the sampled programs, and the review counts.
+
+**A3 development pilot, all three models (2026-11-27; qwen36 rerun on an H200, job 5397181).**
+- Each model has 7 targets. gemma and qwen38 admitted 7 of 7; qwen36 admitted 6 of 7 (post_64 2 of 3). That makes 20 A3 tests: csn_52 9, post_24 3, post_64 8.
+- Condition 2: **15** extra rejections, all on post_24; every model wrote a post_24 test of the same kind.
+- Condition 3: still 2 tasks (csn_52, post_24). No model's test detects a post_64 held-out group.
+- Cost per target: gemma 4.1k tokens, about 600 s (gateway); qwen36 10.5k tokens, about 62 s; qwen38 7.5k tokens, about 82 s.
+- 112 evaluation targets projected.
+
+The section 7 decision (H = A2) stands; with all three models, condition 3 would also fail.

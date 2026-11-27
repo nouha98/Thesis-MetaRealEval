@@ -135,6 +135,70 @@ def sheet(cfg_path: Path, a2: Path, out: Path, ungated: bool) -> int:
     return 0
 
 
+REVIEW_PER_TASK, REVIEW_TAG = 10, "stage5-review"
+
+
+def review_sample(rows: list[dict], label: str, seed: int, k: int = REVIEW_PER_TASK) -> list[dict]:
+    """Random min(k, n) of a task's P-pass/H-fail programs (decisions 10.7): seeded per task, ids sorted first."""
+    bad = sorted((r for r in rows if r["p_pass"] and not r["h_pass"]), key=lambda r: r["group_id"])
+    rng = random.Random(int(hashlib.sha256(f"{seed}|{REVIEW_TAG}|{label}".encode()).hexdigest()[:16], 16))
+    return rng.sample(bad, min(k, len(bad)))
+
+
+def review(cfg_path: Path, grading_path: Path, hidden: Path, audit_path: Path, out: Path, ungated: bool) -> int:
+    """Post-freeze validity review of Stage 5 (decisions 10.7): the cohort's P-pass/H-fail programs, Q2 verdicts."""
+    cfg = ec.load_ext_config(cfg_path)
+    tasks, _ = ec.load_tasks(cfg, ungated)
+    grading = json.loads(grading_path.read_text(encoding="utf-8"))
+    audit = set(json.loads(audit_path.read_text(encoding="utf-8"))["tasks"])
+    spec = json.loads((ec.PROTOCOL_DIR / "output_spec_v1.json").read_text(encoding="utf-8"))["tasks"]
+    items, L = [], ["# Stage 5 validity review: P-pass/H-fail programs on the evaluation cohort (decisions 10.7)", "",
+                    "Judge only against the **skeleton docstrings** and the contract, never the reference. Per program: "
+                    "*true fault* (the completion breaks something the docstring states) / *erroneous rejection* (the "
+                    "completion is acceptable; H asserts unspecified or reference-specific behaviour) / *unclear*.", "",
+                    "Write the verdicts in `items.csv` (column `verdict`).", ""]
+    for t in sorted(grading["tasks"], key=lambda t: t["task"]):
+        lab = t["task"]
+        if lab in audit:
+            continue
+        n_bad = [r for r in t["rows"] if r["p_pass"] and not r["h_pass"]]
+        if not n_bad:
+            continue
+        chosen = review_sample(t["rows"], lab, cfg.extensions.seed)
+        tests = {x["name"]: x for x in json.loads((hidden / lab / "a2.json").read_text(encoding="utf-8"))["final_tests"]}
+        L += [f"## {lab}: {len(n_bad)} program(s) ({sum(len(r['members']) for r in n_bad)} completions); "
+              f"{len(chosen)} sampled", "", "<details><summary>skeleton (what the models saw)</summary>", "",
+              "```python", tasks[lab].prompt.strip(), "```", "", "</details>", "",
+              f"R7 levels: `{json.dumps(spec.get(lab, {}).get('levels', {}))}`", ""]
+        for r in chosen:
+            iid = f"R-{len(items) + 1}"
+            first = r["failing"][0]
+            items.append({"id": iid, "question": "Q2", "task": lab, "item": f"{r['group_id']}:{first}",
+                          "weight": len(n_bad) / len(chosen), "completions": len(r["members"]), "verdict": "",
+                          "failure_kinds": ";".join(r.get("failure_kinds", []))})
+            L += [f"### {iid}: program {r['group_id'][:12]} ({len(r['members'])} completions; {', '.join(r['models'])})",
+                  "", f"Failing tests: {', '.join(r['failing'])}; failure kinds: {', '.join(r.get('failure_kinds', []))}", ""]
+            tt = tests.get(first)
+            if tt:
+                L += [f"First failing test `{first}` (what H asserts):", "", "| step | asserted |", "|---|---|"]
+                for k, st in enumerate(tt["steps"]):
+                    exp = tt["expected"].get(f"api:s{k}")
+                    L.append(f"| `{st['src'][:160]}` | {show_token(exp) if exp else '-'} |")
+                L.append("")
+            L += ["Differences on replay: " + "; ".join(r.get("differences", {}).get(first, [])[:3]), "",
+                  "<details><summary>completion</summary>", "", "```python", r.get("code", ""), "```", "", "</details>",
+                  "", "Verdict (true fault / erroneous rejection / unclear): ______", ""]
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "sheet.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+    with (out / "items.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["id", "question", "task", "item", "weight", "completions", "failure_kinds",
+                                          "verdict"])
+        w.writeheader()
+        w.writerows(items)
+    print(f"review: {len(items)} program(s) on {len({i['task'] for i in items})} task(s) -> {out / 'sheet.md'}")
+    return 0
+
+
 def ratio(rows: list[dict], hit) -> float | None:
     den = sum(r["w"] for r in rows)
     return sum(r["w"] for r in rows if hit(r["v"])) / den if den else None
@@ -180,6 +244,10 @@ def estimate(out: Path) -> int:
                     ("Q2", {"erroneous_unclear_as_fault": lambda v: v == "erroneous rejection",
                             "erroneous_unclear_as_erroneous": lambda v: v in ("erroneous rejection", "unclear")})):
         rows = [{"task": i["task"], "w": float(i["weight"]), "v": i["verdict"].strip()} for i in items if i["question"] == q]
+        if q == "Q2" and items and "completions" in items[0]:      # Stage 5 review: also weighted by completions
+            cw = [{"task": i["task"], "w": float(i["weight"]) * int(i["completions"]), "v": i["verdict"].strip()}
+                  for i in items if i["question"] == q]
+            res["Q2_completion_weighted"] = {k: {"point": ratio(cw, h), "ci95": boot(cw, h)} for k, h in hits.items()}
         res[q] = {"n_items": len(rows), "n_tasks": len({r["task"] for r in rows}),
                   "verdicts": dict(Counter(r["v"] for r in rows)),
                   **{k: {"point": ratio(rows, h), "ci95": boot(rows, h), "exact": exact_ci(rows, h)}
@@ -188,6 +256,12 @@ def estimate(out: Path) -> int:
     err = res["Q2"]["erroneous_unclear_as_erroneous"]          # conservative bound for the acceptance rule
     ok1 = inv["point"] is not None and inv["point"] <= 0.05 and inv["ci95"][1] <= 0.15
     ok2 = err["point"] is None or (err["point"] <= 0.10 and err["ci95"][1] <= 0.25)
+    if res["Q1"]["n_items"] == 0:                     # Stage 5 review (10.7): Q2 only, read against section 6's limits
+        res["acceptance"] = {"invalid_ok": None, "erroneous_ok": ok2, "accepted": None,
+                             "note": "Q2-only review: erroneous_ok uses the section 6 limits (point <= 10%, upper <= 25%)"}
+        (out / "estimates.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
+        print(json.dumps(res, indent=1))
+        return 0
     res["acceptance"] = {"invalid_ok": ok1, "erroneous_ok": ok2, "accepted": ok1 and ok2,
                          "note": "Q2 with no P-pass/H-fail pair is vacuous (n = 0) and reported as such" if err["point"] is None else None}
     (out / "estimates.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
@@ -197,12 +271,17 @@ def estimate(out: Path) -> int:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("cmd", choices=["select", "sheet", "estimate"])
+    ap.add_argument("cmd", choices=["select", "sheet", "estimate", "review"])
     ap.add_argument("--config", type=Path)
     ap.add_argument("--a2", type=Path)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--ungated", action="store_true")
+    ap.add_argument("--grading", type=Path, help="review: the Stage 5 grading.json")
+    ap.add_argument("--hidden", type=Path, help="review: the frozen H bundle")
+    ap.add_argument("--audit", type=Path, help="review: audit_reserved.json (excluded)")
     args = ap.parse_args(argv)
+    if args.cmd == "review":
+        return review(args.config, args.grading, args.hidden, args.audit, args.out, args.ungated)
     if args.cmd == "select":
         return select(args.a2, args.out)
     if args.cmd == "sheet":

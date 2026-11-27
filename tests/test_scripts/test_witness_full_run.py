@@ -233,3 +233,14 @@ def test_a3_precheck_keeps_only_a2_missed_primary_dev_groups():
             {"task": "D", "h_detected": None, "populations": ["primary/generated"]}]
     assert pc.missed_groups(rows, {"D"}) == [rows[0]]
 
+
+
+def test_stage5_review_sample_is_seeded_random_and_bounded():
+    import audit_h as ah
+    rows = [{"group_id": f"g{i:02d}", "p_pass": i % 4 != 0, "h_pass": i % 3 == 0, "members": [{}]} for i in range(40)]
+    bad = {r["group_id"] for r in rows if r["p_pass"] and not r["h_pass"]}
+    a = ah.review_sample(rows, "T1", 7)
+    assert len(a) == min(ah.REVIEW_PER_TASK, len(bad)) and {r["group_id"] for r in a} <= bad
+    assert [r["group_id"] for r in a] == [r["group_id"] for r in ah.review_sample(list(reversed(rows)), "T1", 7)]
+    assert [r["group_id"] for r in a] != [r["group_id"] for r in ah.review_sample(rows, "T2", 7)]
+    assert len(ah.review_sample(rows[:3], "T1", 7)) == len([r for r in rows[:3] if r["p_pass"] and not r["h_pass"]])

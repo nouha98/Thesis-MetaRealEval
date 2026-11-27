@@ -72,6 +72,26 @@ def boot_diff(pt: dict, ph: dict, model: str) -> dict:
             "diff_ci95": [vals[int(0.025 * B)], vals[int(0.975 * B) - 1]]}
 
 
+def gap(tab: dict, a: str, b: str, tasks: list[str]) -> dict:
+    """Mean over tasks of score(a) - score(b), with a task-cluster bootstrap interval (paired by task)."""
+    ts = [t for t in tasks if tab.get((t, a)) is not None and tab.get((t, b)) is not None]
+    if not ts:
+        return {"tasks": 0}
+    d = {t: tab[(t, a)] - tab[(t, b)] for t in ts}
+    rng, vals = random.Random(SEED), []
+    for _ in range(B):
+        s = [d[rng.choice(ts)] for _ in ts]
+        vals.append(sum(s) / len(s))
+    vals.sort()
+    return {"tasks": len(ts), "gap": sum(d.values()) / len(ts), "ci95": [vals[int(0.025 * B)], vals[int(0.975 * B) - 1]]}
+
+
+def pairwise(pt: dict, ph: dict, models: list[str], tasks: list[str]) -> dict:
+    """Every model pair's score gap under P and under P∧H: whether an order is established at all."""
+    return {f"{a} - {b}": {"p": gap(pt, a, b, tasks), "p_and_h": gap(ph, a, b, tasks)}
+            for i, a in enumerate(models) for b in models[i + 1:]}
+
+
 def leaderboard(pt: dict, ph: dict, models: list[str]) -> dict:
     tasks = sorted({t for t, _ in pt})
     mean = lambda tab, m: rate([tab.get((t, m)) for t in tasks])  # noqa: E731
@@ -99,7 +119,9 @@ def leaderboard(pt: dict, ph: dict, models: list[str]) -> dict:
             "mean_score_p": {m: mean(pt, m) for m in models}, "mean_score_p_and_h": {m: mean(ph, m) for m in models},
             "tasks_with_changed_scores": changed, "tau_b_tasks": len(taus), "tau_b_missing_scores": undefined,
             "ranking_collapsed_to_tie": collapsed, "tied_under_p": tied_p, "tie_broken_by_h": broken,
-            "tau_b_mean": sum(taus) / len(taus) if taus else None, "tau_b_below_1": sum(x < 1 for x in taus)}
+            "tau_b_mean": sum(taus) / len(taus) if taus else None,
+            "tau_b_below_1": sum(x < 1 - 1e-9 for x in taus),          # tolerance: kendalltau returns 1 - eps
+            "pairwise": pairwise(pt, ph, models, tasks)}
 
 
 def summarise(recs: list[dict]) -> dict:
@@ -164,7 +186,12 @@ def report_md(res: dict) -> str:
               f"Tasks with changed model scores: {lb['tasks_with_changed_scores']}; per-task tau_b defined on "
               f"{lb['tau_b_tasks']} tasks, mean {lb['tau_b_mean']}, below 1 on {lb['tau_b_below_1']}; ranking collapsed "
               f"to a tie under P∧H on {lb['ranking_collapsed_to_tie']}; tied under P on {lb['tied_under_p']} (tie "
-              f"broken by H on {lb['tie_broken_by_h']}); missing scores {lb['tau_b_missing_scores']}.", ""]
+              f"broken by H on {lb['tie_broken_by_h']}); missing scores {lb['tau_b_missing_scores']}.", "",
+              "| pair | gap under P [95% CI] | gap under P∧H [95% CI] |", "|---|---|---|"]
+        for pair, g in lb["pairwise"].items():
+            fmt = lambda x: f"{x['gap']:+.4f} [{x['ci95'][0]:+.4f}, {x['ci95'][1]:+.4f}]" if x.get("tasks") else "-"  # noqa: E731
+            L.append(f"| {pair} | {fmt(g['p'])} | {fmt(g['p_and_h'])} |")
+        L.append("")
     return "\n".join(L) + "\n"
 
 

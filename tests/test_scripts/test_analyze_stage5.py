@@ -82,3 +82,12 @@ def test_refuses_a_non_isolated_grading(tmp_path):
     (tmp_path / "audit.json").write_text(json.dumps({"tasks": []}), encoding="utf-8")
     with pytest.raises(SystemExit, match="isolated runner"):
         s5.main(["--grading", str(path), "--audit", str(tmp_path / "audit.json"), "--out", str(tmp_path / "o")])
+
+
+def test_tau_tolerance_and_pairwise_gaps():
+    pt = {("T", "a"): 1.0, ("T", "b"): 0.5, ("T", "c"): 0.0, ("U", "a"): 0.9, ("U", "b"): 0.3, ("U", "c"): 0.1}
+    lb = s5.leaderboard(pt, dict(pt), ["a", "b", "c"])
+    assert lb["tau_b_tasks"] == 2 and lb["tau_b_below_1"] == 0          # identical rankings: no spurious "below 1"
+    g = lb["pairwise"]["a - b"]
+    assert g["p"]["tasks"] == 2 and abs(g["p"]["gap"] - 0.55) < 1e-12 and g["p"]["ci95"][0] <= 0.55 <= g["p"]["ci95"][1]
+    assert g["p_and_h"]["gap"] == g["p"]["gap"]

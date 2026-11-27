@@ -138,14 +138,17 @@ def sheet(cfg_path: Path, a2: Path, out: Path, ungated: bool) -> int:
 REVIEW_PER_TASK, REVIEW_TAG = 10, "stage5-review"
 
 
-def review_sample(rows: list[dict], label: str, seed: int, k: int = REVIEW_PER_TASK) -> list[dict]:
-    """Random min(k, n) of a task's P-pass/H-fail programs (decisions 10.7): seeded per task, ids sorted first."""
+def review_sample(rows: list[dict], label: str, seed: int, k: int = REVIEW_PER_TASK,
+                  tag: str = REVIEW_TAG) -> list[dict]:
+    """Random min(k, n) of a task's P-pass/H-fail programs (decisions 10.7): seeded per task, ids sorted first.
+    ``tag`` separates the H versions' samples (v1.1: "stage5-review-v1.1", decisions 10.8)."""
     bad = sorted((r for r in rows if r["p_pass"] and not r["h_pass"]), key=lambda r: r["group_id"])
-    rng = random.Random(int(hashlib.sha256(f"{seed}|{REVIEW_TAG}|{label}".encode()).hexdigest()[:16], 16))
+    rng = random.Random(int(hashlib.sha256(f"{seed}|{tag}|{label}".encode()).hexdigest()[:16], 16))
     return rng.sample(bad, min(k, len(bad)))
 
 
-def review(cfg_path: Path, grading_path: Path, hidden: Path, audit_path: Path, out: Path, ungated: bool) -> int:
+def review(cfg_path: Path, grading_path: Path, hidden: Path, audit_path: Path, out: Path, ungated: bool,
+           tag: str = REVIEW_TAG) -> int:
     """Post-freeze validity review of Stage 5 (decisions 10.7): the cohort's P-pass/H-fail programs, Q2 verdicts."""
     cfg = ec.load_ext_config(cfg_path)
     tasks, _ = ec.load_tasks(cfg, ungated)
@@ -164,7 +167,7 @@ def review(cfg_path: Path, grading_path: Path, hidden: Path, audit_path: Path, o
         n_bad = [r for r in t["rows"] if r["p_pass"] and not r["h_pass"]]
         if not n_bad:
             continue
-        chosen = review_sample(t["rows"], lab, cfg.extensions.seed)
+        chosen = review_sample(t["rows"], lab, cfg.extensions.seed, tag=tag)
         tests = {x["name"]: x for x in json.loads((hidden / lab / "a2.json").read_text(encoding="utf-8"))["final_tests"]}
         L += [f"## {lab}: {len(n_bad)} program(s) ({sum(len(r['members']) for r in n_bad)} completions); "
               f"{len(chosen)} sampled", "", "<details><summary>skeleton (what the models saw)</summary>", "",
@@ -279,9 +282,11 @@ def main(argv=None) -> int:
     ap.add_argument("--grading", type=Path, help="review: the Stage 5 grading.json")
     ap.add_argument("--hidden", type=Path, help="review: the frozen H bundle")
     ap.add_argument("--audit", type=Path, help="review: audit_reserved.json (excluded)")
+    ap.add_argument("--review-tag", default=REVIEW_TAG,
+                    help="review: seed tag (H v1: stage5-review; H v1.1: stage5-review-v1.1, decisions 10.8)")
     args = ap.parse_args(argv)
     if args.cmd == "review":
-        return review(args.config, args.grading, args.hidden, args.audit, args.out, args.ungated)
+        return review(args.config, args.grading, args.hidden, args.audit, args.out, args.ungated, args.review_tag)
     if args.cmd == "select":
         return select(args.a2, args.out)
     if args.cmd == "sheet":

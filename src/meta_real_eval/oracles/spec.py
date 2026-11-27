@@ -38,8 +38,30 @@ def restrict(tok, level: str):
     return ["@any"]
 
 
+def _restricted(tok) -> bool:
+    """Whether a token holds a specification marker (at the top or inside an object's fields)."""
+    if not isinstance(tok, list) or not tok:
+        return False
+    return tok[0] in ("@any", "@type") or (tok[0] == "obj" and any(_restricted(v) for v in tok[2].values()))
+
+
 def spec_diff(exp, cand, rules=None, where: str = "") -> Optional[str]:
-    """Difference between a (possibly restricted) expected token and a candidate token; None if they agree."""
+    """Difference between a (possibly restricted) expected token and a candidate token; None if they agree.
+
+    An object token whose fields carry markers (H v1.1, Fix A, decisions 10.8) is compared field by field with
+    these rules; every other token, every H v1 token included, goes to ``api_diff`` exactly as before."""
+    if exp and exp[0] == "obj" and _restricted(exp):
+        if cand is None:
+            return f"{where}: missing observation"
+        if cand[0] != "obj":
+            return f"{where}: expected an object {exp[1]}, got {str(cand)[:60]}"
+        if exp[1] != cand[1]:
+            return f"{where}: class {exp[1]} != {cand[1]}"
+        for name, tok in exp[2].items():
+            d = spec_diff(tok, cand[2].get(name), rules, f"{where}.{name}")
+            if d:
+                return d
+        return None
     if exp and exp[0] in ("@any", "@type"):
         if cand is None or cand[0] == "exc":
             return f"{where}: expected a normal return, got {cand!r}"

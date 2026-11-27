@@ -244,3 +244,11 @@ def test_stage5_review_sample_is_seeded_random_and_bounded():
     assert [r["group_id"] for r in a] == [r["group_id"] for r in ah.review_sample(list(reversed(rows)), "T1", 7)]
     assert [r["group_id"] for r in a] != [r["group_id"] for r in ah.review_sample(rows, "T2", 7)]
     assert len(ah.review_sample(rows[:3], "T1", 7)) == len([r for r in rows[:3] if r["p_pass"] and not r["h_pass"]])
+
+
+def test_review_tag_separates_the_h_versions_samples():
+    import audit_h as ah
+    rows = [{"group_id": f"g{i:02d}", "p_pass": True, "h_pass": False, "members": [{}]} for i in range(30)]
+    v1 = [r["group_id"] for r in ah.review_sample(rows, "T1", 7)]
+    assert v1 == [r["group_id"] for r in ah.review_sample(rows, "T1", 7, tag="stage5-review")]      # v1 unchanged
+    assert v1 != [r["group_id"] for r in ah.review_sample(rows, "T1", 7, tag="stage5-review-v1.1")]

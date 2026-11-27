@@ -50,15 +50,28 @@ def failure_kind(exp, cand) -> str:
     return "type" if exp[0] == "@type" else "value"
 
 
-def differences(module, code, contract, tests: list[dict], failing: list[str]) -> tuple[dict, list[str]]:
-    """({test name: [api differences]}, sorted failure kinds) for the failing hidden tests, replayed."""
+def exception_caused(t: dict, tr: dict, rules: dict) -> bool:
+    """Cluster C sensitivity (decisions 10.8): the test fails only because the candidate raised at a step where
+    the reference did not (no failing assertion before that step)."""
+    first = next((i for i in range(len(t["steps"])) if str(tr["tokens"].get(f"s{i}", "")).startswith("EXC:")
+                  and (t["expected"].get(f"api:s{i}") or [None])[0] != "exc"), None)
+    if first is None:
+        return False
+    return not any(spec_diff(v, tr["tokens"].get(k), rules, k) for k, v in t["expected"].items()
+                   if int(k.rsplit("s", 1)[1]) < first)
+
+
+def differences(module, code, contract, tests: list[dict], failing: list[str]) -> tuple[dict, list[str], bool]:
+    """({test name: [api differences]}, sorted failure kinds, whether every failing A2 test is exception-caused)
+    for the failing hidden tests, replayed."""
     rules = api_rules(contract)
     sel = [t for t in tests if t["name"] in failing]
     if not sel:
-        return {}, []
+        return {}, [], False
     scs = [{"scenario_id": t["scenario_id"], "steps": t["steps"], "api_flags": t["api_flags"]} for t in sel]
     traces = _run(module, code, f"import {module} as {GEN_ALIAS}\n", scs, WitnessSettings(), rules)
     out, kinds = {}, set()
+    caused = all(exception_caused(t, tr, rules) for t, tr in zip(sel, traces))
     for t, tr in zip(sel, traces):
         diffs = []
         for k, v in t["expected"].items():
@@ -69,7 +82,7 @@ def differences(module, code, contract, tests: list[dict], failing: list[str]) -
         if not diffs:
             kinds.add(f"replay_{tr['status']}")
         out[t["name"]] = diffs or [f"no API difference on replay (status {tr['status']})"]
-    return out, sorted(kinds - {"stopped_earlier"} or kinds)
+    return out, sorted(kinds - {"stopped_earlier"} or kinds), caused
 
 
 def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, workers: int) -> dict:
@@ -111,8 +124,10 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
     def explain(row):
         if row["p_pass"] and row["failing"]:
             code = codes[row["group_id"]]
-            row["differences"], row["failure_kinds"] = differences(task.module_name, code, contract, tests, row["failing"])
+            row["differences"], row["failure_kinds"], caused = differences(task.module_name, code, contract, tests,
+                                                                            row["failing"])
             a3_failing = sorted(set(row["failing"]) - {t["name"] for t in tests})
+            row["exception_caused"] = caused and not a3_failing
             if a3_failing:                                 # free-form A3 property tests: no scenario to replay
                 row["differences"].update({n: ["A3 property test failed"] for n in a3_failing})
                 row["failure_kinds"] = sorted(set(row["failure_kinds"]) | {"a3_property"})
@@ -137,9 +152,35 @@ def grade_task(lab, task, bench, baseline, hidden_dir: Path, timeout_s: float, w
                 c[f"p_pass_h_fail:{k}"] += 1
             if r.get("failure_kinds") == ["unexpected_exception"]:
                 c["p_pass_h_fail:exception_only"] += 1      # would pass if exceptions were not asserted
+            c["p_pass_h_fail:exception_caused"] += bool(r.get("exception_caused"))   # cluster C (10.8)
     return {"task": lab, "hidden": str(hidden_dir / lab), "n_tests": len(names), "counts": dict(c),
             "programs": len(rows), "p_pass_h_fail_programs": sum(bool(r["p_pass"]) and not r["h_pass"] for r in rows),
             "rows": rows}
+
+
+def annotate(cfg_path: Path, grading_path: Path, out: Path) -> int:
+    """Add the cluster C flag (``exception_caused``) to an existing grading: replays only the failing A2 tests of
+    its P-pass/H-fail programs (their code is stored); nothing else is re-run (decisions 10.8)."""
+    cfg = ec.load_ext_config(cfg_path)
+    policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=False)
+    policy.activate()
+    doc = json.loads(grading_path.read_text(encoding="utf-8"))
+    hidden = Path(doc["hidden"])
+    n = 0
+    for t in doc["tasks"]:
+        a2 = json.loads((hidden / t["task"] / "a2.json").read_text(encoding="utf-8"))
+        contract = load_contract(ec.REPO / a2["contract"]["path"])
+        names = {x["name"] for x in a2["final_tests"]}
+        for r in t["rows"]:
+            if r["p_pass"] and not r["h_pass"]:
+                _, _, caused = differences(contract["module_name"], r["code"], contract, a2["final_tests"], r["failing"])
+                r["exception_caused"] = caused and not (set(r["failing"]) - names)
+                n += 1
+    doc["annotated_exception_caused"] = True
+    out.write_text(json.dumps(doc, indent=1, default=str), encoding="utf-8")
+    print(f"annotated {n} P-pass/H-fail program(s); exception-caused: "
+          f"{sum(bool(r.get('exception_caused')) for t in doc['tasks'] for r in t['rows'])} -> {out}")
+    return 0
 
 
 def compare(a_path: Path, b_path: Path, out: Path) -> int:
@@ -181,9 +222,15 @@ def main(argv=None) -> int:
     ap.add_argument("--audit-reserved", type=Path, default=None,
                     help="audit_reserved.json (scripts/audit_h.py select): grade exactly the audit-reserved tasks "
                          "(allowed before the freeze, decisions 6); the selection is recomputed and must match")
+    ap.add_argument("--annotate", type=Path, default=None,
+                    help="existing grading.json: add the cluster C flag to its P-pass/H-fail programs (10.8)")
     args = ap.parse_args(argv)
     if args.compare:
         return compare(*args.compare, args.out)
+    if args.annotate:
+        if args.config is None:
+            raise SystemExit("ERROR: --annotate needs --config")
+        return annotate(args.config, args.annotate, args.out)
     if args.config is None or args.hidden is None:
         raise SystemExit("ERROR: --config and --hidden are required (or use --compare)")
     cfg = ec.load_ext_config(args.config)

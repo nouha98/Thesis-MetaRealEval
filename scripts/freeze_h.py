@@ -30,6 +30,9 @@ import ext_common as ec  # noqa: E402
 from meta_real_eval.core.provenance import file_sha256, git_state  # noqa: E402
 
 RECORD = ec.PROTOCOL_DIR / "hidden_v1_freeze.json"
+# H v1.1 (decisions 10.8): a labelled post-hoc sensitivity with its own record; v1 stays primary
+RECORDS = {"tier2-hidden-v1": RECORD, "tier2-hidden-v1.1": ec.PROTOCOL_DIR / "hidden_v1_1_freeze.json"}
+SPECS = {"tier2-hidden-v1": "output_spec_v1.json", "tier2-hidden-v1.1": "output_spec_v1_1.json"}
 DECISION = ec.PROTOCOL_DIR / "canonical_h_decision.json"
 TASK_FILES = ("hidden_tests.py", "a2.json")
 
@@ -44,7 +47,8 @@ def global_digest(files: dict) -> str:
     return hashlib.sha256("\n".join(f"{k}:{v}" for k, v in sorted(files.items())).encode()).hexdigest()
 
 
-def freeze(a2: Path, audit: Path, out: Path, decision_path: Path = DECISION, record_path: Path = RECORD) -> dict:
+def freeze(a2: Path, audit: Path, out: Path, decision_path: Path = DECISION, record_path: Path = RECORD,
+           version: str = "tier2-hidden-v1") -> dict:
     if out.exists():
         raise SystemExit(f"ERROR: {out} exists; a frozen bundle is never overwritten")
     if record_path.exists():
@@ -65,10 +69,10 @@ def freeze(a2: Path, audit: Path, out: Path, decision_path: Path = DECISION, rec
         for f in TASK_FILES:
             shutil.copy2(a2 / lab / f, out / lab / f)
     files = bundle_hashes(out)
-    inputs = [ec.PROTOCOL_DIR / n for n in ("output_spec_v1.json", "cohorts_v1.json", "fault_split_v1.json",
+    inputs = [ec.PROTOCOL_DIR / n for n in (SPECS[version], "cohorts_v1.json", "fault_split_v1.json",
                                             "contracts_v1/review_decisions.json")]
     inputs += [audit / "estimates.json", audit / "items.csv", audit / "audit_reserved.json", decision_path]
-    record = {"version": "tier2-hidden-v1", "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    record = {"version": version, "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
               "source": str(a2), "bundle": str(out), "components": decision["components"],
               "tasks": ready, "n_tasks": len(ready), "global_sha256": global_digest(files), "files": files,
               "inputs": {str(p.relative_to(ec.REPO)) if p.is_relative_to(ec.REPO) else str(p): file_sha256(p)
@@ -81,8 +85,15 @@ def freeze(a2: Path, audit: Path, out: Path, decision_path: Path = DECISION, rec
     return record
 
 
-def verify(hidden: Path, record_path: Path = RECORD) -> dict:
-    """The bundle must match the committed record file by file (no task added, removed or changed)."""
+def verify(hidden: Path, record_path: Path | None = None) -> dict:
+    """The bundle must match the committed record file by file (no task added, removed or changed). Without
+    ``record_path`` the record is chosen by the version the bundle's own manifest names."""
+    if record_path is None:
+        man = hidden / "freeze_manifest.json"
+        version = json.loads(man.read_text(encoding="utf-8"))["version"] if man.is_file() else "tier2-hidden-v1"
+        if version not in RECORDS:
+            raise SystemExit(f"ERROR: unknown H version {version!r} in {man}")
+        record_path = RECORDS[version]
     if not record_path.is_file():
         raise SystemExit(f"ERROR: {record_path} missing: H is not frozen")
     rec = json.loads(record_path.read_text(encoding="utf-8"))
@@ -100,13 +111,14 @@ def main(argv=None) -> int:
     ap.add_argument("--audit", type=Path)
     ap.add_argument("--out", type=Path)
     ap.add_argument("--hidden", type=Path)
+    ap.add_argument("--version", choices=sorted(RECORDS), default="tier2-hidden-v1")
     args = ap.parse_args(argv)
     if args.cmd == "freeze":
         if not (args.a2 and args.audit and args.out):
             raise SystemExit("ERROR: freeze needs --a2, --audit and --out")
-        rec = freeze(args.a2, args.audit, args.out)
+        rec = freeze(args.a2, args.audit, args.out, record_path=RECORDS[args.version], version=args.version)
         print(f"frozen {rec['n_tasks']} tasks, {len(rec['files'])} files, global sha256 {rec['global_sha256']}\n"
-              f"-> {args.out}/freeze_manifest.json and {RECORD}; commit it, then: git tag tier2-hidden-v1")
+              f"-> {args.out}/freeze_manifest.json and {RECORDS[args.version]}; commit it, then: git tag {args.version}")
     else:
         if not args.hidden:
             raise SystemExit("ERROR: verify needs --hidden")

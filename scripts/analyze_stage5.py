@@ -39,7 +39,10 @@ def completions(grading: dict, cohort: set) -> list[dict]:
                             "relation": m["relation"], "model": m["model"], "p": p, "h": r["h_pass"],
                             "ph": None if p is None else (p and r["h_pass"]), "group": r["group_id"],
                             "kinds": r.get("failure_kinds", []) if p and not r["h_pass"] else [],
-                            "timeout_only": timeout_only, "h_error": "error" in r.get("h_outcomes", {}).values()})
+                            "timeout_only": timeout_only, "h_error": "error" in r.get("h_outcomes", {}).values(),
+                            # cluster C sensitivity (10.8): an exception-caused H rejection counted as a pass
+                            "exc_caused": bool(p) and not r["h_pass"] and bool(r.get("exception_caused")),
+                            "ph_exc": None if p is None else (p and (r["h_pass"] or bool(r.get("exception_caused"))))})
     return out
 
 
@@ -137,6 +140,7 @@ def summarise(recs: list[dict]) -> dict:
         c["p_pass_h_fail_exception_only"] += set(r["kinds"]) == {"unexpected_exception"}
         c["h_timeout_only"] += r["timeout_only"]
         c["h_error"] += r["h_error"]
+        c["p_pass_h_fail_exception_caused"] += r["exc_caused"]
         for k in r["kinds"]:
             c[f"p_pass_h_fail:{k}"] += 1
     n = c["completions"] - c["p_ungradable"]
@@ -158,6 +162,11 @@ def analyse(grading: dict, cohort: set) -> dict:
         pt, ph = per_task_model(sel, "p"), per_task_model(sel, "ph")
         res[f"pass_at_1_{scope}"] = {m: boot_diff(pt, ph, m) for m in models}
         res[f"leaderboard_{scope}"] = leaderboard(pt, ph, models)
+    sel = [r for r in recs if r["relation"] == "original"]       # cluster C sensitivity on the primary relation
+    res["pass_at_1_original_exception_tolerant"] = {m: boot_diff(per_task_model(sel, "p"), per_task_model(sel, "ph_exc"), m)
+                                                    for m in models}
+    res["annotated_exception_caused"] = bool(grading.get("annotated_exception_caused")) or any(
+        "exception_caused" in r for t in grading["tasks"] for r in t["rows"])
     return res
 
 
@@ -192,6 +201,14 @@ def report_md(res: dict) -> str:
             fmt = lambda x: f"{x['gap']:+.4f} [{x['ci95'][0]:+.4f}, {x['ci95'][1]:+.4f}]" if x.get("tasks") else "-"  # noqa: E731
             L.append(f"| {pair} | {fmt(g['p'])} | {fmt(g['p_and_h'])} |")
         L.append("")
+    L += ["## Cluster C sensitivity (decisions 10.8): exception-caused H rejections counted as passes (original)", "",
+          f"Graded with the exception-caused flag: {res['annotated_exception_caused']}; exception-caused P-pass/H-fail "
+          f"completions: {a.get('p_pass_h_fail_exception_caused', 0)}.", "",
+          "| model | P | P∧H (exception-tolerant) | P − P∧H | 95% CI |", "|---|---|---|---|---|"]
+    for m, d in res["pass_at_1_original_exception_tolerant"].items():
+        if d.get("tasks"):
+            L.append(f"| {m} | {d['p']:.3f} | {d['p_and_h']:.3f} | {d['diff']:.4f} | "
+                     f"[{d['diff_ci95'][0]:.4f}, {d['diff_ci95'][1]:.4f}] |")
     return "\n".join(L) + "\n"
 
 
@@ -222,7 +239,8 @@ def main(argv=None) -> int:
     ap.add_argument("--grading", type=Path, required=True)
     ap.add_argument("--audit", type=Path, required=True, help="audit_reserved.json (excluded from the cohort)")
     ap.add_argument("--out", type=Path, required=True)
-    ap.add_argument("--record", type=Path, default=freeze_h.RECORD, help="committed freeze record of H v1")
+    ap.add_argument("--record", type=Path, default=None,
+                    help="committed freeze record (default: the one the graded bundle's manifest names)")
     ap.add_argument("--expect-cohort", type=int, default=55)
     args = ap.parse_args(argv)
     grading = json.loads(args.grading.read_text(encoding="utf-8"))

@@ -829,3 +829,23 @@ Reported for v1 and v1.1: P∧H with exception-caused rejections counted as pass
 - Both versions report every Stage 5 number and the C sensitivity.
 
 **A3.** The A3 targets stay frozen from A2 v1 (`a3_targets_v1.json`, computed from the H v1 bundle), whatever v1.1 changes. The A3 arms are reported on top of A2 v1, as pre-registered in section 10.6, and on top of A2 v1.1 as a sensitivity.
+
+**Review estimate, H v1 (`results_tier2_ext/stage5/review/estimates.json`, 49 programs on 9 tasks).**
+- *Erroneous share among P-pass/H-fail programs:*
+  - unclear counted as a true fault (lower bound): **0.854**, task-cluster bootstrap [0.616, 1.0]; Clopper–Pearson on the counts 39/49 [0.657, 0.898];
+  - unclear counted as erroneous (upper bound): **1.0**, Clopper–Pearson 49/49 [0.927, 1.0].
+- *Weighted by completions:* 0.979 [0.928, 1.0] (lower) and 1.0 (upper).
+- Section 6's limit (≤ 10%, upper ≤ 25%) is exceeded by a wide margin.
+
+The bootstrap has only 9 task clusters, so its intervals are wide; the conclusion does not depend on them. **H v1's Stage 5 drop (P-pass/H-fail 778, pass@1 −0.075 to −0.106) is reported as not validated: almost all of it is H rejecting acceptable completions.**
+
+**Implementation notes for H v1.1 (2026-11-27, before any v1.1 output).**
+- *Code:* `regression.restrict_fields` and `expected_tokens(fix_a=True)` for Fix A. `spec.spec_diff` compares restricted object tokens field by field; on every unrestricted token, all v1 tokens included, it calls `api_diff` exactly as before (a regression test compares the two on v1 tokens).
+- *Fix B:* `scripts/h_v11.py types` lists every `type`-level output that an H v1 test asserts (step outputs, and object fields that Fix A turns into `type` assertions).
+  - Return annotations are mapped mechanically, as listed in section 10.8.
+  - Dunder methods with a language-defined return kind are treated as annotated: `__str__`, `__repr__` and `__format__` → str; `__len__` and `__hash__` → number; `__bool__` → bool; `__bytes__` → bytes.
+  - Everything else goes on the blind sheet `fixb_sheet.md`.
+- *Build:* `h_v11.py spec` writes `output_spec_v1_1.json` with every change and its reason. `h_v11.py build` runs on the verified H v1 bundle and stops if any v1.1 assertion is not implied by the v1 one.
+  - *Same cohort:* every H v1 task stays in v1.1. If no test is left for a task, its v1.1 suite is empty (H passes every completion), recorded as `empty_suite`, so v1 and v1.1 cover the same 55 cohort tasks.
+- *Freeze and versions:* `freeze_h.py --version tier2-hidden-v1.1` writes `hidden_v1_1_freeze.json`. `verify`, `grade_hidden --after-freeze` and `analyze_stage5.py` pick the record named by the bundle's own manifest.
+- *Cluster C:* `grade_hidden` flags `exception_caused` per P-pass/H-fail program. `grade_hidden --annotate` adds the flag to the existing v1 grading by replaying only those programs' failing tests. `analyze_stage5.py` reports the exception-tolerant P∧H next to the primary one.

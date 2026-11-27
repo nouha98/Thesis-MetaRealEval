@@ -124,9 +124,24 @@ def reference_entries(module: str, reference: str, contract: dict, pool: list[di
     return out
 
 
-def expected_tokens(entry: dict, levels: Optional[dict] = None, class_name: str = "") -> dict:
+def restrict_fields(tok, levels: dict):
+    """H v1.1 Fix A (decisions 10.8): the fields of an own-class object token kept at ``value`` level are
+    restricted by their own R7 entry; a field without an entry (a plain attribute) is not asserted."""
+    if not tok or tok[0] != "obj":
+        return tok
+    fields = {}
+    for name, ft in tok[2].items():
+        base = name[:-2] if name.endswith("()") else name
+        if base in levels and base != "__init__":
+            r = restrict(ft, levels[base])
+            fields[name] = restrict_fields(r, levels) if levels[base] == "value" else r
+    return ["obj", tok[1], fields]
+
+
+def expected_tokens(entry: dict, levels: Optional[dict] = None, class_name: str = "", fix_a: bool = False) -> dict:
     """API tokens a test asserts: flagged valid-prefix steps the reference recorded, minus masked keys,
-    each restricted by its callable's specification level (``levels=None``: every output is ``value``)."""
+    each restricted by its callable's specification level (``levels=None``: every output is ``value``).
+    ``fix_a`` (H v1.1 only): object fields follow their own levels (``restrict_fields``)."""
     sc, ref, mask = entry["scenario"], entry["ref"]["tokens"], set(entry["api_mask"])
     exp = {}
     for i in range(entry["valid_prefix"]):
@@ -134,6 +149,8 @@ def expected_tokens(entry: dict, levels: Optional[dict] = None, class_name: str 
         if sc["api_flags"][i] and k in ref and k not in mask:
             lvl = "value" if levels is None else level_of(levels, step_name(sc["steps"][i]["src"], GEN_ALIAS, class_name))
             exp[k] = restrict(ref[k], lvl)
+            if fix_a and levels is not None and lvl == "value":
+                exp[k] = restrict_fields(exp[k], levels)
     return exp
 
 

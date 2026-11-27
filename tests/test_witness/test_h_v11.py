@@ -80,3 +80,9 @@ def test_exception_caused():
     assert not gh.exception_caused(t2, {"tokens": {"api:s0": ["str", "b"], "s2": "EXC:builtins.KeyError"}}, {})
     t3 = {**t, "expected": {"api:s1": ["exc", ["builtins.ValueError"]]}}
     assert not gh.exception_caused(t3, {"tokens": {"s1": "EXC:builtins.ValueError"}}, {})      # documented raise
+
+
+def test_multi_kind_annotation_becomes_none(tmp_path, monkeypatch):
+    """post_218 `value -> str | None`: the reference returns None; asserting kind none would reject a str."""
+    allowed = h_v11.annotation_families(ast.parse("str | None", mode="eval").body)
+    assert allowed == {"str", "none"} and len(allowed) > 1          # the build rule then sets the entry to none

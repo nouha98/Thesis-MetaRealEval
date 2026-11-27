@@ -849,3 +849,12 @@ The bootstrap has only 9 task clusters, so its intervals are wide; the conclusio
   - *Same cohort:* every H v1 task stays in v1.1. If no test is left for a task, its v1.1 suite is empty (H passes every completion), recorded as `empty_suite`, so v1 and v1.1 cover the same 55 cohort tasks.
 - *Freeze and versions:* `freeze_h.py --version tier2-hidden-v1.1` writes `hidden_v1_1_freeze.json`. `verify`, `grade_hidden --after-freeze` and `analyze_stage5.py` pick the record named by the bundle's own manifest.
 - *Cluster C:* `grade_hidden` flags `exception_caused` per P-pass/H-fail program. `grade_hidden --annotate` adds the flag to the existing v1 grading by replaying only those programs' failing tests. `analyze_stage5.py` reports the exception-tolerant P∧H next to the primary one.
+
+**Fix B, implementation clarification (2026-11-27, after checking the mechanical decisions, before any verdict or build).** A `type` assertion names one kind, the reference's. When an annotation allows several kinds (`Optional[X]`, `Union[...]`, `X | None`), asserting the reference's single kind over-specifies: for post_218 `value -> str | None`, the reference returns None, and a `type` assertion would reject a completion returning a `str`. Such entries therefore become `none`. Among the 86 mechanical decisions this changes only post_218 `value`. The other 85 were checked: protocol dunders (`__repr__`/`__str__` → str, `__len__` → number) and single-kind annotations that match the reference stay `type`; post_165's two `List[str]` getters (the reference returns a set) become `none`.
+
+**Cluster C on H v1 (`results_tier2_ext/stage5/grading_annotated.json`, `grade_hidden --annotate`).** 47 of the 115 P-pass/H-fail programs (56 completions) are exception-caused. With them counted as passes, the pass@1 drop under H v1 (`original`) shrinks only slightly:
+- gemma −0.073 [0.018, 0.146];
+- qwen36 −0.091 [0.018, 0.164];
+- qwen38 −0.091 [0.018, 0.164].
+
+The exception rule explains little of the drop. Causes A and B explain most of it (section 10.7).

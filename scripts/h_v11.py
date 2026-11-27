@@ -174,8 +174,12 @@ def types(args, cfg) -> int:
                    "annotation": ast.unparse(ann) if ann is not None else None, "basis": basis}
             if allowed is not None:
                 ok = all(family_allowed(f, allowed) for f in fams)
-                row.update(decision="type" if ok else "none",
-                           reason=f"{basis} allows {sorted(allowed)}; reference shows {['/'.join(f) for f in fams]}")
+                # a type assertion names ONE kind (the reference's); when the annotation allows several (Optional,
+                # Union, X | None), asserting one of them over-specifies, so the entry becomes none (10.8 note)
+                single = len(allowed) == 1
+                row.update(decision="type" if ok and single else "none",
+                           reason=f"{basis} allows {sorted(allowed)}; reference shows {['/'.join(f) for f in fams]}"
+                                  + ("" if single else "; several kinds allowed: a one-kind assertion over-specifies"))
             else:
                 iid = f"B-{len(items) + 1}"
                 row.update(decision="review", item=iid)

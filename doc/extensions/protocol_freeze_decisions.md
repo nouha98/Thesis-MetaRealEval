@@ -769,3 +769,63 @@ Two review concerns were checked and found not to be bugs, and tests now cover t
 - 112 evaluation targets projected.
 
 The section 7 decision (H = A2) stands; with all three models, condition 3 would also fail.
+
+**Review sheet (2026-11-27).** `results_tier2_ext/stage5/review/` holds 49 programs on 9 tasks, drawn by the pre-registered rule. While preparing the overview by failure kind, two systematic causes were found. They are recorded here as facts; the verdicts remain the researcher's.
+- **(A) Implementation defect: constructor observations bypass R7.**
+  - *Mechanism:* the constructor step is always asserted at `value` level (section 10.2: "constructors are always value"). For an own-class object whose contract lists accessors, the reference's observation is an `obj` token that embeds each accessor's value. So `regression.expected_tokens` asserted those property values exactly, ignoring the accessors' own R7 levels.
+  - *Affected:*
+    - csn_119 and csn_120: `prop` is at level `none`, yet H asserts `prop == "Property"`;
+    - csn_240: `payload` is at level `type`, yet H asserts the exact dict with camelCase keys.
+
+    That is 450 of the 778 P-pass/H-fail completions.
+  - *Scope:* it is the same kind of error as the `repr(obj)` bug of section 10.3, an implementation of R7 that asserts more than the specification level. The audit did not catch it: Q1 sampled tests on the audit tasks, and Q2 was empty.
+- **(B) R7 review errors: `type` was kept where the reference contradicts the docstring.** This breaks the section 10.2 rule "type only if the reference agrees with the docstring".
+  - csn_147 `hexdigest`: the docstring says "Hexadecimal digest.", the reference returns `None`, and H asserts kind `none`;
+  - post_165 `get_visited_urls` and `get_searched_queries`: the docstring says "Returns: List of …" and the annotation is `-> List[str]`, but the reference returns a `set`, and H asserts kind `set`.
+
+  That is 266 completions, all of the 266 `type` failures.
+- **The remaining 62 completions** are on csn_220, csn_82, post_223 and post_68: undefined inputs under exception rule (b) (out-of-range `pos`, empty keys), a constructor signature the skeleton leaves open, and the post_223 session-reset question. These need case-by-case verdicts.
+
+H v1 is not changed. Whether a corrected H is evaluated as a labelled post-hoc sensitivity is a separate decision, recorded when taken.
+
+**Review verdicts (the researcher's, 2026-11-27; AI pre-pass per cluster checked and accepted).** Of 49 programs: 39 erroneous rejection, 10 unclear, 0 true fault.
+- *Erroneous rejection:* R-1–19 and R-22 (clusters A and B), R-24–33 (B), R-23 (undefined input: `pos` beyond the string, like post_185 and post_112), and post_68's constructor cases R-40–43, 45, 46, 48, 49 (empty key: "invalid key" is undefined).
+- *Unclear:* R-20 and R-21 (the constructor signature is not in the skeleton), R-34–39 (does `set_request_context` without a session reset it?), R-44 and R-47 (`get('')` raises although the docstring promises None "if not found").
+
+By section 10.7's reading this is far beyond section 6's limits: **the Stage 5 drop under H v1 is not validated.** H v1 stays the primary, pre-registered result and is reported as not validated.
+
+### 10.8 H v1.1: a post-hoc corrected hidden suite, reported as a sensitivity (pre-registered 2026-11-27, before any v1.1 code or outcome)
+
+**Status.** H v1.1 is a labelled post-hoc correction, decided after the Stage 5 v1 outcomes and the review were seen. H v1 remains the primary result. v1.1 is the **last revision**: whatever its review shows, no v1.2 follows. Both are reported side by side.
+
+**Fix A (implementation; all 75 tasks; with a regression test).** When an expected token is an own-class `obj` token at `value` level (the constructor step, or any value-level callable returning an own-class object), its fields no longer inherit `value`:
+- a field that is a callable or property with its own R7 entry is restricted to that entry's level;
+- a field without an R7 entry (a plain attribute) is not asserted. This is the conservative choice: neither its value nor its type is promised by a reviewed specification.
+
+The object's class is still asserted. `spec.spec_diff` compares `obj` tokens field by field with the same rules. On v1 tokens it gives exactly the old result, because the frozen v1 tests import it at run time. A regression test pins this.
+
+**Fix B (R7 rule "type only if the reference agrees with the specification", applied to every `type` entry asserted by at least one H v1 test on the 75 tasks).**
+1. *Callables with a return annotation in the skeleton:* mechanical. The annotation maps to allowed type families: `List`/`Sequence`/`Tuple`/`list`/`tuple` → seq; `Set` → set; `Dict`/`Mapping` → map; `str`; `bytes`; `int`/`float` → number; `bool`; `None` → none; `Optional[X]` → X or none; a class name → that object. If the family the reference shows in H v1 is not allowed, the entry becomes `none`; otherwise it stays `type`.
+2. *Callables without a return annotation:* re-reviewed on a sheet that shows only the callable, its docstring and the family the reference shows. It shows no grading outcome and no completion. Question: does the docstring state or clearly imply this kind of return value? Keep `type`, or set `none`.
+   - *Disclosure:* the reviewer has seen the Stage 5 review cases of 9 cohort tasks, so the review is blind to outcomes except for those tasks; their entries are marked on the sheet.
+
+The result is a new file `config/extensions_protocol/output_spec_v1_1.json`, which records each change and its reason. `output_spec_v1.json` is unchanged.
+
+**Cluster C: no contract change.** Instead, a pre-registered sensitivity separates *exception-caused* H failures:
+- a failing test counts as exception-caused when its only failure kinds are `unexpected_exception`, or `stopped_earlier` where the candidate raised at an earlier step at which the reference did not raise;
+- a program counts as exception-caused when all its failing tests are.
+
+Reported for v1 and v1.1: P∧H with exception-caused rejections counted as passes, next to the primary P∧H.
+
+**Build of v1.1.**
+- *Tests:* exactly the H v1 tests (same scenarios, steps and names; no re-selection). Their expectations are re-derived from fresh reference runs under `output_spec_v1_1.json` and Fix A, with the nondeterminism masks recomputed as in v1. By construction every v1.1 assertion is the same as, or weaker than, the v1 one; this is checked mechanically for every test.
+- *Admission and control:* the same admission (3× together and alone on the reference) and the validated private-rename control as v1. A test that fails admission is dropped and reported.
+- *Freeze:* as `results_tier2_ext/hidden_v1_1`, with record `config/extensions_protocol/hidden_v1_1_freeze.json` and tag `tier2-hidden-v1.1`.
+- *No new Q1 audit:* v1.1 assertions are a subset of v1's, so test validity can only stay the same or improve.
+
+**Evaluation of v1.1.**
+- Isolated grading of the same stored completions; the same `analyze_stage5.py`, with the v1.1 record and the same 55-task cohort.
+- *Fresh review:* per task, a seeded random min(10, n) of the v1.1 P-pass/H-fail programs, with seed tag `stage5-review-v1.1`. Same verdict rules and the same section 6 limits.
+- Both versions report every Stage 5 number and the C sensitivity.
+
+**A3.** The A3 targets stay frozen from A2 v1 (`a3_targets_v1.json`, computed from the H v1 bundle), whatever v1.1 changes. The A3 arms are reported on top of A2 v1, as pre-registered in section 10.6, and on top of A2 v1.1 as a sensitivity.

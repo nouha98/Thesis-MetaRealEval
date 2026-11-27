@@ -948,3 +948,11 @@ Whether the 62 are true faults or invalid inputs (an input outside the documente
 2. freeze the target list;
 3. the v1 and v2 evaluation runs;
 4. grading with `--arm-of results_tier2_ext/hidden_v1`, then the review samples.
+
+**A3 v2 smoke test on the development tasks (2026-11-27; `results_tier2_ext/a3/dev_smoke_v2`, gemma4-31b-it through the gateway; order step 3).** Technical check only.
+- 7 targets on 5 tasks, **7 admitted**. In the v1 pilot, gemma also admitted 7 of 7.
+- 13 attempts in all: 7 admitted, 3 `no_doc_quote`, 2 `reference_fails`, 1 `fault_not_detected`.
+- Both reference-failure messages had the value-free form, e.g. "the test fails on a correct implementation (AssertionError raised at line 9 of the test: `assert result == ["bit1"]`)". The literal in it is the model's own test line, not a reference value.
+- No defect was found, so A3 v2 is unchanged after the smoke test.
+
+**A3 target list frozen (order step 4).** `config/extensions_protocol/a3_targets_v1.json` was computed by `build_a3.py freeze-targets` on the verified H v1 bundle and `results_tier2_ext/witness/full`. It holds **77 targets on 37 of the 55 cohort tasks**; the other 18 tasks have no surviving primary-confirmed discovery group with runnable code. It is committed before either evaluation run starts.

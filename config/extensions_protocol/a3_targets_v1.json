@@ -1,0 +1,557 @@
+{
+ "version": "a3_targets_v1",
+ "rule": "per cohort task: the primary-confirmed discovery groups with runnable code that no final A2 test of the frozen H v1 kills, in group-id order, at most 3 (v1's rule, decisions 10.6)",
+ "h_v1_sha256": "bf0ec5d28a321298efac6b622e3b75266feea79566cc1789a369b9f9eaa0f799",
+ "witness": "results_tier2_ext/witness/full",
+ "witness_files": {
+  "RCE_csn_snippet_108": "e25e3bcd0433bf1cadfbcfa5bb714b3a1678261d47ed0e37fa3227b99345d5d0",
+  "RCE_csn_snippet_115": "20771b6d572d821888dc7349bcf7042d475a56949f896e628b0e388e067c687c",
+  "RCE_csn_snippet_119": "671ffbdc0dd6ab7b5dab644971a85b2b8d3926ef399eb7cdb0e5a226c870dda1",
+  "RCE_csn_snippet_120": "87d9cb6ec09998d2860b5798efec9cc6b5095c55345e32a9bfde9668d10e3d08",
+  "RCE_csn_snippet_125": "9ae713bde0d7850f84677107df78af3576749340b371edf71545d4ddd4e7d3c7",
+  "RCE_csn_snippet_142": "c07ff3762f6b5630f82cfe3230826d27ad688e5943315bd7e8d7f50dcae4b558",
+  "RCE_csn_snippet_147": "e3d3d61036ec3fcfde0282d55ab8c9642343352e20c1109643d032af0f01d18c",
+  "RCE_csn_snippet_151": "79dfdfbf9c188d96678d173dee00ae9f05d2e03b847e41208477c8a30ec3932c",
+  "RCE_csn_snippet_153": "e1ecf37e68f9d83c6713e999c1a7c0eeec5021560001130b93ae91488bb1ee46",
+  "RCE_csn_snippet_159": "abd370f29da73acb9f8c40a1a3df9634bd0984c0233fce7d6cf225af57db822b",
+  "RCE_csn_snippet_160": "230500ca0f62a2f80968e552d6841e5a11f593dd304551493feb839a28cd9898",
+  "RCE_csn_snippet_162": "e984b0210eaf46ac548daa830f3b03d5a20a8c7c2d05dd37a36103e8bf9335af",
+  "RCE_csn_snippet_172": "b9f20e43fb9bf4116065bcdc965c3755f79dd17a284ab529487003bc8c26f400",
+  "RCE_csn_snippet_178": "34b974d6a2914e324d3f8f54aa9850b32516ec161cbd421d4605e80b91bca815",
+  "RCE_csn_snippet_2": "dfe530e0ccee05710ee0b5660d3adbfe0da7e73232352a27512addd0689dbfff",
+  "RCE_csn_snippet_217": "519f368da3c82767b05b26b085b1a3b9eed8d9cc5b9defb73caef97c4718f955",
+  "RCE_csn_snippet_220": "e77fc413610be5fe7922765dc49a40a87b8694a02324c3e6a96eea1dcdf8ec01",
+  "RCE_csn_snippet_240": "a9e1aa8df4205cb63d844607ca8ed5e1c42d8ca77d6476e1ba19f283dcbf35ec",
+  "RCE_csn_snippet_241": "cbb22137cce1bc64e717ed089e521312c84e28fb380fe13d75e712cf4a22a944",
+  "RCE_csn_snippet_274": "b9054259294a7cfa291b1b2f78561bd16f0e16d5fa2a87ee5361029c12b46afc",
+  "RCE_csn_snippet_280": "d1d4e604ebee736121061b76b413ada05ad96256722c8b61a58594421a9d19b1",
+  "RCE_csn_snippet_53": "6e2764de6189282e1942e82a62b3691b8fd611dc34083a21c51415fb46a99d71",
+  "RCE_csn_snippet_6": "e3557f6fff1953b665252005afb99d11159ea99f59e7a4d815e1230490b89dd6",
+  "RCE_csn_snippet_8": "4c53ac12a3971300c8b710bc090066a2a209873323ea3e609c3f668554c286e4",
+  "RCE_csn_snippet_82": "79eceee290825ca241ee5624d51b474a0e0047e954a395c6884b9270f0b9d3df",
+  "RCE_csn_snippet_84": "060fcc845fc1e049bc628978775d209525169ef991c269c6cd2de570f39e59a2",
+  "RCE_csn_snippet_9": "f235b2e86c645e0a74238e2e7b11d3a472ff2dbf8541dbf294b94a056dd17cdb",
+  "RCE_post_snippet_132": "74f325ca6319554a57d69b775d7f11d096c7dd106f31538e9639ca0422fe356b",
+  "RCE_post_snippet_153": "b7bf6dff2e0361d3880200f70bfe3e023132c9607629ccb015b9997c110aae1b",
+  "RCE_post_snippet_155": "18ffe6e6bcdc1f85ff790eb7698303303da76700e8cb45e0fb0e4b0533ee6335",
+  "RCE_post_snippet_165": "25e25573a3153685fea4c5ebc41ec358f7b5bd6729b316d13be8d03c07d716c5",
+  "RCE_post_snippet_167": "91bdddf740f37447a2d46332fe0e97da55775ae2074cc975e4d71bd983b9e429",
+  "RCE_post_snippet_173": "d8c882c36d637f24344c6411e91f26b1a6e95c129f88df0e7ab67749678a5e82",
+  "RCE_post_snippet_19": "a2175b8e0024b70aec4fffd82ff33ec61438790f681138f3adca510d0d1ec5c3",
+  "RCE_post_snippet_194": "2c77ae9ef3e6ef3b2f118ed250d47a8294c537159ad70edbd25f5ca515a09eae",
+  "RCE_post_snippet_218": "a4c7aa7f49824bea92b0c7086c019feaa9042b1760208418c626b81419a60e7d",
+  "RCE_post_snippet_219": "67b8ddfef87c05a410a9ed0564ecfa706f5b8b7b5f835fd0b4feb819b8fecc34",
+  "RCE_post_snippet_22": "49c043bff5f559c07e145625d08266b93d21e4014581c5a1bd3912c54fd4abb7",
+  "RCE_post_snippet_223": "c102fba37a5b882dc2023f0c054c9dc3615b3a75ecdd291ff8ce742490336d0b",
+  "RCE_post_snippet_226": "1889b0aa05c336f7790f1e73c39b441cc6ffba737161f25d1ab911946ad33fee",
+  "RCE_post_snippet_227": "b546c1391344f4aa92b6cbc7effd9fd53fdb1e4b761697e3b31c86ef9bef57ba",
+  "RCE_post_snippet_23": "5141d6dab862fca4f44d2c88cc62ddeccf1dbaf9209757e8edeed7205b64a7a2",
+  "RCE_post_snippet_249": "4acca12081c5ebaeab13aadd504b93caa4a12356332c576a6b226b28f4e3dcd9",
+  "RCE_post_snippet_256": "efc8f084e78e41c478ad2a3a456adb650c7bc9246a76ec56bc3aee94f720c034",
+  "RCE_post_snippet_285": "8fefabafef0c6f95b4729d630b2d117a95f6478080d3aa9c96f61a41c090d093",
+  "RCE_post_snippet_286": "1b730c31b41e3f41c0560a94669313633cf8bd686ec7b7d1a50b9d3763c4680a",
+  "RCE_post_snippet_295": "edc7fbc68ad83b58b0f4e0b445e37616b04b583653d57ca82ba42e791c285218",
+  "RCE_post_snippet_312": "4503c1aaebdf242d3e70e4be5252acab12276d76830d91801edfce0f0d359388",
+  "RCE_post_snippet_340": "472b2ba24cf8dfcc430d4f6c6570adb7780d15fbbeafaea804063eb8a5715b9e",
+  "RCE_post_snippet_342": "83cecd4f64b37a6b9bead50cbd8f3762011c10f4cf100f26fb17571c47f9b5a5",
+  "RCE_post_snippet_343": "5548dde84669544a041da3b441ecda258f744af33dc57669dd0df85474ef2dcf",
+  "RCE_post_snippet_346": "176fcfe1328a9afdc9f0c6a6752a45d073162eb1f7af3e695bbee432e306e742",
+  "RCE_post_snippet_41": "3fa2b214727316ee6a9dc38fdb715a9d01271a80d02774412d95ca8f9076dd5d",
+  "RCE_post_snippet_42": "3b547c419b1c9c48cc93254bf98f8b4222be1d070c5ac43b0ac756b539840501",
+  "RCE_post_snippet_68": "7ab50c4e6218d66aa663cf8b9e5985aeafd7b9ba932af9c8ad986169f3dcf78d"
+ },
+ "audit_reserved": "02eaae35d58725a4689fd42373a6271492c9c86afc4f358d8dd31054b5c03707",
+ "cohort": [
+  "RCE_csn_snippet_108",
+  "RCE_csn_snippet_115",
+  "RCE_csn_snippet_119",
+  "RCE_csn_snippet_120",
+  "RCE_csn_snippet_125",
+  "RCE_csn_snippet_142",
+  "RCE_csn_snippet_147",
+  "RCE_csn_snippet_151",
+  "RCE_csn_snippet_153",
+  "RCE_csn_snippet_159",
+  "RCE_csn_snippet_160",
+  "RCE_csn_snippet_162",
+  "RCE_csn_snippet_172",
+  "RCE_csn_snippet_178",
+  "RCE_csn_snippet_2",
+  "RCE_csn_snippet_217",
+  "RCE_csn_snippet_220",
+  "RCE_csn_snippet_240",
+  "RCE_csn_snippet_241",
+  "RCE_csn_snippet_274",
+  "RCE_csn_snippet_280",
+  "RCE_csn_snippet_53",
+  "RCE_csn_snippet_6",
+  "RCE_csn_snippet_8",
+  "RCE_csn_snippet_82",
+  "RCE_csn_snippet_84",
+  "RCE_csn_snippet_9",
+  "RCE_post_snippet_132",
+  "RCE_post_snippet_153",
+  "RCE_post_snippet_155",
+  "RCE_post_snippet_165",
+  "RCE_post_snippet_167",
+  "RCE_post_snippet_173",
+  "RCE_post_snippet_19",
+  "RCE_post_snippet_194",
+  "RCE_post_snippet_218",
+  "RCE_post_snippet_219",
+  "RCE_post_snippet_22",
+  "RCE_post_snippet_223",
+  "RCE_post_snippet_226",
+  "RCE_post_snippet_227",
+  "RCE_post_snippet_23",
+  "RCE_post_snippet_249",
+  "RCE_post_snippet_256",
+  "RCE_post_snippet_285",
+  "RCE_post_snippet_286",
+  "RCE_post_snippet_295",
+  "RCE_post_snippet_312",
+  "RCE_post_snippet_340",
+  "RCE_post_snippet_342",
+  "RCE_post_snippet_343",
+  "RCE_post_snippet_346",
+  "RCE_post_snippet_41",
+  "RCE_post_snippet_42",
+  "RCE_post_snippet_68"
+ ],
+ "tasks_with_targets": 37,
+ "n_targets": 77,
+ "targets": {
+  "RCE_csn_snippet_108": [],
+  "RCE_csn_snippet_115": [
+   {
+    "group_id": "5265a0d8c2a2c7b5",
+    "code_sha256": "5181a0d284a6eee2cf8ff6f0230b52110929b6d08f6b416aeef4a8a7fef1c943"
+   },
+   {
+    "group_id": "bc4b52a688c5e623",
+    "code_sha256": "f3491623607b1058add55996c04af9dccaff0352191da944cdff45f9c5c025f7"
+   }
+  ],
+  "RCE_csn_snippet_119": [],
+  "RCE_csn_snippet_120": [],
+  "RCE_csn_snippet_125": [
+   {
+    "group_id": "01eb8b731754dad6",
+    "code_sha256": "e390f9d540c125aefdeb23e151b2d4d74e20007f6bf10651a85da878c0ef3e31"
+   },
+   {
+    "group_id": "6647aa138f62f5ea",
+    "code_sha256": "b88b948a78a1979377b9f4ad311b096a874116b11c6b0657214277bd6ca511f3"
+   }
+  ],
+  "RCE_csn_snippet_142": [
+   {
+    "group_id": "0b07e5dd7a9e306c",
+    "code_sha256": "a604ae390c829d5020eec5ccf906dfe5a189cb751b645fd2614936697ac4d92a"
+   },
+   {
+    "group_id": "534a8e253b969dab",
+    "code_sha256": "96d04e5d522e325d71497c3f4462bbdb94df58b9855382185c027d580d30bda5"
+   },
+   {
+    "group_id": "685247c90b3ab8e1",
+    "code_sha256": "22ff2269baf648bd513c928457d35daa875fc394ead3bc3621fbbf161560a49d"
+   }
+  ],
+  "RCE_csn_snippet_147": [],
+  "RCE_csn_snippet_151": [],
+  "RCE_csn_snippet_153": [],
+  "RCE_csn_snippet_159": [
+   {
+    "group_id": "08f87f98ceb6111b",
+    "code_sha256": "b841bd8ccc6dc7e46ec43caff1bf5640ba5c77bcef47d94aafafabde205bdbc3"
+   },
+   {
+    "group_id": "c9aa0827002ed19c",
+    "code_sha256": "f4a85fe58fb1fa69a004a12b4f39c56c6283fd714fb64c7d89e731747614ae14"
+   }
+  ],
+  "RCE_csn_snippet_160": [
+   {
+    "group_id": "681a67b7da98c74f",
+    "code_sha256": "590f73620fd0a0b94862569a228cdd230de5f1440974ab7f94f6e96bc88b2f54"
+   }
+  ],
+  "RCE_csn_snippet_162": [
+   {
+    "group_id": "46645e7c5a96e56a",
+    "code_sha256": "a7ad4d60509e094cd623ee3a28417f3cd317777860bc882a0b9a17a9541e9306"
+   },
+   {
+    "group_id": "68288b39077582e6",
+    "code_sha256": "513ad0e89a8c1283081a66374e2d818f7178a3d49cdd184c61c1b26211304876"
+   },
+   {
+    "group_id": "69de60b7c5a62258",
+    "code_sha256": "99bf700a21552c957d9225273fc48d817a76560b2853eb7810be38544531262f"
+   }
+  ],
+  "RCE_csn_snippet_172": [],
+  "RCE_csn_snippet_178": [
+   {
+    "group_id": "eb1b1782cbdae3a2",
+    "code_sha256": "3175e8402d3e5297625ed844c37dd67c5ed946d83d60eff356943d4229e48d44"
+   }
+  ],
+  "RCE_csn_snippet_2": [
+   {
+    "group_id": "0ada39c77165dc0a",
+    "code_sha256": "07d36070c0f07952e9cdfd75d5da99c788650d47dcfd93945375cea1629b8b06"
+   },
+   {
+    "group_id": "50eae2a4f57b76f3",
+    "code_sha256": "ac1385c09707594211cf394dd75617b9145e3516c0c4e96e50601af4d448b1f6"
+   }
+  ],
+  "RCE_csn_snippet_217": [
+   {
+    "group_id": "9bfec76d557dd647",
+    "code_sha256": "ce1f09aacde8690736aa321ec98e0735a5a8bae30ea06ab891d85b740dea6c44"
+   },
+   {
+    "group_id": "c85ef5d95f796026",
+    "code_sha256": "cf4b28e3a806787c8dcb067b5b7c2d749fba2a7736af124c394fe31f2bea26ef"
+   }
+  ],
+  "RCE_csn_snippet_220": [
+   {
+    "group_id": "e11ca95a86726a50",
+    "code_sha256": "7fcfc3e95cd3577beb7f9107e75a8e741a766257058a742cf17af6ed53df7d6c"
+   },
+   {
+    "group_id": "f63840cdf56337ce",
+    "code_sha256": "98342ae9ec7aecda703c54fe2f823eb961ad2bdc9e870739fc223f889f4b5075"
+   }
+  ],
+  "RCE_csn_snippet_240": [],
+  "RCE_csn_snippet_241": [],
+  "RCE_csn_snippet_274": [],
+  "RCE_csn_snippet_280": [
+   {
+    "group_id": "27756030cc977f0a",
+    "code_sha256": "b3b5ac8c096ec7e7337b7f1ac49aef961d54f3e44a2194cd9e85a4ad9ca45602"
+   },
+   {
+    "group_id": "c77acac204aa236f",
+    "code_sha256": "c727366cb93c12bcec56a94359a9f51422fe344cdd1c7a7bfa28a8bd70009c48"
+   }
+  ],
+  "RCE_csn_snippet_53": [
+   {
+    "group_id": "709d745e53228fff",
+    "code_sha256": "b0b09929701980fe9e0087e43387c90a6ac57e74df1a039988d2878db446d5a0"
+   },
+   {
+    "group_id": "ac6b4773a0d907ac",
+    "code_sha256": "a31de0f98cb1dc7a26cd899f0e0f18ce5ee46b22f242bc6f8e064a46a07a47c3"
+   }
+  ],
+  "RCE_csn_snippet_6": [],
+  "RCE_csn_snippet_8": [
+   {
+    "group_id": "a453b4982e5cf556",
+    "code_sha256": "b805aa2773083d6c2d28e33b801ec53fbbb53bfa1ecd869116d5224325f8f5b4"
+   },
+   {
+    "group_id": "d1c4cda65ccecc64",
+    "code_sha256": "dcfff00ac976d74243cddf4be725a540074e20ac2ca240cde576df6ea8cd497a"
+   }
+  ],
+  "RCE_csn_snippet_82": [
+   {
+    "group_id": "0e431ec69646e017",
+    "code_sha256": "70203ef3c0ccd0d3f0b77e0ed9a24d865f316c81e6ea72ddaaed550f1efad428"
+   },
+   {
+    "group_id": "176c9a776a12c0c7",
+    "code_sha256": "4d143711d1f3f9ed118d355b6d15b6f775d1235b1218c9b3b1b586521b9af38d"
+   },
+   {
+    "group_id": "35be93172e48de4a",
+    "code_sha256": "098f7bcabcbb1dc8206c9e5f2c9743d38cf6f753d6451a8c851e91ca32e414d1"
+   }
+  ],
+  "RCE_csn_snippet_84": [
+   {
+    "group_id": "72c80fbc99551df7",
+    "code_sha256": "c0e165ce4b682cdd26fd6ccab606442b7dfa638df7f14f7d8b43417f2ab2f5d1"
+   }
+  ],
+  "RCE_csn_snippet_9": [],
+  "RCE_post_snippet_132": [
+   {
+    "group_id": "3f1d9814f03d9eb7",
+    "code_sha256": "2277d1cb453588dd55f8a09d3901e6d28ca50b851a8c096916c06e7a1a3003a5"
+   },
+   {
+    "group_id": "5a23466bc8f2a5b3",
+    "code_sha256": "c27f5aa115fff56c3217abfd84747d5f9bf28cc66c8f1b5b34f38fb70247934f"
+   },
+   {
+    "group_id": "639897274688cbf5",
+    "code_sha256": "5c836177212ccabe7dfd7b1b1eef4d817a428853c02fec15afb5fa536ae55e0e"
+   }
+  ],
+  "RCE_post_snippet_153": [
+   {
+    "group_id": "01f3503f2e40ceaf",
+    "code_sha256": "2ebd55d597eb50f753e07c88edb43b5027477602b7a7eef02ad7de2c0f66aa8d"
+   },
+   {
+    "group_id": "37f4a9a1c2356ac0",
+    "code_sha256": "f46a8d3bfb47287c6560bd939e5cecbff93d5a54b1a2c7377fc94daaee503b73"
+   },
+   {
+    "group_id": "4e3cc057b580a9e1",
+    "code_sha256": "c4e51eca7ff32842e72eefd69269cc3f584e299ef3b469e440b148edae0dfd5f"
+   }
+  ],
+  "RCE_post_snippet_155": [
+   {
+    "group_id": "4bb0673d092e91b3",
+    "code_sha256": "247f7529b87884592b04df6ed9472badbbf7672bdb27a0be745a96d411ce8f5b"
+   },
+   {
+    "group_id": "4d8748c8545de698",
+    "code_sha256": "05ec56102fd8fccf871c7547eee986645ae6a7559292feca564935db4d4dff38"
+   },
+   {
+    "group_id": "665ef83e6c122001",
+    "code_sha256": "7ed0b5a70525e3f2c4cbbda5f9a581d8381738fdd861ff395d694fda4243ae0b"
+   }
+  ],
+  "RCE_post_snippet_165": [
+   {
+    "group_id": "328ef14aac465b70",
+    "code_sha256": "843a1f89575845fc025f096262548824ba51c8c96581dbef32752a454b480357"
+   },
+   {
+    "group_id": "710084ae92d5667e",
+    "code_sha256": "34dcb7dbce8e14693846ffb4b6a6558eb4068dbdcb487633240cf1040c9671d9"
+   },
+   {
+    "group_id": "de37b514756de6a5",
+    "code_sha256": "d78ca0e677cd6e541f6ee8d98142d9cc26af449d423f366d6b3cfedd103cf49f"
+   }
+  ],
+  "RCE_post_snippet_167": [],
+  "RCE_post_snippet_173": [
+   {
+    "group_id": "ccb02f40d87dbfd1",
+    "code_sha256": "f4593b098fd2eecb2fd2d2906ab53f0606c1de2a3d81a52f925d47963ed69605"
+   }
+  ],
+  "RCE_post_snippet_19": [
+   {
+    "group_id": "23a1b52185de8602",
+    "code_sha256": "0724bcbe96ba747c24617fa3d5af26069843dac51be86f3c67fa1038d5986de1"
+   },
+   {
+    "group_id": "d5c1e8e4395b30e7",
+    "code_sha256": "5924afa22f0a45133a1262b9dd89a5b2c31cba4364a75dbc8023fa71ab4245c6"
+   }
+  ],
+  "RCE_post_snippet_194": [
+   {
+    "group_id": "2511d0de835ec7b9",
+    "code_sha256": "57bbf7c77db7c41d3dd1770bb9cc8822224bb7c1a14075ec441ea8011d73ad14"
+   },
+   {
+    "group_id": "8416e012c3f1e10d",
+    "code_sha256": "52356e80fc40bca98378e32892dce3b7f5de0b12b5556c6c4e3147bdda6d4187"
+   },
+   {
+    "group_id": "91cecda164248a75",
+    "code_sha256": "8636df886724296b8d8c903ed0deca77e34e84b8db2d880656a1c4941143b85d"
+   }
+  ],
+  "RCE_post_snippet_218": [],
+  "RCE_post_snippet_219": [
+   {
+    "group_id": "4cced379de54118e",
+    "code_sha256": "a1812d48f7340669b8ac3f87da9cbd3e4a9755dc5872adc7e6027f44ef18db29"
+   },
+   {
+    "group_id": "80652f84c243a27c",
+    "code_sha256": "5faf04d02b05b0318afd5adec33ccf03da8ea86d471989c7c2479725ab0077ea"
+   },
+   {
+    "group_id": "9331b8889a7e987a",
+    "code_sha256": "480e8207eb6648da143ef9753fa787c352906347d795b79140225131d8d69b53"
+   }
+  ],
+  "RCE_post_snippet_22": [],
+  "RCE_post_snippet_223": [],
+  "RCE_post_snippet_226": [
+   {
+    "group_id": "2d05baa06a72c2cc",
+    "code_sha256": "fbb11546c510af607824e6b3fdfae88023694ae8a5177e7662617d35a4ff1c3e"
+   },
+   {
+    "group_id": "a082b274c72327ae",
+    "code_sha256": "e11e3940c07a175453feb76a1ae74f42ba5154b3115eee7c4731cad331f78c06"
+   },
+   {
+    "group_id": "d8592e883835e8ab",
+    "code_sha256": "7aba4d9eebd4371f16cb68a5a384ae78bbd60e77ecb397cd8b983c69886090f1"
+   }
+  ],
+  "RCE_post_snippet_227": [
+   {
+    "group_id": "72a4d2d4c24c96ff",
+    "code_sha256": "f940d8dfcdf7a54d60ef8279584dad05201b09be3c3c7cc9199066d27cfc4e59"
+   },
+   {
+    "group_id": "d3b3773259b7b0b0",
+    "code_sha256": "aafc05c8b0f31cb77ecc1ab228ad64fe9abc8cb95c4ccf66c590604e73bde3a5"
+   },
+   {
+    "group_id": "ef0704f1964e08d6",
+    "code_sha256": "006690477a852245cdd627f4b4d5b27c361d6ed9fdf28e00b804f183bcc8b8a7"
+   }
+  ],
+  "RCE_post_snippet_23": [],
+  "RCE_post_snippet_249": [
+   {
+    "group_id": "7b076bb19f563f38",
+    "code_sha256": "b675d9d940c408203b774059482723d9d300352cebd020ac4d6079ef2695ebeb"
+   },
+   {
+    "group_id": "9deb4a354b69cf8a",
+    "code_sha256": "5be8b70935d6017bea10ca520c67c09e18e47936b42de61b683eb19bcf308adc"
+   },
+   {
+    "group_id": "c61a23b222cc73fb",
+    "code_sha256": "2af84140ca9f53b505c6b0b3ae7175088656fedc6f0229975df1b1ef5bf4ce14"
+   }
+  ],
+  "RCE_post_snippet_256": [
+   {
+    "group_id": "db6f7f69a0a09171",
+    "code_sha256": "2ec7aad89c9c3ab8c759b292115ed020bf3a68ad923e2a8e8bcab05155202733"
+   },
+   {
+    "group_id": "e754f0c44a1bc3ff",
+    "code_sha256": "33400e5139914b1c41506b060edd1eb37bab29b3c9b1754b089cf11d3dd8b27f"
+   }
+  ],
+  "RCE_post_snippet_285": [
+   {
+    "group_id": "0cf42f2b425a220a",
+    "code_sha256": "d336690ae2cbcd69baa87e498b43d2d0e070a6078d7a38d381007e5aa98f87a1"
+   },
+   {
+    "group_id": "b2ddc93c435fc14e",
+    "code_sha256": "e061dacd2dd591802dd34d2c18c1206a02c90f87ed082fc4b9bf79b1032a2ab2"
+   },
+   {
+    "group_id": "d63c0d2cc175646f",
+    "code_sha256": "f339b65aed34091daf6db1b4ca46698eb99af4f8aab311e64470716e8dece123"
+   }
+  ],
+  "RCE_post_snippet_286": [
+   {
+    "group_id": "877f43a7da4e9946",
+    "code_sha256": "0e63855cdea2bf2a9acdeaf0e8590f0dbdbb07c4df7aeb1dec71142497029646"
+   }
+  ],
+  "RCE_post_snippet_295": [
+   {
+    "group_id": "0e20451c6b9ddbcf",
+    "code_sha256": "653291353ee1cbf523f4846ecfaf4b414a465bba0f52a9db287b403595c91536"
+   },
+   {
+    "group_id": "bd2092418fc63714",
+    "code_sha256": "fbdf17e26c1746bea4d511ae3750bfa56567a0a6bae27703e8aac762939c1d93"
+   }
+  ],
+  "RCE_post_snippet_312": [
+   {
+    "group_id": "3af4cffb40efff3b",
+    "code_sha256": "1078282f60a636e635396e69a693e6368761273a302d1437317bee450e8376e3"
+   }
+  ],
+  "RCE_post_snippet_340": [
+   {
+    "group_id": "042bc340d7f9c4ee",
+    "code_sha256": "7ee5be1f59cd0f977015f42af66fff991155154216d95f4394b327eb8e39b96a"
+   }
+  ],
+  "RCE_post_snippet_342": [
+   {
+    "group_id": "74d853cb70542a21",
+    "code_sha256": "51710c4db265a5932f241752aa9a659e0b26ba83a354c4c26c3dec04d790861c"
+   },
+   {
+    "group_id": "a90faefa5a55f669",
+    "code_sha256": "a768580457b93271163f7e6266f20b73c59c63bc6f59e76635debb6a0f7b28ed"
+   }
+  ],
+  "RCE_post_snippet_343": [
+   {
+    "group_id": "abc7f66c983643ff",
+    "code_sha256": "b94201bd7be4fde447ced5411311358ef52e8f0238c27fb22bab39097cd3b9db"
+   }
+  ],
+  "RCE_post_snippet_346": [],
+  "RCE_post_snippet_41": [
+   {
+    "group_id": "b5949672e3e5d59b",
+    "code_sha256": "43df7d31ace54fc36ac6bab21fcc172ca7df775a649f0e52b3dea47dbb364739"
+   }
+  ],
+  "RCE_post_snippet_42": [
+   {
+    "group_id": "aa001377e8ccd118",
+    "code_sha256": "f1d870f52d1829db5c56c08e2514207bccf396e6dd51b1f168a1b3c9b452d0f7"
+   }
+  ],
+  "RCE_post_snippet_68": [
+   {
+    "group_id": "6cf8ddc0205cab6e",
+    "code_sha256": "b5214e99718ed58769a34e7f5f4e497077bda456f2f3301c9223560e17b12380"
+   },
+   {
+    "group_id": "92d45a53d03f202e",
+    "code_sha256": "750106a42cb8550c908bfad7904ed4c0e00a5ddef360fb5eb0d1a32655ff1e1d"
+   }
+  ]
+ },
+ "git": {
+  "commit": "e83e183e6b523e936d31dda52658b7ded128642f-dirty",
+  "head": "e83e183e6b523e936d31dda52658b7ded128642f",
+  "dirty_tracked_files": [],
+  "untracked_code_files": [
+   "config/default.tier1_oldfull_3models.yaml",
+   "config/default.yaml.save",
+   "config/tier2_m1_pilot.yaml",
+   "config/tier2_runs/ceil49k_combined.yaml",
+   "config/tier2_runs/ceil49k_innkube.yaml",
+   "config/tier2_runs/ceil49k_vllm-qwen36.yaml",
+   "config/tier2_runs/ceil49k_vllm-qwen38.yaml",
+   "config/tier2_runs/ceil65k_combined.yaml",
+   "config/tier2_runs/ceil65k_innkube.yaml",
+   "config/tier2_runs/ceil65k_vllm-qwen36.yaml",
+   "config/tier2_runs/ceil65k_vllm-qwen38.yaml",
+   "config/tier2_runs/full_combined.yaml",
+   "config/tier2_runs/full_innkube.yaml",
+   "config/tier2_runs/full_vllm-qwen36.yaml",
+   "config/tier2_runs/full_vllm-qwen38.yaml",
+   "config/tier2_runs/pilot2_combined.yaml",
+   "config/tier2_runs/pilot2_innkube.yaml",
+   "config/tier2_runs/pilot2_vllm-qwen36.yaml",
+   "config/tier2_runs/pilot2_vllm-qwen38.yaml",
+   "config/tier2_runs/pilot_combined.yaml",
+   "config/tier2_runs/pilot_innkube.yaml",
+   "config/tier2_runs/pilot_three_models.yaml",
+   "config/tier2_runs/pilot_vllm-qwen3-next.yaml",
+   "config/tier2_runs/pilot_vllm-qwen36.yaml",
+   "config/tier2_runs/pilot_vllm-qwen38.yaml"
+  ]
+ }
+}

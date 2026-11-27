@@ -904,3 +904,47 @@ Whether the 62 are true faults or invalid inputs (an input outside the documente
 | order of the three models | qwen36 first; under P∧H gemma ahead of qwen38 (0.200 vs 0.182) | qwen36 first; gemma and qwen38 tied under P∧H (gap 0.000 [−0.073, +0.076]) |
 
 **What is concluded.** Neither version gives evidence that H finds faults that P misses on the evaluation cohort. No program in either sample was judged a true fault; the unclear programs (10 in each) are the only candidates. Under v1, nearly all of the drop is H rejecting acceptable completions. Under v1.1, that drop is almost entirely gone. What remains is small, at least two thirds erroneous by the lower bound, and, on the `original` relation, entirely exception-caused. As pre-registered, v1 stays the primary result and is reported as not validated; v1.1 is the last revision, and no v1.2 follows. For the thesis: on this benchmark, a reference-differential hidden suite either over-specifies (v1) or, once restricted to the specified outputs, adds almost nothing to P (v1.1).
+
+### 10.9 Pipeline review before A3 v2, and the A3 v2 implementation (2026-11-27)
+
+**Review of the Stage 4 and Stage 5 code (build, freeze, grading, analysis, review).** I found no defect that changes a reported number. Checked in particular:
+- *Fix A with no field left:* an object token whose fields all lose their R7 entry becomes `["obj", class, {}]`. `api_diff` compares only the expected token's fields, so it accepts any object of that class: weaker than v1, as the subset rule assumes.
+- *Exception-caused flag:* it uses the step status (`EXC:`) and requires no failing assertion before the first unexpected raise. A constructor that raises is counted as "stopped earlier", and it is exception-caused too.
+- *v1.1 freeze record:* its source is the h_v11 build output (`a2/full_v2_1`), v1's is `a2/full_v2`, and the digests differ. The v1.1 freeze reuses the round 1 audit acceptance (the audit judged H v1). That is sound only because every v1.1 assertion is the same as or weaker than v1's, which the build checks test by test. It is stated here because the record does not say it.
+
+**Two pre-registered analyses were not yet built or run.** Both are added now, before any of their outputs exist:
+- *RQ4c main (plan, Stage 4): held-out detection of canonical H vs P on the evaluation cohort.* `eval_heldout.py` now:
+  - aggregates the 55-task cohort as well (`--audit`), next to all 75 frozen tasks;
+  - reports the share of a task's groups found by H and not by P (`mean_task_rate_h_only`);
+  - gives task-cluster bootstrap intervals (B = 2,000, seed 20261127) for P, H, P∨H and H-only.
+
+  It runs on H v1 (primary) and H v1.1 (sensitivity).
+- *RQ3 with H (plan, Stage 5; frozen in `rq3_population_v1.json`): `scripts/analyze_rq3_h.py`.* It is task level and descriptive.
+  - Population: the held-out half of the τ_div split ∩ the Stage 5 cohort.
+  - RQ3-scored solutions are rebuilt by RQ3's own rule: per selected relation and model, the first P-passing completion, else the first completion.
+  - Labels: primary ≥ 1 scored solution P-pass/H-fail; secondary ≥ 1 fails P∧H. Sensitivity: the first completion of every cell.
+  - Metrics: AUC; sensitivity, specificity and J only at τ_div = 0.1667 (`score ≥ τ`).
+  - It runs on the v1 grading (primary) and the v1.1 grading (sensitivity). The validity reviews (sections 10.7 and 10.8) found no true fault among the P-pass/H-fail programs, so the primary label measures operational disagreement only (D7), not faults. It is reported that way.
+
+**Arm gate.** `grade_hidden` and `eval_heldout` accept `--arm-of <frozen bundle>` with `--after-freeze`. An A3 directory is never frozen. It may be graded on evaluation tasks only once the named bundle verifies against its record, and only on that bundle's tasks (`freeze_h.unlock`). The grading records the arm and the bundle's digest.
+
+**A3 v2, as pre-registered in section 10.6 (order step 2).**
+- `oracles/agent.py`:
+  - `first_prompt_v2` is v1's prompt without the reference block. The fault diff is produced with no context lines (`fault_diff(..., n=0)`).
+  - `check_v2` runs v1's checks in v1's order. Only the reference-failure message differs: "the test fails on a correct implementation", followed by the exception type and the failing line of the test.
+  - Those two items come from a separate diagnostic run of the same test. A wrapper prints the exception type and the line number of the innermost frame in the test file. No value, no exception message, no pytest output and no line of the reference reaches the model.
+  - The not-detected message and the static-check messages are v1's.
+  - `run_target` takes `checker` (default v1). The repair message is the same.
+- *v1 is pinned* (`tests/test_witness/test_a3_v2.py`): the sha256 of v1's prompt on a fixed input, of v1's diff, of `SYSTEM + RULES`, and of the source of `check`, `first_prompt`, `static_check` and `domain_text`, as they were at commit 1d42220. With `--version v1`, `build_a3.py` calls exactly the pilot's code path, seeds and cache salts (`a3v1:...`).
+- `scripts/build_a3.py`:
+  - `--version v1|v2`. The seeds and cache salts are `a3<version>`, and each output directory has its own cache.
+  - `freeze-targets` writes `a3_targets_v1.json` once, by v1's rule, on the 55-task cohort of the verified H v1 bundle. It stores each target's code sha256 and the H v1 digest, and it never overwrites the file.
+  - `run --targets` (evaluation) uses exactly that list. It stops if a target's code differs or if `--a2` is not the frozen H v1. A record of the other version is never reused.
+  - Every run writes a run manifest first (safeguard 5): the sha256 of `agent.py`, `build_a3.py`, the LLM config and the target list; the model's config and endpoint; temperature, max_tokens and attempts; the prompt hash; and the seed rule.
+  - `merge --targets` builds the A3-only and A2 ∪ A3 files for the cohort.
+
+**Next, as pre-registered:**
+1. the v2 smoke test on the development tasks (technical only);
+2. freeze the target list;
+3. the v1 and v2 evaluation runs;
+4. grading with `--arm-of results_tier2_ext/hidden_v1`, then the review samples.

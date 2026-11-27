@@ -219,6 +219,8 @@ def main(argv=None) -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--after-freeze", action="store_true",
                     help="allow evaluation tasks: only once canonical H v1 is frozen (tag tier2-hidden-v1)")
+    ap.add_argument("--arm-of", type=Path, default=None,
+                    help="with --after-freeze: --hidden is a comparison arm (A3, decisions 10.6) of this frozen bundle")
     ap.add_argument("--audit-reserved", type=Path, default=None,
                     help="audit_reserved.json (scripts/audit_h.py select): grade exactly the audit-reserved tasks "
                          "(allowed before the freeze, decisions 6); the selection is recomputed and must match")
@@ -248,10 +250,10 @@ def main(argv=None) -> int:
     elif not args.after_freeze and set(labels) - set(cfg.extensions.development_tasks):
         raise SystemExit("ERROR: grading evaluation-task completions on H only after H is frozen (--after-freeze); "
                          "before that, H outcomes on RQ2 completions must not be seen (plan D5)")
-    frozen_sha = None
+    unlocked = {"frozen_h_sha256": None}
     if args.after_freeze and args.audit_reserved is None:
-        import freeze_h
-        frozen_sha = freeze_h.verify(args.hidden)["global_sha256"]   # only the committed frozen bundle unlocks them
+        import freeze_h                                  # only a committed frozen bundle unlocks them (or an arm of it)
+        unlocked = freeze_h.unlock(args.hidden, args.arm_of)
     pins = ec.pins_ok(cfg)
     policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=False)   # grading
     policy.activate()
@@ -263,7 +265,7 @@ def main(argv=None) -> int:
     total = Counter()
     for r in res:
         total.update(r["counts"])
-    doc = {"authoritative": gated, "hidden": str(args.hidden), "frozen_h_sha256": frozen_sha,
+    doc = {"authoritative": gated, "hidden": str(args.hidden), **unlocked,
            "isolation": "per_test_process", "pins": pins,
            "totals": dict(total), "tasks": res}
     args.out.parent.mkdir(parents=True, exist_ok=True)

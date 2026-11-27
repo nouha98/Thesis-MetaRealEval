@@ -109,6 +109,23 @@ def verify(hidden: Path, record_path: Path | None = None) -> dict:
     return rec
 
 
+def unlock(hidden: Path, arm_of: Path | None = None) -> dict:
+    """What lets evaluation-task outcomes of ``hidden`` be seen (plan D5).
+
+    The frozen bundle itself verifies against its record. A comparison arm (an A3 directory, decisions 10.4 and
+    10.6) is never frozen: it is allowed only once ``arm_of``, a frozen bundle, verifies, and only on that
+    bundle's tasks."""
+    if arm_of is None:
+        rec = verify(hidden)
+        return {"frozen_h_sha256": rec["global_sha256"], "frozen_h_version": rec["version"], "arm_of": None}
+    rec = verify(arm_of)
+    extra = sorted({p.parent.name for p in hidden.glob("*/hidden_tests.py")} - set(rec["tasks"]))
+    if extra:
+        raise SystemExit(f"ERROR: the arm {hidden} has tasks outside the frozen H {arm_of}: {extra[:5]}")
+    return {"frozen_h_sha256": None, "frozen_h_version": rec["version"], "arm_of": str(arm_of),
+            "arm_of_sha256": rec["global_sha256"]}
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("cmd", choices=["freeze", "verify"])

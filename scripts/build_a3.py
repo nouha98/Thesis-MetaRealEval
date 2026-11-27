@@ -13,8 +13,20 @@
 
 Targets (fixed): per development task with admitted A2 tests, the primary-confirmed discovery groups that
 no final A2 test kills, in group-id order, at most ``--max-groups`` (3); every model targets the same
-groups; at most ``--attempts`` (3) proposals per (model, group). Development tasks only: the script
-refuses any other task.
+groups; at most ``--attempts`` (3) proposals per (model, group). Without ``--targets`` only development tasks
+are used.
+
+A3 v2 and the evaluation runs (decisions 10.6):
+
+    # once, after H v1 is frozen: the shared target list of v1 and v2 (v1's rule on the 55-task cohort)
+    python scripts/build_a3.py freeze-targets --config config/tier2_extensions.yaml --a2 results_tier2_ext/hidden_v1 \
+        --witness results_tier2_ext/witness/full --audit results_tier2_ext/audit_h/round1/audit_reserved.json
+    # a version on the cohort (--version v1 | v2; v1 is the pilot's code path, unchanged)
+    python scripts/build_a3.py run --version v2 --targets config/extensions_protocol/a3_targets_v1.json \
+        --config config/tier2_extensions.yaml --llm-config <group>.yaml --model <model> --a2 results_tier2_ext/hidden_v1 \
+        --witness results_tier2_ext/witness/full --out results_tier2_ext/a3/eval_v2
+    python scripts/build_a3.py merge --targets config/extensions_protocol/a3_targets_v1.json \
+        --config config/tier2_extensions.yaml --a2 results_tier2_ext/hidden_v1 --out results_tier2_ext/a3/eval_v2
 """
 
 from __future__ import annotations
@@ -41,6 +53,9 @@ from meta_real_eval.oracles.admission import admit, private_rename, run_tests  #
 from meta_real_eval.oracles.fault_groups import load_split  # noqa: E402
 
 MAX_GROUPS, ATTEMPTS = 3, 3
+TARGETS = ec.PROTOCOL_DIR / "a3_targets_v1.json"
+TARGET_RULE = ("per cohort task: the primary-confirmed discovery groups with runnable code that no final A2 test of "
+               "the frozen H v1 kills, in group-id order, at most 3 (v1's rule, decisions 10.6)")
 
 
 def surviving(a2: dict) -> list[str]:
@@ -61,8 +76,67 @@ def seed_of(*parts) -> int:
     return int(hashlib.sha256("|".join(map(str, parts)).encode()).hexdigest()[:8], 16) % 2**31
 
 
-def fault_diff(ref: str, code: str) -> str:
-    return "".join(difflib.unified_diff(ref.splitlines(True), code.splitlines(True), "reference", "faulty", n=3))
+def fault_diff(ref: str, code: str, n: int = 3) -> str:
+    """v1: three context lines; v2: none (``-U0``, decisions 10.6)."""
+    return "".join(difflib.unified_diff(ref.splitlines(True), code.splitlines(True), "reference", "faulty", n=n))
+
+
+def sha(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def load_targets(path: Path, a2_dir: Path) -> dict:
+    """The frozen target list; ``a2_dir`` must be the frozen H v1 bundle it was computed from."""
+    import freeze_h
+    rec = json.loads(path.read_text(encoding="utf-8"))
+    h = freeze_h.verify(a2_dir)
+    if h["version"] != "tier2-hidden-v1" or h["global_sha256"] != rec["h_v1_sha256"]:
+        raise SystemExit(f"ERROR: {a2_dir} is not the frozen H v1 the target list was computed from")
+    return rec
+
+
+def selected(args, cfg) -> dict:
+    """{task: its A2 record}: the cohort of the target list (evaluation) or the ready development tasks."""
+    if args.targets:
+        rec = load_targets(args.targets, args.a2)
+        return {lab: json.loads((args.a2 / lab / "a2.json").read_text(encoding="utf-8")) for lab in rec["cohort"]}
+    return a2_ready(args.a2, cfg.extensions.development_tasks)
+
+
+def freeze_targets(args, cfg) -> dict:
+    """The shared A3 target list of v1 and v2, frozen before either evaluation run (decisions 10.6)."""
+    import build_a2
+    import freeze_h
+    from meta_real_eval.core.provenance import file_sha256, git_state
+    if TARGETS.exists():
+        raise SystemExit(f"ERROR: {TARGETS} exists; the target list is never recomputed")
+    if not (args.witness and args.audit):
+        raise SystemExit("ERROR: freeze-targets needs --witness and --audit")
+    h = freeze_h.verify(args.a2)
+    if h["version"] != "tier2-hidden-v1":
+        raise SystemExit(f"ERROR: targets come from the frozen H v1 bundle, not {h['version']}")
+    audit = set(json.loads(args.audit.read_text(encoding="utf-8"))["tasks"])
+    cohort = sorted(set(h["tasks"]) - audit)
+    if len(cohort) != 55:
+        raise SystemExit(f"ERROR: cohort has {len(cohort)} tasks, expected 55")
+    tasks, _ = ec.load_tasks(cfg, args.ungated)
+    bench = get_benchmark(cfg)
+    baseline = Path(cfg.extensions.baseline_scores)
+    split_groups, _ = load_split(ec.PROTOCOL_DIR / "fault_split_v1.json")
+    targets = {}
+    for lab in cohort:
+        a2 = json.loads((args.a2 / lab / "a2.json").read_text(encoding="utf-8"))
+        wit = json.loads((args.witness / lab / "witness.json").read_text(encoding="utf-8"))
+        disc = build_a2.discovery_codes(wit, tasks[lab], bench, baseline, split_groups)
+        targets[lab] = [{"group_id": g, "code_sha256": sha(disc[g])} for g in surviving(a2) if disc.get(g)][:MAX_GROUPS]
+    rec = {"version": "a3_targets_v1", "rule": TARGET_RULE, "h_v1_sha256": h["global_sha256"],
+           "witness": str(args.witness), "witness_files": {lab: file_sha256(args.witness / lab / "witness.json")
+                                                           for lab in cohort},
+           "audit_reserved": file_sha256(args.audit), "cohort": cohort,
+           "tasks_with_targets": sum(bool(v) for v in targets.values()), "n_targets": sum(map(len, targets.values())),
+           "targets": targets, "git": git_state()}
+    TARGETS.write_text(json.dumps(rec, indent=1), encoding="utf-8")
+    return {"tasks_with_targets": rec["tasks_with_targets"], "n_targets": rec["n_targets"], "written": str(TARGETS)}
 
 
 # --- run -----------------------------------------------------------------------------------------
@@ -76,19 +150,32 @@ async def run_model(args, cfg, llm_cfg) -> dict:
     bench = get_benchmark(cfg)
     baseline = Path(cfg.extensions.baseline_scores)
     split_groups, _ = load_split(ec.PROTOCOL_DIR / "fault_split_v1.json")
-    ready = a2_ready(args.a2, cfg.extensions.development_tasks)
+    ready = selected(args, cfg)
+    plan = json.loads(args.targets.read_text(encoding="utf-8"))["targets"] if args.targets else None
     out_dir = args.out / "runs" / args.model
     client = InnkubeClient(llm_cfg.llm, ResponseCache(out_dir / "llm_cache"))   # never the frozen RQ2 caches
     timeout_s = cfg.execution.timeout_s
+    tag = f"a3{args.version}"                  # seeds and cache salts: (version, task, group, model, attempt)
+    write_manifest(args, llm_cfg, out_dir)
 
     async def one_task(lab: str, a2: dict) -> dict:
         path = out_dir / lab / "a3.json"
         if path.is_file() and not args.force:
-            return json.loads(path.read_text(encoding="utf-8"))
+            old = json.loads(path.read_text(encoding="utf-8"))
+            if old.get("version", "v1") != args.version:
+                raise SystemExit(f"ERROR: {path} holds A3 {old.get('version', 'v1')}, not {args.version}")
+            return old
         task = tasks[lab]
         wit = json.loads((args.witness / lab / "witness.json").read_text(encoding="utf-8"))
         disc = build_a2.discovery_codes(wit, task, bench, baseline, split_groups)
-        targets = [g for g in surviving(a2) if disc.get(g)][:args.max_groups]
+        if plan is not None:                       # the frozen list: same groups, same code, for v1 and v2
+            targets = [t["group_id"] for t in plan[lab]]
+            bad = [t["group_id"] for t in plan[lab]
+                   if not disc.get(t["group_id"]) or sha(disc[t["group_id"]]) != t["code_sha256"]]
+            if bad:
+                raise SystemExit(f"ERROR: {lab}: target code differs from the frozen list: {bad}")
+        else:
+            targets = [g for g in surviving(a2) if disc.get(g)][:args.max_groups]
         contract = load_contract(ec.REPO / a2["contract"]["path"])
 
         async def one_target(gid: str) -> dict:
@@ -98,8 +185,8 @@ async def run_model(args, cfg, llm_cfg) -> dict:
                 t0 = time.monotonic()
                 try:
                     r = await client.complete_detailed(args.model, msgs, temperature=0.6, max_tokens=args.max_tokens,
-                                                       n=1, cache_salt=f"a3v1:{lab}:{gid}:{k}",
-                                                       seed=seed_of("a3v1", lab, gid, args.model, k))
+                                                       n=1, cache_salt=f"{tag}:{lab}:{gid}:{k}",
+                                                       seed=seed_of(tag, lab, gid, args.model, k))
                 except Exception as exc:                  # a transport failure costs the attempt, not the run
                     meta = {"seconds": round(time.monotonic() - t0, 1), "error": f"{type(exc).__name__}: {exc}"}
                     calls.append(meta)
@@ -109,13 +196,17 @@ async def run_model(args, cfg, llm_cfg) -> dict:
                 calls.append(meta)
                 return (r.choices or [""])[0], meta
             t0 = time.monotonic()
-            msgs = agent.first_prompt(task.prompt, contract, task.reference_code, fault_diff(task.reference_code, disc[gid]))
+            if args.version == "v1":
+                msgs = agent.first_prompt(task.prompt, contract, task.reference_code,
+                                          fault_diff(task.reference_code, disc[gid]))
+            else:                                  # v2: no reference, no diff context, value-free feedback
+                msgs = agent.first_prompt_v2(task.prompt, contract, fault_diff(task.reference_code, disc[gid], n=0))
             res = await agent.run_target(ask, msgs, task.module_name, task.reference_code, disc[gid], timeout_s,
-                                         args.attempts)
+                                         args.attempts, checker=agent.check_v2 if args.version == "v2" else None)
             return {"group_id": gid, "admitted": res.admitted is not None, "code": res.admitted,
                     "attempts": res.attempts, "seconds": round(time.monotonic() - t0, 1)}
         recs = await asyncio.gather(*(one_target(g) for g in targets))
-        rec = {"task": lab, "model": args.model, "gated": gated, "targets": recs,
+        rec = {"task": lab, "model": args.model, "version": args.version, "gated": gated, "targets": recs,
                "n_targets": len(targets), "admitted": sum(r["admitted"] for r in recs)}
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(rec, indent=1, default=str), encoding="utf-8")
@@ -126,6 +217,22 @@ async def run_model(args, cfg, llm_cfg) -> dict:
             "admitted": sum(r["admitted"] for r in recs)}
 
 
+def write_manifest(args, llm_cfg, out_dir: Path) -> None:
+    """Recorded at the start of every run (decisions 10.6, safeguard 5): code, prompts, model, config, seeds."""
+    import os
+    from meta_real_eval.core.provenance import write_run_manifest
+    m = llm_cfg.llm.model(args.model)
+    write_run_manifest(out_dir, stage=f"a3_{args.version}_run", config_path=args.config,
+                       inputs={"agent": Path(agent.__file__), "build_a3": Path(__file__),
+                               "llm_config": args.llm_config, **({"targets": args.targets} if args.targets else {})},
+                       seeds={"rule": f"sha256(a3{args.version}|task|group|model|attempt)[:8] mod 2^31"},
+                       settings={"version": args.version, "model": args.model,
+                                 "model_config": m.model_dump(mode="json") if m else None,
+                                 "endpoint": os.environ.get("INNKUBE_BASE_URL"), "temperature": 0.6,
+                                 "max_tokens": args.max_tokens, "attempts": args.attempts, "max_groups": args.max_groups,
+                                 "prompt_sha256": sha(agent.SYSTEM + agent.RULES), "evaluation": bool(args.targets)})
+
+
 # --- merge ---------------------------------------------------------------------------------------
 
 def renamed(body: str, name: str) -> str:
@@ -134,7 +241,7 @@ def renamed(body: str, name: str) -> str:
 
 def merge(args, cfg) -> dict:
     tasks, _ = ec.load_tasks(cfg, args.ungated)
-    ready = a2_ready(args.a2, cfg.extensions.development_tasks)
+    ready = selected(args, cfg)
     runs = sorted(p for p in (args.out / "runs").iterdir() if p.is_dir())
     summary = {}
     for lab, a2 in ready.items():
@@ -252,13 +359,16 @@ def report(args, cfg) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("cmd", choices=["run", "merge", "report"])
+    ap.add_argument("cmd", choices=["run", "merge", "report", "freeze-targets"])
+    ap.add_argument("--version", choices=["v1", "v2"], default="v1", help="A3 version (v2: decisions 10.6)")
+    ap.add_argument("--targets", type=Path, help="the frozen target list (evaluation runs, decisions 10.6)")
+    ap.add_argument("--audit", type=Path, help="freeze-targets: audit_reserved.json (excluded from the cohort)")
     ap.add_argument("--config", type=Path, required=True)
     ap.add_argument("--llm-config", type=Path, help="the model's serving-group config (llm section, profile)")
     ap.add_argument("--model")
     ap.add_argument("--a2", type=Path, required=True, help="development A2 suite (e.g. a2/dev_k5_r7b)")
     ap.add_argument("--witness", type=Path)
-    ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--out", type=Path)
     ap.add_argument("--eval-a2", type=Path, help="evaluation A2 build: only to count targets for condition 4")
     ap.add_argument("--max-groups", type=int, default=MAX_GROUPS)
     ap.add_argument("--attempts", type=int, default=ATTEMPTS)
@@ -267,6 +377,11 @@ def main(argv=None) -> int:
     ap.add_argument("--ungated", action="store_true")
     args = ap.parse_args(argv)
     cfg = ec.load_ext_config(args.config)
+    if args.cmd == "freeze-targets":              # reads stored records only; no model code runs
+        print(json.dumps(freeze_targets(args, cfg), indent=1))
+        return 0
+    if args.out is None:
+        raise SystemExit("ERROR: --out is required")
     if args.cmd in ("run", "merge"):              # model-written code runs: scrub credentials, kill process trees
         import dataclasses
         from meta_real_eval.core import canary

@@ -25,6 +25,7 @@ import argparse
 import dataclasses
 import hashlib
 import json
+import random
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -38,6 +39,7 @@ from meta_real_eval.oracles.admission import run_tests_isolated  # noqa: E402
 from meta_real_eval.oracles.fault_groups import load_split  # noqa: E402
 
 EQUIV = ("no_divergence", "no_testable_inputs", "ast_identical")
+B, SEED = 2000, 20261127
 
 
 def is_primary(g):
@@ -67,6 +69,20 @@ def populations(g) -> list[str]:
     return out
 
 
+def boot_mean(per_task: dict, key) -> list | None:
+    """Task-cluster bootstrap 95% interval of the mean per-task rate ``key(groups of one task)``."""
+    tasks = sorted(per_task)
+    if not tasks:
+        return None
+    rates = {t: key(per_task[t]) for t in tasks}
+    rng, vals = random.Random(SEED), []
+    for _ in range(B):
+        s = [rates[rng.choice(tasks)] for _ in tasks]
+        vals.append(sum(s) / len(s))
+    vals.sort()
+    return [vals[int(0.025 * B)], vals[int(0.975 * B) - 1]]
+
+
 def aggregate(rows: list[dict]) -> dict:
     out = {}
     pops = sorted({p for r in rows for p in r["populations"]} | {"primary"})
@@ -82,13 +98,18 @@ def aggregate(rows: list[dict]) -> dict:
             return sum(rates) / len(rates) if rates else None
         for r in sel:
             r["either"] = r["p_killed"] or r["h_detected"]
+            r["h_only"] = r["h_detected"] and not r["p_killed"]
         out[pop] = {"tasks": len(per_task), "groups": len(sel),
                     "p_detected": sum(r["p_killed"] for r in sel), "h_detected": sum(r["h_detected"] for r in sel),
                     "p_or_h": sum(r["either"] for r in sel),
                     "h_only": sum(r["h_detected"] and not r["p_killed"] for r in sel),
                     "p_only": sum(r["p_killed"] and not r["h_detected"] for r in sel),
                     "mean_task_rate_p": mean_rate("p_killed"), "mean_task_rate_h": mean_rate("h_detected"),
-                    "mean_task_rate_p_or_h": mean_rate("either")}
+                    "mean_task_rate_p_or_h": mean_rate("either"),
+                    # what H adds to P per task (share of a task's groups detected by H and not by P), with intervals
+                    "mean_task_rate_h_only": mean_rate("h_only"),
+                    "ci95": {k: boot_mean(per_task, lambda v, k=k: sum(x[k] for x in v) / len(v))
+                             for k in ("p_killed", "h_detected", "either", "h_only")}}
     return out
 
 
@@ -102,15 +123,20 @@ def main(argv=None) -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--after-freeze", action="store_true",
                     help="allow evaluation tasks: only once canonical H v1 is frozen (tag tier2-hidden-v1)")
+    ap.add_argument("--arm-of", type=Path, default=None,
+                    help="with --after-freeze: --hidden is a comparison arm (A3, decisions 10.6) of this frozen bundle")
+    ap.add_argument("--audit", type=Path, default=None,
+                    help="audit_reserved.json: also aggregate the evaluation cohort (frozen H minus these tasks)")
     args = ap.parse_args(argv)
     cfg = ec.load_ext_config(args.config)
     hidden_tasks = {p.parent.name for p in args.hidden.glob("*/hidden_tests.py")}
     if not args.after_freeze and hidden_tasks - set(cfg.extensions.development_tasks):
         raise SystemExit("ERROR: held-out detection on evaluation tasks only after H is frozen (--after-freeze); "
                          "before that it would invite tuning on evaluation tasks (plan D5)")
+    unlocked = {"frozen_h_sha256": None}
     if args.after_freeze:
-        import freeze_h
-        freeze_h.verify(args.hidden)          # only the committed frozen bundle unlocks evaluation tasks
+        import freeze_h                       # only a committed frozen bundle (or an arm of it) unlocks them
+        unlocked = freeze_h.unlock(args.hidden, args.arm_of)
     pins = ec.pins_ok(cfg)
     policy = dataclasses.replace(cfg.extensions.exec_policy.to_policy(), isolate_home=False)   # grading
     policy.activate()
@@ -153,11 +179,15 @@ def main(argv=None) -> int:
         if r["h_outcomes"] is not None:  # a timeout is never a detection (as the RQ1 suite veto)
             r["h_detected"] = any(o not in ("ordinary_pass", "timeout") for o in r["h_outcomes"].values())
     rows = [{k: v for k, v in r.items() if k != "args"} for r in done]
+    audit = set(json.loads(args.audit.read_text(encoding="utf-8"))["tasks"]) if args.audit else set()
     res = {"authoritative": gated, "hidden": str(args.hidden), "witness": str(args.witness), "isolation": "per_test_process",
-           "pins": pins, "populations": aggregate(rows), "rows": rows}
+           **unlocked, "pins": pins, "populations": aggregate(rows), "rows": rows}
+    if args.audit:                            # RQ4c primary: the 55-task evaluation cohort (decisions 10.6)
+        res["audit_excluded"] = sorted(audit & hidden_tasks)
+        res["populations_cohort"] = aggregate([r for r in rows if r["task"] not in audit])
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(res, indent=1, default=str), encoding="utf-8")
-    print(json.dumps(res["populations"], indent=1))
+    print(json.dumps({k: res[k] for k in ("populations", "populations_cohort") if k in res}, indent=1))
     return 0
 
 

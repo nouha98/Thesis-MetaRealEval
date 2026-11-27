@@ -85,15 +85,20 @@ def freeze(a2: Path, audit: Path, out: Path, decision_path: Path = DECISION, rec
     return record
 
 
+def record_for(hidden: Path) -> Path:
+    """The committed record of the H version the bundle's own manifest names."""
+    man = hidden / "freeze_manifest.json"
+    version = json.loads(man.read_text(encoding="utf-8"))["version"] if man.is_file() else "tier2-hidden-v1"
+    if version not in RECORDS:
+        raise SystemExit(f"ERROR: unknown H version {version!r} in {man}")
+    return RECORDS[version]
+
+
 def verify(hidden: Path, record_path: Path | None = None) -> dict:
     """The bundle must match the committed record file by file (no task added, removed or changed). Without
     ``record_path`` the record is chosen by the version the bundle's own manifest names."""
     if record_path is None:
-        man = hidden / "freeze_manifest.json"
-        version = json.loads(man.read_text(encoding="utf-8"))["version"] if man.is_file() else "tier2-hidden-v1"
-        if version not in RECORDS:
-            raise SystemExit(f"ERROR: unknown H version {version!r} in {man}")
-        record_path = RECORDS[version]
+        record_path = record_for(hidden)
     if not record_path.is_file():
         raise SystemExit(f"ERROR: {record_path} missing: H is not frozen")
     rec = json.loads(record_path.read_text(encoding="utf-8"))

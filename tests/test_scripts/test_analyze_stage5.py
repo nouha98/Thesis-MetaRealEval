@@ -91,3 +91,22 @@ def test_tau_tolerance_and_pairwise_gaps():
     g = lb["pairwise"]["a - b"]
     assert g["p"]["tasks"] == 2 and abs(g["p"]["gap"] - 0.55) < 1e-12 and g["p"]["ci95"][0] <= 0.55 <= g["p"]["ci95"][1]
     assert g["p_and_h"]["gap"] == g["p"]["gap"]
+
+
+def test_main_resolves_the_record_from_the_bundle_and_writes_a_manifest(tmp_path, monkeypatch):
+    bundle = tmp_path / "hidden_v1"
+    (bundle / "RCE_csn_snippet_1").mkdir(parents=True)
+    (bundle / "RCE_csn_snippet_1" / "hidden_tests.py").write_text("# t\n", encoding="utf-8")
+    (bundle / "RCE_csn_snippet_1" / "a2.json").write_text("{}", encoding="utf-8")
+    files = fh.bundle_hashes(bundle)
+    record = tmp_path / "record.json"
+    record.write_text(json.dumps({"tasks": ["RCE_csn_snippet_1"], "files": files, "global_sha256": fh.global_digest(files),
+                                  "version": "tier2-hidden-v1", "n_tasks": 1}), encoding="utf-8")
+    (bundle / "freeze_manifest.json").write_text(json.dumps({"version": "tier2-hidden-v1"}), encoding="utf-8")
+    monkeypatch.setitem(fh.RECORDS, "tier2-hidden-v1", record)
+    g = {"isolation": "per_test_process", "hidden": str(bundle), "tasks": [{**GRADING["tasks"][0], "task": "RCE_csn_snippet_1"}]}
+    gp, ap_ = tmp_path / "g.json", tmp_path / "audit.json"
+    gp.write_text(json.dumps(g), encoding="utf-8")
+    ap_.write_text(json.dumps({"tasks": []}), encoding="utf-8")
+    assert s5.main(["--grading", str(gp), "--audit", str(ap_), "--out", str(tmp_path / "o"), "--expect-cohort", "1"]) == 0
+    assert (tmp_path / "o" / "run_manifest.json").is_file()

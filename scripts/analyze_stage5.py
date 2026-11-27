@@ -247,13 +247,14 @@ def main(argv=None) -> int:
     if grading.get("isolation") != "per_test_process":
         raise SystemExit("ERROR: the grading was not produced by the isolated runner (decisions 10.5)")
     audit = set(json.loads(args.audit.read_text(encoding="utf-8"))["tasks"])
-    cohort = cohort_from_freeze(grading, audit, args.record, args.expect_cohort)
+    record = args.record or freeze_h.record_for(Path(grading["hidden"]))     # the record actually verified
+    cohort = cohort_from_freeze(grading, audit, record, args.expect_cohort)
     res = analyse(grading, cohort)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "stage5_summary.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
     (args.out / "stage5_report.md").write_text(report_md(res), encoding="utf-8")
     write_run_manifest(args.out, stage="stage5_analysis", inputs={"grading": args.grading, "audit": args.audit,
-                                                                  "freeze_record": args.record},
+                                                                  "freeze_record": record},
                        seeds={"bootstrap": SEED}, settings={"bootstrap_replicates": B, "cohort_tasks": len(cohort)})
     print(report_md(res))
     return 0
